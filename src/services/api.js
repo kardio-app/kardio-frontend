@@ -1,5 +1,27 @@
 import API_URL from '../config/api.js'
 
+// Helper para tratar erros de response
+async function handleResponseError(response) {
+  let errorMessage = `Erro ${response.status}: ${response.statusText}`
+  try {
+    // Clonar response antes de ler para evitar "body stream already read"
+    const clonedResponse = response.clone()
+    const errorData = await clonedResponse.json()
+    errorMessage = errorData.error || errorMessage
+  } catch (e) {
+    // Se não conseguir fazer parse do JSON, tentar ler como texto
+    try {
+      const clonedResponse = response.clone()
+      const text = await clonedResponse.text()
+      errorMessage = text || errorMessage
+    } catch (textError) {
+      // Se falhar, usar apenas status e statusText
+      errorMessage = `Erro ${response.status}: ${response.statusText}`
+    }
+  }
+  return errorMessage
+}
+
 // Criar novo projeto
 export async function createProject(name) {
   try {
@@ -14,15 +36,7 @@ export async function createProject(name) {
     })
 
     if (!response.ok) {
-      let errorMessage = `Erro ${response.status}: ${response.statusText}`
-      try {
-        const errorData = await response.json()
-        errorMessage = errorData.error || errorMessage
-      } catch (e) {
-        // Se não conseguir fazer parse do JSON, usar o texto da resposta
-        const text = await response.text()
-        errorMessage = text || errorMessage
-      }
+      const errorMessage = await handleResponseError(response)
       throw new Error(errorMessage)
     }
 
@@ -48,14 +62,7 @@ export async function accessProject(code) {
     })
 
     if (!response.ok) {
-      let errorMessage = `Erro ${response.status}: ${response.statusText}`
-      try {
-        const errorData = await response.json()
-        errorMessage = errorData.error || errorMessage
-      } catch (e) {
-        const text = await response.text()
-        errorMessage = text || errorMessage
-      }
+      const errorMessage = await handleResponseError(response)
       throw new Error(errorMessage)
     }
 
@@ -72,14 +79,7 @@ export async function getProject(encryptedId) {
     const response = await fetch(`${API_URL}/projects/${encryptedId}`)
 
     if (!response.ok) {
-      let errorMessage = `Erro ${response.status}: ${response.statusText}`
-      try {
-        const errorData = await response.json()
-        errorMessage = errorData.error || errorMessage
-      } catch (e) {
-        const text = await response.text()
-        errorMessage = text || errorMessage
-      }
+      const errorMessage = await handleResponseError(response)
       throw new Error(errorMessage)
     }
 
@@ -98,14 +98,20 @@ export async function getBoard(encryptedId) {
     if (!response.ok) {
       let errorMessage = `Erro ${response.status}: ${response.statusText}`
       try {
-        const errorData = await response.json()
+        const clonedResponse = response.clone()
+        const errorData = await clonedResponse.json()
         errorMessage = errorData.error || errorMessage
         if (errorData.details) {
           console.error('Detalhes do erro:', errorData.details)
         }
       } catch (e) {
-        const text = await response.text()
-        errorMessage = text || errorMessage
+        try {
+          const clonedResponse = response.clone()
+          const text = await clonedResponse.text()
+          errorMessage = text || errorMessage
+        } catch (textError) {
+          errorMessage = `Erro ${response.status}: ${response.statusText}`
+        }
       }
       throw new Error(errorMessage)
     }
@@ -129,14 +135,7 @@ export async function updateProjectName(encryptedId, name) {
     })
 
     if (!response.ok) {
-      let errorMessage = `Erro ${response.status}: ${response.statusText}`
-      try {
-        const errorData = await response.json()
-        errorMessage = errorData.error || errorMessage
-      } catch (e) {
-        const text = await response.text()
-        errorMessage = text || errorMessage
-      }
+      const errorMessage = await handleResponseError(response)
       throw new Error(errorMessage)
     }
 
@@ -163,8 +162,13 @@ export async function createColumn(encryptedId, title) {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Erro ao criar coluna')
+    try {
+      const clonedResponse = response.clone()
+      const error = await clonedResponse.json()
+      throw new Error(error.error || 'Erro ao criar coluna')
+    } catch (e) {
+      throw new Error(`Erro ${response.status}: ${response.statusText}`)
+    }
   }
 
   return response.json()
@@ -181,8 +185,13 @@ export async function updateColumn(encryptedId, columnId, data) {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Erro ao atualizar coluna')
+    try {
+      const clonedResponse = response.clone()
+      const error = await clonedResponse.json()
+      throw new Error(error.error || 'Erro ao atualizar coluna')
+    } catch (e) {
+      throw new Error(`Erro ${response.status}: ${response.statusText}`)
+    }
   }
 
   return response.json()
@@ -195,8 +204,13 @@ export async function deleteColumn(encryptedId, columnId) {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Erro ao deletar coluna')
+    try {
+      const clonedResponse = response.clone()
+      const error = await clonedResponse.json()
+      throw new Error(error.error || 'Erro ao deletar coluna')
+    } catch (e) {
+      throw new Error(`Erro ${response.status}: ${response.statusText}`)
+    }
   }
 
   return response.json()
@@ -216,15 +230,21 @@ export async function createCard(encryptedId, columnId, data) {
     if (!response.ok) {
       let errorMessage = `Erro ${response.status}: ${response.statusText}`
       try {
-        const errorData = await response.json()
+        const clonedResponse = response.clone()
+        const errorData = await clonedResponse.json()
         errorMessage = errorData.error || errorMessage
         if (errorData.details) {
           console.error('Detalhes do erro:', errorData.details)
           console.error('Código do erro:', errorData.code)
         }
       } catch (e) {
-        const text = await response.text()
-        errorMessage = text || errorMessage
+        try {
+          const clonedResponse = response.clone()
+          const text = await clonedResponse.text()
+          errorMessage = text || errorMessage
+        } catch (textError) {
+          errorMessage = `Erro ${response.status}: ${response.statusText}`
+        }
       }
       throw new Error(errorMessage)
     }
@@ -248,14 +268,7 @@ export async function updateCard(encryptedId, cardId, data) {
     })
 
     if (!response.ok) {
-      let errorMessage = `Erro ${response.status}: ${response.statusText}`
-      try {
-        const errorData = await response.json()
-        errorMessage = errorData.error || errorMessage
-      } catch (e) {
-        const text = await response.text()
-        errorMessage = text || errorMessage
-      }
+      const errorMessage = await handleResponseError(response)
       throw new Error(errorMessage)
     }
 
@@ -287,14 +300,7 @@ export async function reorderCards(encryptedId, columnId, cards) {
     })
 
     if (!response.ok) {
-      let errorMessage = `Erro ${response.status}: ${response.statusText}`
-      try {
-        const errorData = await response.json()
-        errorMessage = errorData.error || errorMessage
-      } catch (e) {
-        const text = await response.text()
-        errorMessage = text || errorMessage
-      }
+      const errorMessage = await handleResponseError(response)
       throw new Error(errorMessage)
     }
 
@@ -312,10 +318,14 @@ export async function deleteCard(encryptedId, cardId) {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Erro ao deletar card')
+    try {
+      const clonedResponse = response.clone()
+      const error = await clonedResponse.json()
+      throw new Error(error.error || 'Erro ao deletar card')
+    } catch (e) {
+      throw new Error(`Erro ${response.status}: ${response.statusText}`)
+    }
   }
 
   return response.json()
 }
-

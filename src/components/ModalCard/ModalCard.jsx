@@ -68,6 +68,9 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
       if (showToast) {
         showToast('Tarefa atualizada', 'success')
       }
+      
+      // Fechar modal após salvar com sucesso
+      onClose()
     } catch (error) {
       console.error('Erro ao salvar card:', error)
       if (showToast) {

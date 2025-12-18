@@ -1,0 +1,176 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid transparent;
+}
+
+.modal-title-input {
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.5rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+}
+
+.modal-close-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.modal-close-button:hover {
+  background-color: var(--bg-gray-light);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-field:last-child {
+  margin-bottom: 0;
+}
+
+.modal-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-input,
+.modal-textarea {
+  padding: 0.75rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+  font-size: 0.9375rem;
+  resize: vertical;
+  transition: var(--transition);
+}
+
+.modal-input:focus,
+.modal-textarea:focus {
+  background-color: var(--bg-gray-hover);
+}
+
+.modal-textarea {
+  font-family: inherit;
+  min-height: 120px;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid transparent;
+}
+
+.modal-button {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.modal-button-save {
+  background-color: var(--bg-gray-light);
+}
+
+.modal-button-save:hover {
+  background-color: var(--bg-gray-hover);
+}
+
+.modal-button-delete {
+  background-color: transparent;
+  color: var(--text-gray);
+}
+
+.modal-button-delete:hover {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+@media (max-width: 768px) {
+  .modal-backdrop {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1rem;
+  }
+}
+

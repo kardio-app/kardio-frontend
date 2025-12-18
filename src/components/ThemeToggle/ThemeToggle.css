@@ -1,0 +1,28 @@
+.theme-toggle-container {
+  position: relative;
+}
+
+.theme-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  color: var(--text-white);
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+}
+
+.theme-toggle-button:hover {
+  background-color: var(--bg-gray-light);
+}
+
+.theme-toggle-button svg {
+  width: 20px;
+  height: 20px;
+}
+

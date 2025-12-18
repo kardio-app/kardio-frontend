@@ -144,8 +144,13 @@
   background-color: var(--bg-gray-light);
 }
 
-.modal-button-save:hover {
+.modal-button-save:hover:not(:disabled) {
   background-color: var(--bg-gray-hover);
+}
+
+.modal-button-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .modal-button-delete {

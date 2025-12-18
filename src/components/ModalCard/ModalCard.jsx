@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
 import './ModalCard.css'
@@ -10,25 +10,61 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
   const [description, setDescription] = useState(card.description || '')
   const [assignee, setAssignee] = useState(card.assignee || '')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const initialValues = useRef({
+    title: card.title,
+    description: card.description || '',
+    assignee: card.assignee || ''
+  })
+
+  // Verificar se há alterações não salvas
+  useEffect(() => {
+    const hasChanges = 
+      title.trim() !== initialValues.current.title ||
+      description.trim() !== initialValues.current.description ||
+      assignee.trim() !== initialValues.current.assignee
+    
+    setHasUnsavedChanges(hasChanges)
+  }, [title, description, assignee])
+
+  const handleClose = useCallback(() => {
+    if (hasUnsavedChanges) {
+      const confirmClose = window.confirm('Você tem alterações não salvas. Deseja descartá-las e fechar?')
+      if (!confirmClose) return
+    }
+    onClose()
+  }, [hasUnsavedChanges, onClose])
 
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
-        handleSave()
-        onClose()
+        handleClose()
       }
     }
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
-  }, [title, description, assignee])
+  }, [handleClose])
 
   const handleSave = async () => {
+    if (isSaving) return
+    
+    setIsSaving(true)
     try {
       await updateCard(boardId, columnId, card.id, {
         title: title.trim() || card.title,
         description: description.trim(),
         assignee: assignee.trim(),
       })
+      
+      // Atualizar valores iniciais após salvar
+      initialValues.current = {
+        title: title.trim() || card.title,
+        description: description.trim(),
+        assignee: assignee.trim()
+      }
+      setHasUnsavedChanges(false)
+      
       if (showToast) {
         showToast('Tarefa atualizada', 'success')
       }
@@ -37,6 +73,8 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
       if (showToast) {
         showToast('Erro ao salvar alterações', 'error')
       }
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -62,8 +100,7 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
-      handleSave()
-      onClose()
+      handleClose()
     }
   }
 
@@ -76,14 +113,10 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Título do card"
-            onBlur={handleSave}
           />
           <button
             className="modal-close-button"
-            onClick={() => {
-              handleSave()
-              onClose()
-            }}
+            onClick={handleClose}
             aria-label="Fechar"
           >
             ×
@@ -99,7 +132,6 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Adicione uma descrição..."
               rows={6}
-              onBlur={handleSave}
             />
           </div>
 
@@ -110,7 +142,6 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
               placeholder="Nome do responsável"
-              onBlur={handleSave}
             />
           </div>
         </div>
@@ -124,12 +155,10 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
           </button>
           <button
             className="modal-button modal-button-save"
-            onClick={() => {
-              handleSave()
-              onClose()
-            }}
+            onClick={handleSave}
+            disabled={isSaving || !hasUnsavedChanges}
           >
-            Salvar
+            {isSaving ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </div>

@@ -8,7 +8,7 @@ function NotFound() {
   const [countdown, setCountdown] = useState(5)
 
   useEffect(() => {
-    document.title = 'Página não encontrada - kardio'
+    document.title = 'Página não encontrada - @kardio'
     
     const timer = setInterval(() => {
       setCountdown((prev) => {

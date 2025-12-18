@@ -61,7 +61,7 @@ function Board() {
         })
         
         setBoardData(boardDataToUse)
-        document.title = `${boardDataToUse.name} - kardio`
+        document.title = `${boardDataToUse.name} - @kardio`
         setError(null)
       } catch (err) {
         if (!isMounted) return
@@ -141,7 +141,7 @@ function Board() {
 
   const handleProjectNameUpdate = (newName) => {
     setBoardData(prev => prev ? { ...prev, name: newName } : null)
-    document.title = `${newName} - kardio`
+    document.title = `${newName} - @kardio`
   }
 
   return (

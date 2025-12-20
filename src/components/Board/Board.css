@@ -5,12 +5,14 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   position: relative;
+  height: 100%;
+  min-height: 0;
 }
 
 .board-columns {
   display: flex;
   gap: 1.5rem;
-  min-height: calc(100vh - 120px);
+  height: 100%;
   align-items: flex-start;
   width: max-content;
 }
@@ -137,11 +139,12 @@
     padding: 1rem;
     overflow-x: auto;
     overflow-y: hidden;
+    height: 100%;
   }
 
   .board-columns {
     gap: 1rem;
-    min-height: calc(100vh - 100px);
+    height: 100%;
     width: max-content;
   }
 

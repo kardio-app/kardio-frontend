@@ -19,6 +19,11 @@ function Board() {
   const boardDataRef = useRef(null)
 
   useEffect(() => {
+    // Scroll para o topo ao carregar a página
+    window.scrollTo(0, 0)
+  }, [boardId])
+
+  useEffect(() => {
     let isMounted = true
     let pollInterval = null
     let consecutiveErrors = 0

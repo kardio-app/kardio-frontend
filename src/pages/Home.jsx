@@ -13,6 +13,8 @@ function Home() {
 
   useEffect(() => {
     document.title = '@kardio'
+    // Scroll para o topo ao carregar a página
+    window.scrollTo(0, 0)
   }, [])
 
   useEffect(() => {

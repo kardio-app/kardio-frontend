@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   padding: 2rem;
   animation: fadeIn 0.2s ease;
 }
@@ -166,10 +166,15 @@
 @media (max-width: 768px) {
   .modal-backdrop {
     padding: 1rem;
+    align-items: center;
+    justify-content: center;
   }
 
   .modal-content {
-    max-height: 95vh;
+    max-height: 90vh;
+    width: calc(100% - 2rem);
+    margin: 0 auto;
+    position: relative;
   }
 
   .modal-header,

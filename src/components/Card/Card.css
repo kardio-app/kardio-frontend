@@ -9,6 +9,7 @@
   border: 1px solid transparent;
   position: relative;
   cursor: default;
+  touch-action: pan-y;
 }
 
 .card:hover {
@@ -30,6 +31,10 @@
   transition: var(--transition);
   opacity: 0;
   z-index: 10;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .card:hover .card-drag-handle {
@@ -82,5 +87,42 @@
 .card-assignee-name {
   color: var(--text-white);
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .card {
+    touch-action: pan-y;
+  }
+
+  .card-drag-handle {
+    width: 32px;
+    height: 32px;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0.8;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+  }
+
+  /* Sempre visível no mobile */
+  .card .card-drag-handle {
+    opacity: 0.8 !important;
+  }
+
+  .card:hover .card-drag-handle,
+  .card:active .card-drag-handle,
+  .card:focus-within .card-drag-handle {
+    opacity: 1 !important;
+  }
+
+  .card[data-dragging="true"] {
+    touch-action: none !important;
+  }
+  
+  .card[data-dragging="true"] .card-drag-handle {
+    touch-action: none !important;
+    opacity: 1 !important;
+  }
 }
 

@@ -41,6 +41,7 @@ function Card({ boardId, columnId, card, showToast }) {
         {...attributes}
         className="card"
         onClick={handleClick}
+        data-dragging={isDragging}
       >
         <div 
           className="card-drag-handle"

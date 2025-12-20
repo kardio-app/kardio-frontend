@@ -57,7 +57,9 @@ function Board({ boardId, showToast }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
+        delay: 0,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -71,6 +73,12 @@ function Board({ boardId, showToast }) {
     const activeId = event.active.id.toString()
     const isColumn = boardData.columns.some(col => col.id === activeId)
     setActiveType(isColumn ? 'column' : 'card')
+    
+    // Prevenir scroll durante o drag no mobile
+    if (boardContainerRef.current) {
+      boardContainerRef.current.style.overflowX = 'hidden'
+      boardContainerRef.current.style.touchAction = 'none'
+    }
   }
 
   const handleDragEnd = async (event) => {
@@ -182,6 +190,12 @@ function Board({ boardId, showToast }) {
 
     setActiveId(null)
     setActiveType(null)
+    
+    // Reabilitar scroll após o drag
+    if (boardContainerRef.current) {
+      boardContainerRef.current.style.overflowX = 'auto'
+      boardContainerRef.current.style.touchAction = 'pan-x'
+    }
   }
 
   const activeCard = activeId ? boardData.columns

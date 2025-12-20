@@ -9,6 +9,19 @@
   max-width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
+  transition: transform 0.3s ease-in-out;
+}
+
+.navbar-fixed {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+.navbar-hidden {
+  transform: translateY(-100%);
 }
 
 .navbar-container {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import ModalAccess from '../ModalAccess/ModalAccess'
@@ -18,6 +18,8 @@ function Navbar() {
   const [projectResult, setProjectResult] = useState(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900)
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true)
+  const lastScrollY = useRef(0)
 
   const isHome = location.pathname === '/home'
   const isBoard = location.pathname.startsWith('/board/')
@@ -44,6 +46,43 @@ function Navbar() {
       document.body.style.overflow = ''
     }
   }, [isMobileMenuOpen])
+
+  // Lógica de scroll para mostrar/esconder navbar na home
+  useEffect(() => {
+    if (!isHome) {
+      setIsNavbarVisible(true)
+      lastScrollY.current = 0
+      return
+    }
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+
+      // Se estiver no topo, sempre mostrar
+      if (currentScrollY < 10) {
+        setIsNavbarVisible(true)
+        lastScrollY.current = currentScrollY
+        return
+      }
+
+      // Se estiver scrollando para baixo, esconder
+      // Se estiver scrollando para cima, mostrar
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setIsNavbarVisible(false)
+      } else if (currentScrollY < lastScrollY.current) {
+        setIsNavbarVisible(true)
+      }
+
+      lastScrollY.current = currentScrollY
+    }
+
+    // Resetar quando mudar de página
+    lastScrollY.current = window.scrollY
+    setIsNavbarVisible(true)
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isHome])
 
   useEffect(() => {
     if (isCreating && projectResult) {
@@ -105,7 +144,7 @@ function Navbar() {
       <>
         {isCreating && <Loading />}
         {isExiting && <Loading message="Saindo do projeto..." />}
-        <nav className="navbar">
+        <nav className="navbar navbar-fixed">
           <div className="navbar-container">
             <button
               className="navbar-logo"
@@ -241,7 +280,7 @@ function Navbar() {
   return (
     <>
       {isCreating && <Loading />}
-      <nav className="navbar">
+      <nav className={`navbar ${!isNavbarVisible ? 'navbar-hidden' : ''}`}>
         <div className="navbar-container">
           <button
             className="navbar-logo"

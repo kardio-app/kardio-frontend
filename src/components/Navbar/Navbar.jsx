@@ -65,12 +65,22 @@ function Navbar() {
         return
       }
 
-      // Se estiver scrollando para baixo, esconder
-      // Se estiver scrollando para cima, mostrar
-      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-        setIsNavbarVisible(false)
-      } else if (currentScrollY < lastScrollY.current) {
+      // Calcular diferença de scroll
+      const scrollDifference = currentScrollY - lastScrollY.current
+      
+      // Se a diferença for muito pequena, não fazer nada (evitar flickering)
+      if (Math.abs(scrollDifference) < 5) {
+        lastScrollY.current = currentScrollY
+        return
+      }
+
+      // Se estiver scrollando para cima (scrollDifference < 0), sempre mostrar
+      if (scrollDifference < 0) {
         setIsNavbarVisible(true)
+      } 
+      // Se estiver scrollando para baixo (scrollDifference > 0), esconder (após 100px)
+      else if (scrollDifference > 0 && currentScrollY > 100) {
+        setIsNavbarVisible(false)
       }
 
       lastScrollY.current = currentScrollY

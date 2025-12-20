@@ -5,6 +5,10 @@
   background-color: var(--navbar-bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .navbar-container {
@@ -14,6 +18,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .navbar-logo {
@@ -311,24 +317,46 @@
 }
 
 @media (max-width: 768px) {
+  .navbar {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
   .navbar-container {
     padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .navbar-logo {
     font-size: 1.125rem;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .navbar-link {
     font-size: 0.875rem;
   }
 
+  .navbar-mobile-menu {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
   .navbar-mobile-header {
     padding: 1rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .navbar-mobile-content {
     padding: 1.5rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 

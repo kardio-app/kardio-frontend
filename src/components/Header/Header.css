@@ -5,6 +5,8 @@
   padding: 1.5rem 2rem;
   background-color: var(--bg-black);
   border-bottom: 1px solid transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .header-left {

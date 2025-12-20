@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
 import './ModalCard.css'
@@ -107,7 +108,7 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
     }
   }
 
-  return (
+  return createPortal(
     <div className="modal-backdrop" onClick={handleBackdropClick}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -175,7 +176,8 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
           cancelText="Cancelar"
         />
       )}
-    </div>
+    </div>,
+    document.body
   )
 }
 

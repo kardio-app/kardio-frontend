@@ -168,16 +168,22 @@
 @media (max-width: 768px) {
   .modal-backdrop {
     padding: 1rem;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding-top: 80px;
     z-index: 10000;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
   }
 
   .modal-content {
-    max-height: calc(100vh - 100px);
+    max-height: 85vh;
     width: calc(100% - 2rem);
     margin: 0 auto;
     position: relative;

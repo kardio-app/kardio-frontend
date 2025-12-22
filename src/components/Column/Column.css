@@ -8,8 +8,7 @@
   flex-direction: column;
   gap: 1rem;
   transition: var(--transition);
-  height: 100%;
-  max-height: 100%;
+  max-height: calc(100vh - 70px - 80px - 4rem);
 }
 
 .column {
@@ -96,7 +95,7 @@
   flex-direction: column;
   gap: 0.75rem;
   min-height: 100px;
-  flex: 1;
+  max-height: calc(100vh - 70px - 80px - 4rem - 120px);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0.5rem 0 1.75rem;
@@ -218,6 +217,11 @@
     min-width: 280px;
     max-width: 280px;
     padding: 1rem;
+    max-height: calc(100vh - 60px - 60px - 2rem);
+  }
+
+  .column-cards {
+    max-height: calc(100vh - 60px - 60px - 2rem - 100px);
   }
 }
 

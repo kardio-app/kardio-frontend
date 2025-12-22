@@ -4,7 +4,7 @@ import './Legal.css'
 
 function Termos() {
   useEffect(() => {
-    document.title = 'Termos de Uso - @kardio'
+    document.title = 'Termos de Uso - @kardiosoftware'
   }, [])
 
   return (

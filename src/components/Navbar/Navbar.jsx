@@ -161,7 +161,7 @@ function Navbar() {
               onClick={() => setShowExitModal(true)}
             >
               <span className="navbar-logo-letter">K</span>
-              <span className="navbar-logo-text">kardio</span>
+              <span className="navbar-logo-text">@kardiosoftware</span>
             </button>
             <div className="navbar-right-actions">
               <ThemeToggle />
@@ -217,7 +217,7 @@ function Navbar() {
             <div className="navbar-mobile-header">
               <span className="navbar-logo">
                 <span className="navbar-logo-letter">K</span>
-                <span className="navbar-logo-text">kardio</span>
+                <span className="navbar-logo-text">@kardiosoftware</span>
               </span>
               <button
                 className="navbar-mobile-close"
@@ -378,7 +378,7 @@ function Navbar() {
           <div className="navbar-mobile-header">
             <span className="navbar-logo">
               <span className="navbar-logo-letter">K</span>
-              <span className="navbar-logo-text">kardio</span>
+              <span className="navbar-logo-text">@kardiosoftware</span>
             </span>
             <button
               className="navbar-mobile-close"

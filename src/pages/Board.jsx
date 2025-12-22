@@ -124,7 +124,7 @@ function Board() {
           
           setBoardData(boardDataToUse)
           boardDataRef.current = boardDataToUse // Atualizar ref
-          document.title = `${boardDataToUse.name} - @kardio`
+          document.title = `${boardDataToUse.name} - @kardiosoftware`
           
           // Resetar contador de erros em caso de sucesso
           consecutiveErrors = 0
@@ -264,7 +264,7 @@ function Board() {
 
   const handleProjectNameUpdate = (newName) => {
     setBoardData(prev => prev ? { ...prev, name: newName } : null)
-    document.title = `${newName} - @kardio`
+    document.title = `${newName} - @kardiosoftware`
   }
 
   return (

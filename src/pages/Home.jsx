@@ -13,7 +13,7 @@ function Home() {
   const [projectResult, setProjectResult] = useState(null)
 
   useEffect(() => {
-    document.title = '@kardio'
+    document.title = '@kardiosoftware'
     // Scroll para o topo ao carregar a página
     window.scrollTo(0, 0)
   }, [])
@@ -223,7 +223,7 @@ function Home() {
         <footer className="home-footer">
           <div className="footer-content">
             <div className="footer-column">
-              <h3 className="footer-column-title">@kardio</h3>
+              <h3 className="footer-column-title">@kardiosoftware</h3>
               <div className="footer-social-links">
                 <a 
                   href="https://www.linkedin.com/in/initpedro/" 
@@ -276,7 +276,7 @@ function Home() {
                   </svg>
                 </a>
               </div>
-              <p className="footer-copyright">© 2025 @kardio</p>
+              <p className="footer-copyright">© 2025 @kardiosoftware</p>
             </div>
             <div className="footer-column">
               <h4 className="footer-column-subtitle">Links Úteis</h4>

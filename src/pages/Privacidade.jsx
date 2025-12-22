@@ -4,7 +4,7 @@ import './Legal.css'
 
 function Privacidade() {
   useEffect(() => {
-    document.title = 'Privacidade - @kardio'
+    document.title = 'Privacidade - @kardiosoftware'
   }, [])
 
   return (

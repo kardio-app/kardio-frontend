@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import './BoardPreview.css'
 
 function BoardPreview() {
+  const [activeTab, setActiveTab] = useState('video')
+
   return (
     <div className="board-preview-wrapper">
       <div className="board-preview-gradient"></div>
@@ -11,9 +14,38 @@ function BoardPreview() {
             <div className="board-preview-dot board-preview-dot-yellow"></div>
             <div className="board-preview-dot board-preview-dot-green"></div>
           </div>
-          <div className="board-preview-header-title">Board Preview</div>
+          <div className="board-preview-tabs">
+            <button
+              className={`board-preview-tab ${activeTab === 'video' ? 'active' : ''}`}
+              onClick={() => setActiveTab('video')}
+            >
+              Vídeo
+            </button>
+            <button
+              className={`board-preview-tab ${activeTab === 'preview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('preview')}
+            >
+              Board Preview
+            </button>
+          </div>
         </div>
         <div className="board-preview-content">
+          {activeTab === 'video' ? (
+            <div className="board-preview-video-container">
+              <iframe
+                src="https://drive.google.com/file/d/1Dt6q8ShqFx7gT_BoO_yzoINqxEFh34I8/preview"
+                width="100%"
+                height="100%"
+                allow="autoplay"
+                style={{
+                  border: 'none',
+                  borderRadius: '8px',
+                  minHeight: '500px'
+                }}
+              ></iframe>
+            </div>
+          ) : (
+            <div className="board-preview-board-content">
           <div className="board-preview-board">
             <div className="board-preview-column">
               <div className="board-preview-column-header">
@@ -104,6 +136,8 @@ function BoardPreview() {
               </svg>
             </button>
           </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

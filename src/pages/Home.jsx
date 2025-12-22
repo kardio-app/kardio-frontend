@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar/Navbar'
 import BoardPreview from '../components/BoardPreview/BoardPreview'
 import Loading from '../components/Loading/Loading'
+import GitHubCommits from '../components/GitHubCommits/GitHubCommits'
 import { createProject } from '../services/api'
 import './Home.css'
 
@@ -48,63 +49,68 @@ function Home() {
       <Navbar />
       <div className="home">
         <section className="home-hero">
-          <div className="home-content">
-            <p className="home-created-by">
-              Criado por{' '}
-              <a 
-                href="https://www.instagram.com/initpedro/" 
-                className="home-created-link"
-                target="_blank"
-                rel="noopener noreferrer"
+          <div className="home-hero-container">
+            <div className="home-hero-commits">
+              <GitHubCommits />
+            </div>
+            <div className="home-content">
+              <p className="home-created-by">
+                Siga o{' '}
+                <a 
+                  href="https://www.instagram.com/kardiosoftware/" 
+                  className="home-created-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  kardiosoftware
+                </a>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="home-external-icon"
+                >
+                  <path d="M15 3h6v6"></path>
+                  <path d="M10 14 21 3"></path>
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                </svg>
+              </p>
+              <h1 className="home-title">
+                Organize e faça<br />
+                progresso <span className="home-title-highlight">gratuitamente</span>
+              </h1>
+              <p className="home-subtitle">
+                Ferramentas simples para organizar seus projetos e alcançar seus objetivos.
+              </p>
+              <button 
+                className="home-button" 
+                onClick={handleCreateBoard}
+                disabled={isCreating}
               >
-                initpedro
-              </a>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="home-external-icon"
-              >
-                <path d="M15 3h6v6"></path>
-                <path d="M10 14 21 3"></path>
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              </svg>
-            </p>
-            <h1 className="home-title">
-              Organize e faça<br />
-              progresso <span className="home-title-highlight">gratuitamente</span>
-            </h1>
-            <p className="home-subtitle">
-              Ferramentas simples para organizar seus projetos e alcançar seus objetivos.
-            </p>
-            <button 
-              className="home-button" 
-              onClick={handleCreateBoard}
-              disabled={isCreating}
-            >
-              {isCreating ? 'Criando...' : 'Começar Agora'}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="18" 
-                height="18" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="home-button-icon"
-              >
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
-            </button>
+                {isCreating ? 'Criando...' : 'Começar Agora'}
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="18" 
+                  height="18" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="home-button-icon"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </section>
 

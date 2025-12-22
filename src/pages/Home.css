@@ -14,10 +14,26 @@
   min-height: 70vh;
 }
 
+.home-hero-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  max-width: 1400px;
+  width: 100%;
+}
+
+.home-hero-commits {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .home-content {
   text-align: center;
   max-width: 1200px;
   width: 100%;
+  flex: 1;
 }
 
 .home-created-by {
@@ -604,6 +620,22 @@
   .home-hero {
     padding: 4rem 1.5rem;
     min-height: 60vh;
+  }
+
+  .home-hero-container {
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .home-content {
+    order: 1;
+  }
+
+  .home-hero-commits {
+    width: 100%;
+    max-width: 100%;
+    order: 2;
   }
 
   .home-title {

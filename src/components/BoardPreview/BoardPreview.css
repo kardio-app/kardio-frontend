@@ -40,6 +40,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  justify-content: space-between;
 }
 
 [data-theme="light"] .board-preview-header {
@@ -50,6 +51,7 @@
 .board-preview-dots {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .board-preview-dot {
@@ -70,24 +72,76 @@
   background-color: #34d399;
 }
 
-.board-preview-header-title {
+.board-preview-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.board-preview-tab {
+  padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-gray);
-  margin-left: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
-[data-theme="light"] .board-preview-header-title {
-  color: #4b5563;
+.board-preview-tab:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+.board-preview-tab.active {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+[data-theme="light"] .board-preview-tab {
+  color: #6b7280;
+}
+
+[data-theme="light"] .board-preview-tab:hover {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+[data-theme="light"] .board-preview-tab.active {
+  background-color: #e5e7eb;
+  color: #111827;
 }
 
 .board-preview-content {
   padding: 1.5rem 2rem 1.5rem;
   background-color: var(--bg-gray-light);
+  min-height: 400px;
 }
 
 [data-theme="light"] .board-preview-content {
   background-color: #ffffff;
+}
+
+.board-preview-video-container {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-black);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+[data-theme="light"] .board-preview-video-container {
+  background-color: #000000;
+}
+
+.board-preview-board-content {
+  width: 100%;
 }
 
 .board-preview-board {
@@ -277,8 +331,32 @@
 }
 
 @media (max-width: 768px) {
+  .board-preview-header {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .board-preview-tabs {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
+
+  .board-preview-tab {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
   .board-preview-content {
     padding: 1rem;
+    min-height: 300px;
+  }
+
+  .board-preview-video-container {
+    min-height: 300px;
   }
 
   .board-preview-column {

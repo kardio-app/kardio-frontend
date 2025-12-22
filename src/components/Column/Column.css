@@ -25,12 +25,38 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  cursor: grab;
-  touch-action: pan-y;
+  position: relative;
 }
 
-.column-header:active {
+.column-drag-handle {
+  position: absolute;
+  left: -0.5rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-gray);
+  cursor: grab;
+  transition: var(--transition);
+  opacity: 0;
+  z-index: 10;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.column:hover .column-drag-handle {
+  opacity: 1;
+}
+
+.column-drag-handle:active {
   cursor: grabbing;
+}
+
+.column-drag-handle:hover {
+  color: var(--text-white);
 }
 
 .column-header-right {
@@ -225,8 +251,25 @@
     z-index: 0;
   }
 
-  .column-header {
-    touch-action: pan-y;
+  .column-drag-handle {
+    width: 32px;
+    height: 32px;
+    left: -0.75rem;
+    opacity: 0.8;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+  }
+
+  /* Sempre visível no mobile */
+  .column .column-drag-handle {
+    opacity: 0.8 !important;
+  }
+
+  .column:hover .column-drag-handle,
+  .column:active .column-drag-handle,
+  .column:focus-within .column-drag-handle {
+    opacity: 1 !important;
   }
 
   .column-cards {

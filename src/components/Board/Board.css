@@ -144,9 +144,10 @@
   .board-container {
     padding: 1rem;
     overflow-x: auto;
-    overflow-y: hidden;
-    height: 100%;
-    touch-action: pan-x;
+    overflow-y: visible;
+    min-height: 100%;
+    height: auto;
+    touch-action: pan-x pan-y;
   }
 
   .board-columns {

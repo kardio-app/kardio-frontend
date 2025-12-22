@@ -77,6 +77,17 @@
   height: 20px;
 }
 
+[data-theme="light"] .header-button-icon {
+  background-color: #333333;
+  color: #FFFFFF;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] .header-button-icon:hover {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
 .share-modal-overlay {
   position: fixed;
   top: 0;
@@ -200,6 +211,19 @@
 .share-modal-copy-button:hover {
   background-color: var(--bg-gray-light);
   border-color: var(--text-gray);
+}
+
+[data-theme="light"] .share-modal-copy-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  border-color: #333333;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="light"] .share-modal-copy-button:hover {
+  background-color: #000000;
+  color: #FFFFFF;
+  border-color: #000000;
 }
 
 .share-modal-loading,

@@ -235,6 +235,19 @@
   color: var(--text-white);
 }
 
+[data-theme="light"] .column-add-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  border-color: #333333;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="light"] .column-add-button:hover {
+  background-color: #000000;
+  color: #FFFFFF;
+  border-color: #000000;
+}
+
 .column-add-card-form {
   display: flex;
   flex-direction: column;

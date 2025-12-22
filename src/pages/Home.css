@@ -136,6 +136,17 @@
   background-color: var(--button-hover);
 }
 
+[data-theme="light"] .home-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] .home-button:hover {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
 .home-button-icon {
   width: 18px;
   height: 18px;
@@ -406,6 +417,17 @@
 
 .opensource-button:hover {
   background-color: var(--button-hover);
+}
+
+[data-theme="light"] .opensource-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] .opensource-button:hover {
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
 .opensource-button-icon {

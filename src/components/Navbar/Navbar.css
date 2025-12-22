@@ -127,6 +127,17 @@
   background-color: var(--button-hover);
 }
 
+[data-theme="light"] .navbar-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] .navbar-button:hover {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
 .navbar-button-icon {
   width: 16px;
   height: 16px;
@@ -150,6 +161,17 @@
 
 .navbar-back-button:hover {
   background-color: var(--button-hover);
+}
+
+[data-theme="light"] .navbar-back-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] .navbar-back-button:hover {
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
 .navbar-back-button svg {
@@ -281,6 +303,17 @@
 
 .navbar-mobile-button:hover:not(:disabled) {
   background-color: var(--button-hover);
+}
+
+[data-theme="light"] .navbar-mobile-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] .navbar-mobile-button:hover:not(:disabled) {
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
 .navbar-mobile-button:disabled {

@@ -150,6 +150,17 @@
   background-color: var(--bg-gray-hover);
 }
 
+[data-theme="light"] .modal-button-save {
+  background-color: #333333;
+  color: #FFFFFF;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] .modal-button-save:hover:not(:disabled) {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
 .modal-button-save:disabled {
   opacity: 0.5;
   cursor: not-allowed;

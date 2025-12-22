@@ -52,13 +52,28 @@ function Board({ boardId, showToast }) {
     }
   }
 
+  // Detectar se é mobile/touch device
+  const isMobile = typeof window !== 'undefined' && (
+    window.innerWidth <= 768 || 
+    'ontouchstart' in window || 
+    navigator.maxTouchPoints > 0
+  )
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-        delay: 0,
-        tolerance: 5,
-      },
+      activationConstraint: isMobile
+        ? {
+            // No mobile: precisa segurar por 250ms e mover pelo menos 10px
+            distance: 10,
+            delay: 250,
+            tolerance: 5,
+          }
+        : {
+            // No desktop: comportamento original
+            distance: 5,
+            delay: 0,
+            tolerance: 5,
+          },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,

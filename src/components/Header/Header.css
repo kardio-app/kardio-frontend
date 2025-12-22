@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 2rem 0 2rem;
   background-color: var(--bg-black);
   border-bottom: 1px solid transparent;
   position: relative;
@@ -245,7 +245,7 @@
 
 @media (max-width: 768px) {
   .header {
-    padding: 1rem;
+    padding: 1.5rem 1rem 0.75rem 1rem;
   }
 
   .header-left {

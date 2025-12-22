@@ -164,7 +164,7 @@ function Navbar() {
               <span className="navbar-logo-text">@kardiosoftware</span>
             </button>
             <div className="navbar-right-actions">
-              <ThemeToggle />
+              {!isMobile && <ThemeToggle />}
               {isMobile ? (
                 <button
                   className="navbar-mobile-toggle"
@@ -300,7 +300,7 @@ function Navbar() {
             <span className="navbar-logo-text">@kardiosoftware</span>
           </button>
           <div className="navbar-right-section">
-            <ThemeToggle />
+            {!isMobile && <ThemeToggle />}
             {isMobile ? (
               <button
                 className="navbar-mobile-toggle"

@@ -243,7 +243,6 @@ function Navbar() {
             <div className="navbar-mobile-content">
               <div className="navbar-mobile-theme" onClick={(e) => e.stopPropagation()}>
                 <ThemeToggle />
-                <span>Tema</span>
               </div>
               <button
                 className="navbar-mobile-link"
@@ -404,7 +403,6 @@ function Navbar() {
           <div className="navbar-mobile-content">
             <div className="navbar-mobile-theme" onClick={(e) => e.stopPropagation()}>
               <ThemeToggle />
-              <span>Tema</span>
             </div>
             {!isHome && (
               <button

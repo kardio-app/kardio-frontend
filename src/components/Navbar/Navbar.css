@@ -329,12 +329,33 @@
 .navbar-mobile-theme {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-white);
+  width: 100%;
+  padding: 0;
   border-radius: var(--border-radius);
+}
+
+.navbar-mobile-theme .theme-toggle {
+  width: 100%;
+}
+
+.navbar-mobile-theme .theme-toggle-trigger {
+  width: 100%;
+  padding: 1rem;
+  min-width: auto;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: var(--border-radius);
+}
+
+.navbar-mobile-theme .theme-toggle-trigger:hover {
+  background-color: var(--bg-gray);
+  transform: none;
+}
+
+.navbar-mobile-theme .theme-toggle-trigger:active {
+  transform: none;
 }
 
 @keyframes slideInDown {

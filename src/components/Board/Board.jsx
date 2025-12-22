@@ -231,6 +231,37 @@ function Board({ boardId, showToast }) {
     }
   }, [boardData.columns.length])
 
+  // Implementar scroll horizontal com roda do mouse
+  useEffect(() => {
+    const container = boardContainerRef.current
+    if (!container) return
+
+    const handleWheel = (e) => {
+      // Verificar se o evento está sobre uma área de cards de coluna
+      const target = e.target
+      const columnCardsElement = target.closest('.column-cards')
+      
+      // Se estiver sobre uma área de cards, permitir scroll vertical normal
+      if (columnCardsElement) {
+        return
+      }
+
+      // Verificar se há overflow horizontal
+      if (container.scrollWidth > container.clientWidth) {
+        // Prevenir scroll vertical padrão
+        e.preventDefault()
+        // Converter scroll vertical em horizontal
+        container.scrollLeft += e.deltaY
+      }
+    }
+
+    container.addEventListener('wheel', handleWheel, { passive: false })
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel)
+    }
+  }, [boardData.columns.length])
+
   return (
     <div className="board-container" ref={boardContainerRef}>
       {showLeftScrollHint && (

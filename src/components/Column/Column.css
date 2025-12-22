@@ -26,11 +26,12 @@
   justify-content: space-between;
   gap: 1rem;
   position: relative;
+  padding-left: 1.75rem;
 }
 
 .column-drag-handle {
   position: absolute;
-  left: -1.5rem;
+  left: 0;
   width: 20px;
   height: 20px;
   display: flex;
@@ -45,6 +46,7 @@
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .column:hover .column-drag-handle {
@@ -73,6 +75,10 @@
   border-radius: var(--border-radius);
   transition: var(--transition);
   flex: 1;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .column-title:hover {
@@ -251,10 +257,14 @@
     z-index: 0;
   }
 
+  .column-header {
+    padding-left: 2.25rem;
+  }
+
   .column-drag-handle {
     width: 32px;
     height: 32px;
-    left: -2rem;
+    left: 0;
     opacity: 0.8;
     touch-action: none;
     -webkit-tap-highlight-color: transparent;

@@ -30,7 +30,7 @@
 
 .column-drag-handle {
   position: absolute;
-  left: -0.5rem;
+  left: -1.5rem;
   width: 20px;
   height: 20px;
   display: flex;
@@ -254,7 +254,7 @@
   .column-drag-handle {
     width: 32px;
     height: 32px;
-    left: -0.75rem;
+    left: -2rem;
     opacity: 0.8;
     touch-action: none;
     -webkit-tap-highlight-color: transparent;

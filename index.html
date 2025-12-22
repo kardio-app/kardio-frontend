@@ -12,8 +12,10 @@
       // Aplicar tema antes de qualquer renderização para evitar flash
       (function() {
         const THEME_STORAGE_KEY = 'kardio-theme';
+        const ALLOWED_THEMES = ['galaxy', 'dark', 'light', 'clorofila', 'midnight', 'neon'];
+        const DEFAULT_THEME = 'galaxy';
         const stored = localStorage.getItem(THEME_STORAGE_KEY);
-        const theme = (stored && (stored === 'dark' || stored === 'light')) ? stored : 'dark';
+        const theme = (stored && ALLOWED_THEMES.includes(stored)) ? stored : DEFAULT_THEME;
         document.documentElement.setAttribute('data-theme', theme);
       })();
     </script>

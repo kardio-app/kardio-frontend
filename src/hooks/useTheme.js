@@ -1,84 +1,131 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const THEME_STORAGE_KEY = 'kardio-theme'
+const DEFAULT_THEME = 'galaxy'
 
-// Aplicar tema imediatamente ao carregar
-function applyTheme(theme) {
-  const root = document.documentElement
-  root.setAttribute('data-theme', theme)
+export const THEME_OPTIONS = [
+  { id: 'galaxy', label: 'Galáxia' },
+  { id: 'dark', label: 'Escuro' },
+  { id: 'light', label: 'Claro' },
+  { id: 'clorofila', label: 'Clorofila Dark' },
+  { id: 'midnight', label: 'Midnight' },
+  { id: 'neon', label: 'Neon' },
+]
+
+const ALLOWED_THEMES = new Set(THEME_OPTIONS.map(({ id }) => id))
+const subscribers = new Set()
+
+let hasExplicitPreference = false
+
+const isValidTheme = (value) => ALLOWED_THEMES.has(value)
+
+const safeGetStoredTheme = () => {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY)
+  } catch (error) {
+    console.warn('Não foi possível ler o tema salvo.', error)
+    return null
+  }
 }
 
-// Função para obter tema do localStorage
-function getStoredTheme() {
-  if (typeof window === 'undefined') return 'dark'
-  const stored = localStorage.getItem(THEME_STORAGE_KEY)
-  if (stored && (stored === 'dark' || stored === 'light')) {
+const applyTheme = (theme) => {
+  document.documentElement.setAttribute('data-theme', theme)
+}
+
+const resolveInitialTheme = () => {
+  const stored = safeGetStoredTheme()
+
+  if (isValidTheme(stored)) {
+    hasExplicitPreference = true
+    applyTheme(stored)
     return stored
   }
-  return 'dark'
+
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const fallback = prefersDark && isValidTheme('dark') ? 'dark' : DEFAULT_THEME
+  applyTheme(fallback)
+  return fallback
 }
 
-// Inicializar tema antes do React renderizar
-const initialTheme = (() => {
-  const theme = getStoredTheme()
-  applyTheme(theme)
-  return theme
-})()
+let currentTheme = resolveInitialTheme()
+
+const notify = (theme) => {
+  subscribers.forEach((listener) => listener(theme))
+}
+
+const persistTheme = (theme) => {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+  } catch (error) {
+    console.warn('Não foi possível salvar o tema selecionado.', error)
+  }
+}
+
+const updateTheme = (nextTheme, { persist = true } = {}) => {
+  if (!isValidTheme(nextTheme)) return
+
+  currentTheme = nextTheme
+  applyTheme(nextTheme)
+
+  if (persist) {
+    hasExplicitPreference = true
+    persistTheme(nextTheme)
+  }
+
+  notify(nextTheme)
+}
+
+const getNextTheme = (current) => {
+  const index = THEME_OPTIONS.findIndex(({ id }) => id === current)
+  if (index === -1) return DEFAULT_THEME
+  const nextIndex = (index + 1) % THEME_OPTIONS.length
+  return THEME_OPTIONS[nextIndex].id
+}
 
 export function useTheme() {
-  // Sempre ler do localStorage ao montar o componente
-  const [theme, setTheme] = useState(() => {
-    // Ler do localStorage novamente ao montar
-    return getStoredTheme()
-  })
+  const [theme, setThemeState] = useState(currentTheme)
 
-  // Aplicar tema e salvar no localStorage quando mudar
   useEffect(() => {
-    const root = document.documentElement
-    root.setAttribute('data-theme', theme)
-    localStorage.setItem(THEME_STORAGE_KEY, theme)
-  }, [theme])
+    subscribers.add(setThemeState)
+    return () => subscribers.delete(setThemeState)
+  }, [])
 
-  // Sincronizar com mudanças no localStorage (para múltiplas abas)
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === THEME_STORAGE_KEY && e.newValue) {
-        const newTheme = e.newValue === 'dark' || e.newValue === 'light' ? e.newValue : 'dark'
-        setTheme(newTheme)
-        applyTheme(newTheme)
+    const mediaQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null
+    const handleMediaChange = (event) => {
+      if (!hasExplicitPreference) {
+        updateTheme(event.matches ? 'dark' : DEFAULT_THEME, { persist: false })
       }
     }
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
+    const handleStorage = (event) => {
+      if (event.key === THEME_STORAGE_KEY && isValidTheme(event.newValue)) {
+        hasExplicitPreference = true
+        updateTheme(event.newValue, { persist: false })
+      }
+    }
+
+    if (mediaQuery) {
+      mediaQuery.addEventListener('change', handleMediaChange)
+    }
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      if (mediaQuery) {
+        mediaQuery.removeEventListener('change', handleMediaChange)
+      }
+      window.removeEventListener('storage', handleStorage)
+    }
   }, [])
 
-  // Verificar se o tema no DOM está sincronizado com o estado
-  useEffect(() => {
-    const currentTheme = document.documentElement.getAttribute('data-theme')
-    if (currentTheme !== theme) {
-      applyTheme(theme)
-    }
-  }, [theme])
-
-  const toggleTheme = () => {
-    setTheme(prev => {
-      const newTheme = prev === 'dark' ? 'light' : 'dark'
-      // Salvar imediatamente no localStorage
-      localStorage.setItem(THEME_STORAGE_KEY, newTheme)
-      applyTheme(newTheme)
-      return newTheme
-    })
+  const cycleTheme = () => {
+    updateTheme(getNextTheme(theme))
   }
 
-  const setThemeDirect = (newTheme) => {
-    if (newTheme === 'dark' || newTheme === 'light') {
-      setTheme(newTheme)
-      localStorage.setItem(THEME_STORAGE_KEY, newTheme)
-      applyTheme(newTheme)
-    }
+  const setTheme = (newTheme) => {
+    updateTheme(newTheme)
   }
 
-  return { theme, toggleTheme, setTheme: setThemeDirect }
+  return { theme, setTheme, cycleTheme, themes: THEME_OPTIONS }
 }
 

@@ -297,7 +297,7 @@ function Navbar() {
             onClick={() => navigate('/home')}
           >
             <span className="navbar-logo-letter">K</span>
-            <span className="navbar-logo-text">kardio</span>
+            <span className="navbar-logo-text">@kardiosoftware</span>
           </button>
           <div className="navbar-right-section">
             <ThemeToggle />

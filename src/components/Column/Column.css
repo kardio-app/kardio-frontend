@@ -218,6 +218,8 @@
     max-width: 280px;
     padding: 1rem;
     max-height: calc(100vh - 60px - 60px - 2rem);
+    position: relative;
+    z-index: 0;
   }
 
   .column-cards {

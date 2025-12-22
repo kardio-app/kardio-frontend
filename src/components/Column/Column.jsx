@@ -19,7 +19,6 @@ function Column({ boardId, column, showToast }) {
   const [newCardTitle, setNewCardTitle] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const cardsRef = useRef(null)
-  const [showScrollHint, setShowScrollHint] = useState(false)
 
   const {
     attributes,
@@ -59,27 +58,6 @@ function Column({ boardId, column, showToast }) {
       setTitle(currentColumn.title)
     }
   }, [currentColumn.title, isEditing])
-
-  // Verificar overflow vertical para mostrar indicador de scroll
-  useEffect(() => {
-    const el = cardsRef.current
-    if (!el) return
-
-    const updateHint = () => {
-      const hasOverflow = el.scrollHeight > el.clientHeight + 4
-      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4
-      setShowScrollHint(hasOverflow && !atBottom)
-    }
-
-    updateHint()
-    el.addEventListener('scroll', updateHint)
-    window.addEventListener('resize', updateHint)
-
-    return () => {
-      el.removeEventListener('scroll', updateHint)
-      window.removeEventListener('resize', updateHint)
-    }
-  }, [currentColumn.cards.length])
 
   const cardIds = currentColumn.cards.map(card => card.id)
 
@@ -250,11 +228,6 @@ function Column({ boardId, column, showToast }) {
               showToast={showToast}
             />
           ))}
-          {showScrollHint && (
-            <div className="column-scroll-hint">
-              Role para ver mais
-            </div>
-          )}
         </div>
       </SortableContext>
 

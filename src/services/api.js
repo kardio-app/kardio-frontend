@@ -3,11 +3,53 @@ import API_URL from '../config/api.js'
 // Helper para tratar erros de response
 async function handleResponseError(response) {
   let errorMessage = `Erro ${response.status}: ${response.statusText}`
+  
+  // Tratar rate limiting (429)
+  if (response.status === 429) {
+    const retryAfter = response.headers.get('Retry-After')
+    let waitTime = 'alguns minutos'
+    
+    if (retryAfter) {
+      const seconds = parseInt(retryAfter, 10)
+      if (seconds < 60) {
+        waitTime = `${seconds} segundos`
+      } else {
+        const minutes = Math.ceil(seconds / 60)
+        waitTime = `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`
+      }
+    } else {
+      // Se não tiver Retry-After, assumir 15 minutos (janela padrão do rate limit)
+      waitTime = '15 minutos'
+    }
+    
+    return `Muitas ações: aguarde ${waitTime} antes de tentar novamente`
+  }
+  
   try {
     // Clonar response antes de ler para evitar "body stream already read"
     const clonedResponse = response.clone()
     const errorData = await clonedResponse.json()
     errorMessage = errorData.error || errorMessage
+    
+    // Se for rate limiting mas não detectado pelo status, verificar na mensagem
+    if (errorMessage.includes('Muitas requisições') || errorMessage.includes('rate limit')) {
+      const retryAfter = response.headers.get('Retry-After')
+      let waitTime = 'alguns minutos'
+      
+      if (retryAfter) {
+        const seconds = parseInt(retryAfter, 10)
+        if (seconds < 60) {
+          waitTime = `${seconds} segundos`
+        } else {
+          const minutes = Math.ceil(seconds / 60)
+          waitTime = `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`
+        }
+      } else {
+        waitTime = '15 minutos'
+      }
+      
+      return `Muitas ações: aguarde ${waitTime} antes de tentar novamente`
+    }
   } catch (e) {
     // Se não conseguir fazer parse do JSON, tentar ler como texto
     try {

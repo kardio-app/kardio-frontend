@@ -113,15 +113,18 @@
 @media (max-width: 768px) {
   .toast-container {
     bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
     min-width: auto;
-    max-width: none;
+    max-width: calc(100vw - 2rem);
+    width: auto;
   }
 
   .toast {
     min-width: auto;
-    max-width: none;
+    max-width: calc(100vw - 2rem);
+    width: 100%;
   }
 }
 

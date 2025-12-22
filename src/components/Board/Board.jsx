@@ -17,8 +17,6 @@ function Board({ boardId, showToast }) {
   const [activeType, setActiveType] = useState(null) // 'card' ou 'column'
   const [showAddColumn, setShowAddColumn] = useState(false)
   const [newColumnTitle, setNewColumnTitle] = useState('')
-  const [showLeftScrollHint, setShowLeftScrollHint] = useState(false)
-  const [showRightScrollHint, setShowRightScrollHint] = useState(false)
   const boardContainerRef = useRef(null)
 
   // Forçar re-render quando boards mudar
@@ -202,35 +200,6 @@ function Board({ boardId, showToast }) {
     .flatMap(col => col.cards)
     .find(card => card.id === activeId) : null
 
-  // Verificar overflow horizontal para mostrar indicadores de scroll
-  useEffect(() => {
-    const container = boardContainerRef.current
-    if (!container) return
-
-    const updateScrollHints = () => {
-      const hasOverflow = container.scrollWidth > container.clientWidth
-      const scrollLeft = container.scrollLeft
-      const scrollRight = container.scrollWidth - container.scrollLeft - container.clientWidth
-
-      setShowLeftScrollHint(hasOverflow && scrollLeft > 10)
-      setShowRightScrollHint(hasOverflow && scrollRight > 10)
-    }
-
-    updateScrollHints()
-    container.addEventListener('scroll', updateScrollHints)
-    window.addEventListener('resize', updateScrollHints)
-
-    // Observar mudanças no conteúdo das colunas
-    const observer = new MutationObserver(updateScrollHints)
-    observer.observe(container, { childList: true, subtree: true })
-
-    return () => {
-      container.removeEventListener('scroll', updateScrollHints)
-      window.removeEventListener('resize', updateScrollHints)
-      observer.disconnect()
-    }
-  }, [boardData.columns.length])
-
   // Implementar scroll horizontal com roda do mouse
   useEffect(() => {
     const container = boardContainerRef.current
@@ -264,40 +233,6 @@ function Board({ boardId, showToast }) {
 
   return (
     <div className="board-container" ref={boardContainerRef}>
-      {showLeftScrollHint && (
-        <div className="board-scroll-hint board-scroll-hint-left">
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="20" 
-            height="20" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <path d="m15 18-6-6 6-6"></path>
-          </svg>
-        </div>
-      )}
-      {showRightScrollHint && (
-        <div className="board-scroll-hint board-scroll-hint-right">
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="20" 
-            height="20" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <path d="m9 18 6-6-6-6"></path>
-          </svg>
-        </div>
-      )}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}

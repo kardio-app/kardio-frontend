@@ -15,6 +15,7 @@ function ToastContainer({ toasts, onClose }) {
           type={toast.type}
           duration={toast.duration}
           createdAt={toast.createdAt}
+          onClick={toast.onClick}
           onClose={() => onClose(toast.id)}
         />
       ))}

@@ -5,8 +5,15 @@ import ModalAccess from '../ModalAccess/ModalAccess'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
 import ThemeToggle from '../ThemeToggle/ThemeToggle'
 import Loading from '../Loading/Loading'
-import { createProject } from '../../services/api'
+import Breadcrumb from '../Breadcrumb/Breadcrumb'
+import SearchBar from '../SearchBar/SearchBar'
+import SavedProjectsSidebar from '../SavedProjectsSidebar/SavedProjectsSidebar'
+import ModalSaveProject from '../ModalSaveProject/ModalSaveProject'
+import { createProject, getProject } from '../../services/api'
+import { saveProject, getSavedProjects } from '../../utils/savedProjects'
 import './Navbar.css'
+
+const SIDEBAR_STORAGE_KEY = 'kardio-sidebar-open'
 
 function Navbar() {
   const navigate = useNavigate()
@@ -19,10 +26,27 @@ function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900)
   const [isNavbarVisible, setIsNavbarVisible] = useState(true)
+  const [showSaveProjectModal, setShowSaveProjectModal] = useState(false)
+  const [projectCode, setProjectCode] = useState(null)
+  const [projectName, setProjectName] = useState(null)
   const lastScrollY = useRef(0)
 
   const isHome = location.pathname === '/home'
   const isBoard = location.pathname.startsWith('/board/')
+  const boardId = isBoard ? location.pathname.split('/board/')[1] : null
+
+  // Estado da sidebar persistido no localStorage
+  const getInitialSidebarState = () => {
+    if (!isBoard) return false
+    try {
+      const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY)
+      return stored === 'true'
+    } catch (error) {
+      console.warn('Não foi possível ler o estado da sidebar.', error)
+      return false
+    }
+  }
+  const [showSavedProjects, setShowSavedProjects] = useState(getInitialSidebarState)
 
   useEffect(() => {
     const handleResize = () => {
@@ -111,6 +135,18 @@ function Navbar() {
     try {
       const result = await createProject('Novo Projeto')
       setProjectResult(result)
+      
+      // Salvar automaticamente no localStorage
+      try {
+        saveProject({
+          name: 'Novo Projeto',
+          code: result.accessCode,
+          encryptedLink: result.encryptedLink
+        })
+      } catch (saveError) {
+        console.error('Erro ao salvar projeto automaticamente:', saveError)
+        // Continua mesmo se falhar o salvamento
+      }
     } catch (error) {
       console.error('Erro ao criar projeto:', error)
       alert('Erro ao criar projeto. Tente novamente.')
@@ -137,6 +173,25 @@ function Navbar() {
     }
   }
 
+  // Verificar se o projeto atual está salvo localmente
+  const isProjectSaved = () => {
+    if (!boardId || !projectCode) return false
+    const savedProjects = getSavedProjects()
+    return savedProjects.some(
+      p => p.code === projectCode || p.encryptedLink === boardId
+    )
+  }
+
+  const handleExitClick = () => {
+    if (isProjectSaved()) {
+      // Se estiver salvo, mostrar modal normal
+      setShowExitModal(true)
+    } else {
+      // Se não estiver salvo, mostrar modal de aviso
+      setShowExitModal(true)
+    }
+  }
+
   const handleExitConfirm = () => {
     setShowExitModal(false)
     setIsExiting(true)
@@ -148,6 +203,83 @@ function Navbar() {
     }, 2000)
   }
 
+  const handleSaveAndExit = () => {
+    if (projectCode && boardId && projectName) {
+      try {
+        saveProject({
+          name: projectName,
+          code: projectCode,
+          encryptedLink: boardId
+        })
+        // Após salvar, sair normalmente
+        handleExitConfirm()
+      } catch (error) {
+        console.error('Erro ao salvar projeto:', error)
+        alert('Erro ao salvar projeto. Tente novamente.')
+      }
+    } else {
+      // Se não tiver as informações, apenas sair
+      handleExitConfirm()
+    }
+  }
+
+  // Buscar informações do projeto quando estiver no board
+  useEffect(() => {
+    if (isBoard && boardId) {
+      const fetchProjectInfo = async () => {
+        try {
+          const projectData = await getProject(boardId)
+          setProjectCode(projectData.accessCode)
+          setProjectName(projectData.name)
+        } catch (error) {
+          console.error('Erro ao buscar informações do projeto:', error)
+        }
+      }
+      fetchProjectInfo()
+    }
+  }, [isBoard, boardId])
+
+  const handleSaveProject = () => {
+    if (projectCode && boardId) {
+      setShowSaveProjectModal(true)
+    } else {
+      alert('Erro ao obter informações do projeto. Tente novamente.')
+    }
+  }
+
+  const handleSearch = (searchValue) => {
+    // Função para pesquisa - pode ser expandida no futuro
+    console.log('Pesquisando:', searchValue)
+  }
+
+  // Aplicar estado inicial da sidebar ao carregar
+  useEffect(() => {
+    if (isBoard && showSavedProjects) {
+      document.body.classList.add('sidebar-open')
+    }
+    return () => {
+      if (!isBoard) {
+        document.body.classList.remove('sidebar-open')
+      }
+    }
+  }, [isBoard])
+
+  // Persistir estado da sidebar no localStorage
+  useEffect(() => {
+    if (isBoard) {
+      try {
+        localStorage.setItem(SIDEBAR_STORAGE_KEY, showSavedProjects.toString())
+        if (showSavedProjects) {
+          document.body.classList.add('sidebar-open')
+        } else {
+          document.body.classList.remove('sidebar-open')
+        }
+      } catch (error) {
+        console.warn('Não foi possível salvar o estado da sidebar.', error)
+      }
+    }
+  }, [showSavedProjects, isBoard])
+
   // Navbar simplificada para /board
   if (isBoard) {
     return (
@@ -156,15 +288,21 @@ function Navbar() {
         {isExiting && <Loading message="Saindo do projeto..." />}
         <nav className="navbar navbar-fixed">
           <div className="navbar-container">
-            <button
-              className="navbar-logo"
-              onClick={() => setShowExitModal(true)}
-            >
-              <span className="navbar-logo-letter">K</span>
-              <span className="navbar-logo-text">@kardiosoftware</span>
-            </button>
+            <div className="navbar-breadcrumb-wrapper">
+              <Breadcrumb
+                items={[
+                  { label: 'Home', href: '/home' },
+                  { label: 'Board' }
+                ]}
+                onNavigate={handleExitClick}
+              />
+            </div>
+            {!isMobile && (
+              <div className="navbar-center">
+                <SearchBar onSearch={handleSearch} placeholder="Pesquisar..." />
+              </div>
+            )}
             <div className="navbar-right-actions">
-              {!isMobile && <ThemeToggle />}
               {isMobile ? (
                 <button
                   className="navbar-mobile-toggle"
@@ -189,8 +327,8 @@ function Navbar() {
                 </button>
               ) : (
                 <button
-                  className="navbar-back-button"
-                  onClick={() => setShowExitModal(true)}
+                  className="navbar-menu-button"
+                  onClick={() => setShowSavedProjects(!showSavedProjects)}
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -203,10 +341,11 @@ function Navbar() {
                     strokeLinecap="round" 
                     strokeLinejoin="round"
                   >
-                    <path d="m12 19-7-7 7-7"></path>
-                    <path d="M19 12H5"></path>
+                    <line x1="3" x2="21" y1="6" y2="6"></line>
+                    <line x1="3" x2="21" y1="12" y2="12"></line>
+                    <line x1="3" x2="21" y1="18" y2="18"></line>
                   </svg>
-                  Voltar para Home
+                  Menu
                 </button>
               )}
             </div>
@@ -241,45 +380,77 @@ function Navbar() {
               </button>
             </div>
             <div className="navbar-mobile-content">
-              <div className="navbar-mobile-theme" onClick={(e) => e.stopPropagation()}>
-                <ThemeToggle />
-              </div>
-              <button
-                className="navbar-mobile-link"
-                onClick={() => {
-                  setIsMobileMenuOpen(false)
-                  setShowExitModal(true)
-                }}
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <path d="m12 19-7-7 7-7"></path>
-                  <path d="M19 12H5"></path>
-                </svg>
-                Voltar para Home
-              </button>
+              {isBoard && (
+                <>
+                  <div className="navbar-mobile-search">
+                    <SearchBar onSearch={handleSearch} placeholder="Pesquisar..." />
+                  </div>
+                  <button
+                    className="navbar-mobile-link"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false)
+                      setShowSavedProjects(!showSavedProjects)
+                    }}
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <line x1="3" x2="21" y1="6" y2="6"></line>
+                      <line x1="3" x2="21" y1="12" y2="12"></line>
+                      <line x1="3" x2="21" y1="18" y2="18"></line>
+                    </svg>
+                    Menu
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
         {showExitModal && createPortal(
-          <ModalConfirm
-            title="Sair do Projeto?"
-            message="Se você sair agora, só conseguirá voltar novamente usando o código do projeto. Tem certeza que deseja sair?"
-            onConfirm={handleExitConfirm}
-            onCancel={() => setShowExitModal(false)}
-            confirmText="Sair"
-            cancelText="Cancelar"
-          />,
+          isProjectSaved() ? (
+            <ModalConfirm
+              title="Sair do Projeto?"
+              message="Tem certeza que deseja sair do projeto?"
+              onConfirm={handleExitConfirm}
+              onCancel={() => setShowExitModal(false)}
+              confirmText="Sair"
+              cancelText="Cancelar"
+              showCloseButton={true}
+            />
+          ) : (
+            <ModalConfirm
+              title="Projeto não salvo localmente"
+              message="Este projeto não está salvo localmente. Se você sair agora, precisará do código do projeto para acessá-lo novamente. Você pode salvar o projeto pelo menu lateral (ícone de Menu) antes de sair, ou salvar agora."
+              onConfirm={handleSaveAndExit}
+              onCancel={handleExitConfirm}
+              confirmText="Salvar e Sair"
+              cancelText="Sair sem Salvar"
+              showCloseButton={true}
+            />
+          ),
           document.body
+        )}
+        <SavedProjectsSidebar
+          isOpen={showSavedProjects}
+          onClose={() => setShowSavedProjects(false)}
+          onExit={handleExitClick}
+        />
+        {showSaveProjectModal && (
+          <ModalSaveProject
+            isOpen={showSaveProjectModal}
+            onClose={() => setShowSaveProjectModal(false)}
+            projectCode={projectCode}
+            projectName={projectName}
+            encryptedLink={boardId}
+          />
         )}
       </>
     )
@@ -332,12 +503,9 @@ function Navbar() {
                   Início
                 </button>
               )}
-            <button
-              className="navbar-link"
-              onClick={() => scrollToSection('how-it-works')}
-            >
-              Como Funciona
-            </button>
+              <div className="navbar-search-wrapper">
+                <SearchBar onSearch={handleSearch} placeholder="Pesquisar projetos..." />
+              </div>
               <div className="navbar-separator"></div>
               <button
                 className="navbar-link"
@@ -415,12 +583,9 @@ function Navbar() {
                 Início
               </button>
             )}
-            <button
-              className="navbar-mobile-link"
-              onClick={() => scrollToSection('how-it-works')}
-            >
-              Como Funciona
-            </button>
+            <div className="navbar-mobile-search-wrapper">
+              <SearchBar onSearch={handleSearch} placeholder="Pesquisar projetos..." />
+            </div>
             <div className="navbar-mobile-separator"></div>
             <button
               className="navbar-mobile-link"

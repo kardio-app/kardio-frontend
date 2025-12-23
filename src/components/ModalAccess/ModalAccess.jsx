@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import Loading from '../Loading/Loading'
 import { accessProject, getBoard } from '../../services/api'
+import { saveProject } from '../../utils/savedProjects'
 import './ModalAccess.css'
 
 function ModalAccess({ onClose }) {
@@ -44,6 +45,18 @@ function ModalAccess({ onClose }) {
     try {
       const result = await accessProject(code.trim().toUpperCase())
       setProjectResult(result)
+      
+      // Salvar automaticamente no localStorage
+      try {
+        saveProject({
+          name: result.name || 'Projeto sem nome',
+          code: code.trim().toUpperCase(),
+          encryptedLink: result.encryptedLink
+        })
+      } catch (saveError) {
+        console.error('Erro ao salvar projeto automaticamente:', saveError)
+        // Continua mesmo se falhar o salvamento
+      }
       
       // Pré-carregar dados do board durante o loading
       try {
@@ -92,10 +105,12 @@ function ModalAccess({ onClose }) {
               type="text"
               value={code}
               onChange={(e) => {
-                setCode(e.target.value)
-                setError('')
+                const value = e.target.value.toUpperCase().slice(0, 6);
+                setCode(value);
+                setError('');
               }}
               placeholder="Digite o código do projeto"
+              maxLength={6}
               autoFocus
             />
             {error && (

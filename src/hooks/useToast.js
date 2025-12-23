@@ -4,7 +4,7 @@ export function useToast() {
   const [toasts, setToasts] = useState([])
   const timeoutsRef = useRef({})
 
-  const showToast = useCallback((message, type = 'success', duration = 3000) => {
+  const showToast = useCallback((message, type = 'success', duration = 3000, onClick = null) => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
     
     const newToast = {
@@ -12,7 +12,8 @@ export function useToast() {
       message,
       type,
       duration,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      onClick
     }
 
     setToasts(prev => [...prev, newToast])

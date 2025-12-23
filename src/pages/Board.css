@@ -8,6 +8,17 @@
   width: 100%;
   max-width: 100vw;
   box-sizing: border-box;
+  transition: margin-right 0.3s ease-in-out;
+}
+
+body.sidebar-open .board-page {
+  margin-right: 400px;
+}
+
+@media (max-width: 768px) {
+  body.sidebar-open .board-page {
+    margin-right: 0;
+  }
 }
 
 @media (max-width: 768px) {

@@ -1,0 +1,471 @@
+.saved-projects-sidebar {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  width: 400px;
+  height: calc(100vh - 70px);
+  background-color: var(--navbar-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 99;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.saved-projects-sidebar-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+
+.saved-projects-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2.125rem 1.5rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.saved-projects-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.saved-projects-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.saved-projects-close:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+.saved-projects-actions {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.saved-projects-theme {
+  width: 100%;
+}
+
+.saved-projects-theme .theme-toggle {
+  width: 100%;
+}
+
+.saved-projects-theme .theme-toggle-trigger {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.saved-projects-copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.saved-projects-copy-button:hover:not(:disabled) {
+  color: var(--text-white);
+}
+
+.saved-projects-copy-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.saved-projects-copy-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--text-white);
+  transition: var(--transition);
+}
+
+.saved-projects-copy-button:hover:not(:disabled)::after {
+  width: 100%;
+}
+
+.saved-projects-copy-button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.saved-projects-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.saved-projects-back-button:hover {
+  color: var(--text-white);
+}
+
+.saved-projects-back-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--text-white);
+  transition: var(--transition);
+}
+
+.saved-projects-back-button:hover::after {
+  width: 100%;
+}
+
+.saved-projects-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.saved-projects-save-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.saved-projects-save-input {
+  padding: 0.875rem 1rem;
+  background-color: var(--card-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-white);
+  transition: var(--transition);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.saved-projects-save-input::placeholder {
+  color: var(--text-gray);
+}
+
+.saved-projects-save-input:focus {
+  outline: none;
+  background-color: var(--card-bg-hover);
+  border-color: var(--text-gray);
+  border-style: solid;
+}
+
+.saved-projects-save-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.saved-projects-save-button {
+  padding: 0.875rem 1rem;
+  background-color: var(--card-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  transition: var(--transition);
+  color: var(--text-gray);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.saved-projects-save-button:hover:not(:disabled) {
+  background-color: var(--card-bg-hover);
+  border-color: var(--text-gray);
+  color: var(--text-white);
+  border-style: solid;
+}
+
+.saved-projects-save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-theme="light"] .saved-projects-save-input {
+  background-color: #F5F5F5;
+  color: #000000;
+  border-color: rgba(0, 0, 0, 0.12);
+  border-style: dashed;
+}
+
+[data-theme="light"] .saved-projects-save-input:focus {
+  background-color: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: solid;
+}
+
+[data-theme="light"] .saved-projects-save-input::placeholder {
+  color: #666666;
+}
+
+[data-theme="light"] .saved-projects-save-button {
+  background-color: #333333;
+  color: #FFFFFF;
+  border-color: #333333;
+  border-style: solid;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="light"] .saved-projects-save-button:hover:not(:disabled) {
+  background-color: #000000;
+  color: #FFFFFF;
+  border-color: #000000;
+}
+
+.saved-projects-save-error {
+  color: var(--error-color, #ff4444);
+  font-size: 0.8125rem;
+  margin: 0;
+  padding: 0;
+}
+
+.saved-projects-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.saved-projects-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-gray);
+}
+
+.saved-projects-empty p {
+  margin: 0.5rem 0;
+}
+
+.saved-projects-empty-hint {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.saved-project-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: var(--bg-gray);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.saved-project-item:hover {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--button-bg);
+  transform: translateX(-2px);
+}
+
+.saved-project-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.saved-project-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--button-bg);
+  border-radius: var(--border-radius);
+  color: var(--text-white);
+  flex-shrink: 0;
+}
+
+.saved-project-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.saved-project-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-white);
+  margin: 0 0 0.25rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-project-code {
+  font-size: 0.8125rem;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.saved-project-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
+}
+
+.saved-project-enter-icon {
+  color: var(--text-gray);
+  opacity: 0.6;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.saved-project-item:hover .saved-project-enter-icon {
+  color: var(--text-white);
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.saved-project-edit-btn,
+.saved-project-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.saved-project-edit-btn:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--button-bg);
+}
+
+.saved-project-delete-btn:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--error-color, #ff4444);
+}
+
+.saved-project-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.saved-project-edit-input {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: var(--bg-gray-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-white);
+  font-size: 0.9375rem;
+}
+
+.saved-project-edit-input:focus {
+  outline: none;
+  border-color: var(--button-bg);
+}
+
+.saved-project-edit-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.saved-project-edit-save,
+.saved-project-edit-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.saved-project-edit-save:hover {
+  background-color: var(--button-bg);
+  color: var(--text-white);
+}
+
+.saved-project-edit-cancel:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+@media (max-width: 768px) {
+  .saved-projects-sidebar {
+    width: 100%;
+    max-width: 100%;
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+
+  body.sidebar-open .board-page {
+    margin-right: 0;
+  }
+}
+

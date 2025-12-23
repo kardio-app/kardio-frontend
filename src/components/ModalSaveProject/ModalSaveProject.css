@@ -1,0 +1,177 @@
+.modal-save-project-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 1rem;
+}
+
+.modal-save-project-content {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-save-project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-save-project-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.modal-save-project-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.modal-save-project-close:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+.modal-save-project-form {
+  padding: 1.5rem;
+}
+
+.modal-save-project-field {
+  margin-bottom: 1.5rem;
+}
+
+.modal-save-project-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-white);
+  margin-bottom: 0.5rem;
+}
+
+.modal-save-project-input {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--bg-gray);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-white);
+  font-size: 0.9375rem;
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.modal-save-project-input:focus {
+  outline: none;
+  border-color: var(--button-bg);
+  background-color: var(--bg-gray-hover);
+}
+
+.modal-save-project-input::placeholder {
+  color: var(--text-gray);
+}
+
+.modal-save-project-error {
+  color: var(--error-color, #ff4444);
+  font-size: 0.8125rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.modal-save-project-info {
+  padding: 1rem;
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+}
+
+.modal-save-project-code {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.modal-save-project-code strong {
+  color: var(--text-white);
+}
+
+.modal-save-project-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.modal-save-project-button {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.modal-save-project-button-cancel {
+  background-color: var(--bg-gray);
+  color: var(--text-gray);
+}
+
+.modal-save-project-button-cancel:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+.modal-save-project-button-submit {
+  background-color: var(--button-bg);
+  color: var(--text-white);
+}
+
+.modal-save-project-button-submit:hover {
+  background-color: var(--button-hover);
+}
+
+[data-theme="light"] .modal-save-project-button-submit {
+  background-color: #333333;
+  color: #FFFFFF;
+}
+
+[data-theme="light"] .modal-save-project-button-submit:hover {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+  .modal-save-project-content {
+    max-width: 100%;
+  }
+
+  .modal-save-project-header,
+  .modal-save-project-form {
+    padding: 1rem;
+  }
+}
+

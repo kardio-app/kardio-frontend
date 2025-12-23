@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import './Toast.css'
 
-function Toast({ id, message, type = 'success', duration = 3000, createdAt, onClose }) {
+function Toast({ id, message, type = 'success', duration = 3000, createdAt, onClick, onClose }) {
   const [progress, setProgress] = useState(100)
   const startTimeRef = useRef(createdAt || Date.now())
   const animationFrameRef = useRef(null)
@@ -33,10 +33,10 @@ function Toast({ id, message, type = 'success', duration = 3000, createdAt, onCl
   }, [duration, createdAt, onClose])
 
   return (
-    <div className={`toast toast-${type}`}>
+    <div className={`toast toast-${type} ${onClick ? 'toast-clickable' : ''}`} onClick={onClick}>
       <div className="toast-content">
         <span className="toast-message">{message}</span>
-        <button className="toast-close" onClick={() => onClose()} aria-label="Fechar">
+        <button className="toast-close" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Fechar">
           ×
         </button>
       </div>

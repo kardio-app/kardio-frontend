@@ -18,6 +18,15 @@
   overflow: hidden;
 }
 
+.toast-clickable {
+  cursor: pointer;
+}
+
+.toast-clickable:hover {
+  transform: translateX(-4px);
+  transition: transform 0.2s ease;
+}
+
 .toast-content {
   display: flex;
   align-items: center;

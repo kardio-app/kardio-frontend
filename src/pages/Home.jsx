@@ -1,22 +1,76 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar/Navbar'
 import BoardPreview from '../components/BoardPreview/BoardPreview'
 import Loading from '../components/Loading/Loading'
 import GitHubCommits from '../components/GitHubCommits/GitHubCommits'
+import ScrollVelocity from '../components/ScrollVelocity/ScrollVelocity'
+import ToastContainer from '../components/Toast/ToastContainer'
+import { useToast } from '../hooks/useToast'
 import { createProject } from '../services/api'
+import { saveProject } from '../utils/savedProjects'
 import './Home.css'
 
 function Home() {
   const navigate = useNavigate()
+  const { showToast, hideToast, toasts } = useToast()
   const [isCreating, setIsCreating] = useState(false)
   const [projectResult, setProjectResult] = useState(null)
+  const notificationsShownRef = useRef(false)
+
+  const scrollToBoardPreview = useCallback(() => {
+    const boardPreviewSection = document.querySelector('.home-board-preview')
+    if (boardPreviewSection) {
+      boardPreviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [])
 
   useEffect(() => {
     document.title = '@kardiosoftware'
     // Scroll para o topo ao carregar a página
     window.scrollTo(0, 0)
   }, [])
+
+  useEffect(() => {
+    // Mostrar notificações apenas uma vez
+    if (notificationsShownRef.current) return
+    
+    notificationsShownRef.current = true
+    
+    const showNotifications = async () => {
+      try {
+        // Buscar último commit
+        const response = await fetch(
+          'https://api.github.com/repos/kardio-app/kardio-frontend/commits?sha=main&per_page=1'
+        )
+        
+        if (response.ok) {
+          const commits = await response.json()
+          if (commits.length > 0) {
+            const lastCommit = commits[0]
+            const commitMessage = lastCommit.commit.message.split('\n')[0]
+            const truncatedMessage = commitMessage.length > 50 
+              ? commitMessage.substring(0, 50) + '...' 
+              : commitMessage
+            
+            // Notificação sobre atualização
+            setTimeout(() => {
+              showToast(`Confira a nova atualização: ${truncatedMessage}`, 'info', 6000)
+            }, 1000)
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar último commit:', error)
+      }
+
+      // Notificação sobre vídeo explicativo
+      setTimeout(() => {
+        showToast('Confira o vídeo explicativo!', 'info', 6000, scrollToBoardPreview)
+      }, 2500)
+    }
+
+    showNotifications()
+  }, [showToast, scrollToBoardPreview])
 
   useEffect(() => {
     if (isCreating && projectResult) {
@@ -35,6 +89,18 @@ function Home() {
     try {
       const result = await createProject('Novo Projeto')
       setProjectResult(result)
+      
+      // Salvar automaticamente no localStorage
+      try {
+        saveProject({
+          name: 'Novo Projeto',
+          code: result.accessCode,
+          encryptedLink: result.encryptedLink
+        })
+      } catch (saveError) {
+        console.error('Erro ao salvar projeto automaticamente:', saveError)
+        // Continua mesmo se falhar o salvamento
+      }
     } catch (error) {
       console.error('Erro ao criar projeto:', error)
       alert('Erro ao criar projeto. Tente novamente.')
@@ -120,52 +186,11 @@ function Home() {
           </div>
         </section>
 
-        <section id="how-it-works" className="home-how-it-works">
-          <div className="how-it-works-container">
-            <h2 className="how-it-works-title">Como Funciona</h2>
-            <div className="steps-grid">
-              <div className="step-card">
-                <div className="step-card-header">
-                  <div className="step-number">1</div>
-                  <h3 className="step-title">Crie Seu Projeto</h3>
-                </div>
-                <p className="step-description">
-                  Comece criando um novo projeto. Dê um nome e comece a organizar suas tarefas.
-                </p>
-              </div>
-              <div className="step-card">
-                <div className="step-card-header">
-                  <div className="step-number">2</div>
-                  <h3 className="step-title">Organize com Colunas</h3>
-                </div>
-                <p className="step-description">
-                  Organize suas tarefas em colunas personalizáveis. 
-                  Arraste e solte cards entre colunas conforme o progresso.
-                </p>
-              </div>
-              <div className="step-card">
-                <div className="step-card-header">
-                  <div className="step-number">3</div>
-                  <h3 className="step-title">Adicione Cards</h3>
-                </div>
-                <p className="step-description">
-                  Crie cards para suas tarefas. Adicione descrições, responsáveis 
-                  e mantenha tudo organizado.
-                </p>
-              </div>
-              <div className="step-card">
-                <div className="step-card-header">
-                  <div className="step-number">4</div>
-                  <h3 className="step-title">Colabore e Compartilhe</h3>
-                </div>
-                <p className="step-description">
-                  Compartilhe seu projeto com sua equipe. Trabalhem juntos 
-                  de forma simples e eficiente.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <ScrollVelocity
+          texts={['usekardio', 'usekardio', 'usekardio']}
+          velocity={100}
+          className="custom-scroll-text"
+        />
 
         <section className="home-opensource">
           <div className="opensource-wrapper">
@@ -227,7 +252,7 @@ function Home() {
               <div className="footer-social-links">
                 <a 
                   href="https://www.linkedin.com/in/initpedro/" 
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener noreferrer" 
                   className="footer-social-link"
                   title="LinkedIn"
@@ -240,7 +265,7 @@ function Home() {
                 </a>
                 <a 
                   href="https://github.com/initpedro" 
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener noreferrer" 
                   className="footer-social-link"
                   title="GitHub"
@@ -251,8 +276,8 @@ function Home() {
                   </svg>
                 </a>
                 <a 
-                  href="https://instagram.com/initpedro" 
-                  target="_blank" 
+                  href="https://instagram.com/kardiosoftware" 
+                  target="_blank"
                   rel="noopener noreferrer" 
                   className="footer-social-link"
                   title="Instagram"
@@ -265,7 +290,7 @@ function Home() {
                 </a>
                 <a 
                   href="https://wa.me/5534998731732?text=Olá, kardio! Vim pelo seu Website e gostaria de saber mais!" 
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener noreferrer" 
                   className="footer-social-link"
                   title="WhatsApp"
@@ -281,8 +306,21 @@ function Home() {
             <div className="footer-column">
               <h4 className="footer-column-subtitle">Links Úteis</h4>
               <ul className="footer-links">
-                <li><a href="#how-it-works" className="footer-link">Como Funciona</a></li>
                 <li><a href="/home" className="footer-link">Início</a></li>
+              </ul>
+            </div>
+            <div className="footer-column">
+              <h4 className="footer-column-subtitle">Suporte</h4>
+              <ul className="footer-links">
+                <li>
+                  <a href="mailto:kardiosoftware@gmail.com" className="footer-link footer-link-email">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                    </svg>
+                    kardiosoftware@gmail.com
+                  </a>
+                </li>
               </ul>
             </div>
             <div className="footer-column">
@@ -306,6 +344,7 @@ function Home() {
           </div>
         </footer>
       </div>
+      <ToastContainer toasts={toasts} onClose={hideToast} />
     </>
   )
 }

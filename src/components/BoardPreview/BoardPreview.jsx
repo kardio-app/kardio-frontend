@@ -33,7 +33,7 @@ function BoardPreview() {
           {activeTab === 'video' ? (
             <div className="board-preview-video-container">
               <iframe
-                src="https://drive.google.com/file/d/1Dt6q8ShqFx7gT_BoO_yzoINqxEFh34I8/preview"
+                src="https://drive.google.com/file/d/13830znP_wO3jnwO3sWXl2GxL5OsAW9Sy/preview"
                 width="100%"
                 height="100%"
                 allow="autoplay"

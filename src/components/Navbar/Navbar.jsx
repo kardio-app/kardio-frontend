@@ -306,8 +306,21 @@ function Navbar() {
               {isMobile ? (
                 <button
                   className="navbar-mobile-toggle"
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  aria-label="Abrir menu"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // No /board, abrir diretamente a sidebar
+                    if (isBoard) {
+                      // Se já estiver aberta, apenas fechar (evita bug de abrir/fechar)
+                      if (showSavedProjects) {
+                        setShowSavedProjects(false);
+                      } else {
+                        setShowSavedProjects(true);
+                      }
+                    } else {
+                      setIsMobileMenuOpen(true);
+                    }
+                  }}
+                  aria-label={isBoard ? "Abrir menu" : "Abrir menu"}
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -328,7 +341,10 @@ function Navbar() {
               ) : (
                 <button
                   className="navbar-menu-button"
-                  onClick={() => setShowSavedProjects(!showSavedProjects)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Evita que o click fora interfira
+                    setShowSavedProjects(!showSavedProjects); // Toggle normal
+                  }}
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -351,7 +367,7 @@ function Navbar() {
             </div>
           </div>
         </nav>
-        {isMobileMenuOpen && (
+        {isMobileMenuOpen && !isBoard && (
           <div className="navbar-mobile-menu">
             <div className="navbar-mobile-header">
               <span className="navbar-logo">
@@ -380,37 +396,7 @@ function Navbar() {
               </button>
             </div>
             <div className="navbar-mobile-content">
-              {isBoard && (
-                <>
-                  <div className="navbar-mobile-search">
-                    <SearchBar onSearch={handleSearch} placeholder="Pesquisar..." />
-                  </div>
-                  <button
-                    className="navbar-mobile-link"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false)
-                      setShowSavedProjects(!showSavedProjects)
-                    }}
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="20" 
-                      height="20" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    >
-                      <line x1="3" x2="21" y1="6" y2="6"></line>
-                      <line x1="3" x2="21" y1="12" y2="12"></line>
-                      <line x1="3" x2="21" y1="18" y2="18"></line>
-                    </svg>
-                    Menu
-                  </button>
-                </>
-              )}
+              {/* Conteúdo do menu mobile para /home */}
             </div>
           </div>
         )}

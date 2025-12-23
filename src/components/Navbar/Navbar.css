@@ -361,6 +361,20 @@
 
 .navbar-mobile-search {
   margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  width: calc(100% + 4rem);
+  margin-left: -2rem;
+  margin-right: -2rem;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+.navbar-mobile-search .search-bar {
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  flex: none;
 }
 
 .navbar-mobile-link {
@@ -536,6 +550,13 @@
     padding: 1.5rem 1rem;
     width: 100%;
     box-sizing: border-box;
+  }
+
+  .navbar-mobile-search {
+    width: calc(100% + 2rem);
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding: 0 1rem;
   }
 }
 

@@ -145,12 +145,17 @@
 @media (max-width: 768px) {
   .search-bar {
     max-width: 100%;
-    margin: 0 1rem;
+    /* margin: 0 1rem; */
   }
 
   .search-bar-input {
     padding: 0.5rem 2rem 0.5rem 2rem;
     font-size: 0.8125rem;
+  }
+
+  /* Quando dentro do menu mobile, remover margem lateral */
+  .navbar-mobile-search .search-bar {
+    margin: 0;
   }
 }
 

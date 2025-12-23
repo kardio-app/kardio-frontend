@@ -242,6 +242,13 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
           const modals = document.querySelectorAll('.modal-confirm-backdrop, .share-modal-overlay');
           const isClickOnModal = Array.from(modals).some(modal => modal.contains(event.target));
           
+          // Verificar se o click foi no botão de menu (evita conflito)
+          // O stopPropagation no botão já previne que o evento chegue aqui, mas verificamos por segurança
+          const menuButton = event.target.closest('.navbar-menu-button, .navbar-mobile-link, .navbar-mobile-toggle');
+          if (menuButton) {
+            return; // Não fechar se o click foi no botão de menu
+          }
+          
           if (!isClickOnModal) {
             onClose();
           }

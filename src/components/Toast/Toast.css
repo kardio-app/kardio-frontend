@@ -122,9 +122,9 @@
 @media (max-width: 768px) {
   .toast-container {
     bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    right: auto;
+    right: 1rem;
+    left: auto;
+    transform: none;
     min-width: auto;
     max-width: calc(100vw - 2rem);
     width: auto;

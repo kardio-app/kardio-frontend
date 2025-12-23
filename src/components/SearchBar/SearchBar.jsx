@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { getSavedProjects } from '../../utils/savedProjects';
+import { getSavedProjects, saveProject } from '../../utils/savedProjects';
 import { accessProject, getBoard } from '../../services/api';
 import Loading from '../Loading/Loading';
 import './SearchBar.css';
@@ -45,9 +45,43 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
     };
   }, [showDropdown]);
 
-  const loadProjects = () => {
+  const loadProjects = async () => {
     const saved = getSavedProjects();
     setProjects(saved);
+    
+    // Atualizar nomes dos projetos do servidor em background
+    if (saved.length > 0) {
+      const updatedProjects = await Promise.allSettled(
+        saved.map(async (project) => {
+          try {
+            const result = await accessProject(project.code);
+            // Atualizar no localStorage se o nome mudou
+            if (result.name && result.name !== project.name) {
+              saveProject({
+                name: result.name,
+                code: project.code,
+                encryptedLink: result.encryptedLink || project.encryptedLink
+              });
+              return {
+                ...project,
+                name: result.name
+              };
+            }
+            return project;
+          } catch (error) {
+            // Se falhar, manter o projeto como está
+            console.warn(`Erro ao atualizar projeto ${project.code}:`, error);
+            return project;
+          }
+        })
+      );
+      
+      // Atualizar estado com projetos atualizados
+      const finalProjects = updatedProjects.map(result => 
+        result.status === 'fulfilled' ? result.value : saved[updatedProjects.indexOf(result)]
+      );
+      setProjects(finalProjects);
+    }
   };
 
   const handleFocus = () => {

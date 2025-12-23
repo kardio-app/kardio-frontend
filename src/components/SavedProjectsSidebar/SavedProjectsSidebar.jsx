@@ -133,9 +133,43 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
     }
   };
 
-  const loadProjects = () => {
+  const loadProjects = async () => {
     const saved = getSavedProjects();
     setProjects(saved);
+    
+    // Atualizar nomes dos projetos do servidor em background
+    if (saved.length > 0) {
+      const updatedProjects = await Promise.allSettled(
+        saved.map(async (project) => {
+          try {
+            const result = await accessProject(project.code);
+            // Atualizar no localStorage se o nome mudou
+            if (result.name && result.name !== project.name) {
+              saveProject({
+                name: result.name,
+                code: project.code,
+                encryptedLink: result.encryptedLink || project.encryptedLink
+              });
+              return {
+                ...project,
+                name: result.name
+              };
+            }
+            return project;
+          } catch (error) {
+            // Se falhar, manter o projeto como está
+            console.warn(`Erro ao atualizar projeto ${project.code}:`, error);
+            return project;
+          }
+        })
+      );
+      
+      // Atualizar estado com projetos atualizados
+      const finalProjects = updatedProjects.map(result => 
+        result.status === 'fulfilled' ? result.value : saved[updatedProjects.indexOf(result)]
+      );
+      setProjects(finalProjects);
+    }
   };
 
   const handleLoadProject = async (project) => {

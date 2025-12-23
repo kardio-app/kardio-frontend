@@ -1,11 +1,14 @@
 import './ModalConfirm.css'
 
-function ModalConfirm({ title, message, onConfirm, onCancel, confirmText = 'Confirmar', cancelText = 'Cancelar', showCloseButton = false }) {
+function ModalConfirm({ title, message, onConfirm, onCancel, onClose, confirmText = 'Confirmar', cancelText = 'Cancelar', showCloseButton = false }) {
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onCancel()
     }
   }
+
+  // Se onClose não for fornecido, usa onCancel como fallback
+  const handleClose = onClose || onCancel
 
   return (
     <div className="modal-confirm-backdrop" onClick={handleBackdropClick}>
@@ -13,7 +16,7 @@ function ModalConfirm({ title, message, onConfirm, onCancel, confirmText = 'Conf
         {showCloseButton && (
           <button
             className="modal-confirm-close"
-            onClick={onCancel}
+            onClick={handleClose}
             aria-label="Fechar"
           >
             <svg

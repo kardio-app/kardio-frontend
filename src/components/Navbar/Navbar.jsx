@@ -407,6 +407,7 @@ function Navbar() {
               message="Tem certeza que deseja sair do projeto?"
               onConfirm={handleExitConfirm}
               onCancel={() => setShowExitModal(false)}
+              onClose={() => setShowExitModal(false)}
               confirmText="Sair"
               cancelText="Cancelar"
               showCloseButton={true}
@@ -417,6 +418,7 @@ function Navbar() {
               message="Este projeto não está salvo localmente. Se você sair agora, precisará do código do projeto para acessá-lo novamente. Você pode salvar o projeto pelo menu lateral (ícone de Menu) antes de sair, ou salvar agora."
               onConfirm={handleSaveAndExit}
               onCancel={handleExitConfirm}
+              onClose={() => setShowExitModal(false)}
               confirmText="Salvar e Sair"
               cancelText="Sair sem Salvar"
               showCloseButton={true}

@@ -392,11 +392,26 @@
   cursor: pointer;
   border-radius: var(--border-radius);
   transition: var(--transition);
+  opacity: 0.8;
+}
+
+.saved-project-edit-btn {
+  color: var(--text-gray);
+}
+
+[data-theme="light"] .saved-project-edit-btn {
+  color: #666666;
+  opacity: 0.9;
 }
 
 .saved-project-edit-btn:hover {
-  background-color: var(--bg-gray-hover);
-  color: var(--button-bg);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-gray);
+}
+
+[data-theme="light"] .saved-project-edit-btn:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: var(--text-gray);
 }
 
 .saved-project-delete-btn:hover {

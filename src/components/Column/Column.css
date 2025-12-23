@@ -158,6 +158,19 @@
   background-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Customização da scrollbar para tema claro */
+[data-theme="light"] .column-cards {
+  scrollbar-color: #EEEEEE transparent;
+}
+
+[data-theme="light"] .column-cards::-webkit-scrollbar-thumb {
+  background-color: #EEEEEE;
+}
+
+[data-theme="light"] .column-cards::-webkit-scrollbar-thumb:hover {
+  background-color: #333333;
+}
+
 .column-cards::before {
   content: '';
   position: absolute;

@@ -142,17 +142,49 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       const updatedProjects = await Promise.allSettled(
         saved.map(async (project) => {
           try {
-            const result = await accessProject(project.code);
+            // Priorizar usar getProject com encryptedLink se disponível (mais direto e atualizado)
+            let result;
+            if (project.encryptedLink) {
+              try {
+                const projectData = await getProject(project.encryptedLink);
+                result = {
+                  name: projectData.name,
+                  encryptedLink: project.encryptedLink, // Manter o encryptedLink que já temos
+                  accessCode: projectData.accessCode || project.code
+                };
+              } catch (getProjectError) {
+                // Se falhar com getProject, tentar com accessProject como fallback
+                console.warn(`Erro ao buscar projeto por encryptedLink, tentando por código:`, getProjectError);
+                result = await accessProject(project.code);
+              }
+            } else {
+              // Se não tiver encryptedLink, usar accessProject
+              result = await accessProject(project.code);
+            }
+            
             // Atualizar no localStorage se o nome mudou
             if (result.name && result.name !== project.name) {
               saveProject({
                 name: result.name,
-                code: project.code,
+                code: result.accessCode || project.code,
                 encryptedLink: result.encryptedLink || project.encryptedLink
               });
               return {
                 ...project,
-                name: result.name
+                name: result.name,
+                encryptedLink: result.encryptedLink || project.encryptedLink
+              };
+            }
+            // Garantir que encryptedLink está salvo mesmo se o nome não mudou
+            if (result.encryptedLink && result.encryptedLink !== project.encryptedLink) {
+              saveProject({
+                name: project.name,
+                code: result.accessCode || project.code,
+                encryptedLink: result.encryptedLink
+              });
+              return {
+                ...project,
+                encryptedLink: result.encryptedLink
               };
             }
             return project;
@@ -658,4 +690,5 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
 }
 
 export default SavedProjectsSidebar;
+
 

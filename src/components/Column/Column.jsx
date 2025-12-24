@@ -326,64 +326,119 @@ function Column({ boardId, column, showToast }) {
               />
             ))}
           
-          {showAddCard ? (
-            <div className="column-add-card-form">
-              <input
-                className="column-add-card-input"
-                value={newCardTitle}
-                onChange={(e) => setNewCardTitle(e.target.value)}
-                onKeyDown={handleAddCardKeyDown}
-                placeholder="Título do card..."
-                autoFocus
-              />
-              <div className="column-add-card-actions">
-                <button
-                  className="column-add-card-button"
-                  onClick={handleAddCard}
-                >
-                  Adicionar
-                </button>
-                <button
-                  className="column-add-card-button"
-                  onClick={() => {
-                    setShowAddCard(false)
-                    setNewCardTitle('')
-                  }}
-                >
-                  Cancelar
-                </button>
+          {/* No mobile, botão e formulário ficam dentro do scroll */}
+          {isMobile && (
+            showAddCard ? (
+              <div className="column-add-card-form">
+                <input
+                  className="column-add-card-input"
+                  value={newCardTitle}
+                  onChange={(e) => setNewCardTitle(e.target.value)}
+                  onKeyDown={handleAddCardKeyDown}
+                  placeholder="Título do card..."
+                  autoFocus
+                />
+                <div className="column-add-card-actions">
+                  <button
+                    className="column-add-card-button"
+                    onClick={handleAddCard}
+                  >
+                    Adicionar
+                  </button>
+                  <button
+                    className="column-add-card-button"
+                    onClick={() => {
+                      setShowAddCard(false)
+                      setNewCardTitle('')
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <button
-              className="column-add-button"
-              onClick={() => {
-                if (isMobile) {
+            ) : (
+              <button
+                className="column-add-button"
+                onClick={() => {
                   setShowAddCardModal(true)
-                } else {
-                  setShowAddCard(true)
-                }
-              }}
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
+                }}
               >
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
-              Adicionar Tarefa
-            </button>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+                Adicionar Tarefa
+              </button>
+            )
           )}
         </div>
       </SortableContext>
+      
+      {/* No desktop, botão e formulário ficam fora do scroll */}
+      {!isMobile && (
+        showAddCard ? (
+          <div className="column-add-card-form">
+            <input
+              className="column-add-card-input"
+              value={newCardTitle}
+              onChange={(e) => setNewCardTitle(e.target.value)}
+              onKeyDown={handleAddCardKeyDown}
+              placeholder="Título do card..."
+              autoFocus
+            />
+            <div className="column-add-card-actions">
+              <button
+                className="column-add-card-button"
+                onClick={handleAddCard}
+              >
+                Adicionar
+              </button>
+              <button
+                className="column-add-card-button"
+                onClick={() => {
+                  setShowAddCard(false)
+                  setNewCardTitle('')
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            className="column-add-button"
+            onClick={() => {
+              setShowAddCard(true)
+            }}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+            Adicionar Tarefa
+          </button>
+        )
+      )}
       </div>
       {showDeleteConfirm && createPortal(
         <ModalConfirm

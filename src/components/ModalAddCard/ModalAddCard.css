@@ -1,0 +1,173 @@
+.modal-add-card-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+  overflow-y: auto;
+}
+
+.modal-add-card-content {
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 450px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+}
+
+.modal-add-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid transparent;
+}
+
+.modal-add-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.modal-add-card-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  background: transparent;
+  border: none;
+  color: var(--text-white);
+  cursor: pointer;
+}
+
+.modal-add-card-close:hover {
+  background-color: var(--bg-gray-light);
+}
+
+.modal-add-card-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-add-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-add-card-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-add-card-input {
+  padding: 0.75rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+  font-size: 16px; /* Garantir 16px para evitar zoom no mobile */
+  color: var(--text-white);
+  border: 1px solid transparent;
+  transition: var(--transition);
+  font-family: inherit;
+  width: 100%;
+}
+
+.modal-add-card-input:focus {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--border-color);
+  outline: none;
+}
+
+.modal-add-card-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.modal-add-card-button {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.modal-add-card-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-add-card-button-cancel {
+  background-color: transparent;
+  color: var(--text-gray);
+}
+
+.modal-add-card-button-cancel:hover {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+.modal-add-card-button-submit {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+.modal-add-card-button-submit:hover:not(:disabled) {
+  background-color: var(--bg-gray-hover);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-add-card-backdrop {
+    padding: 1rem;
+  }
+
+  .modal-add-card-content {
+    max-width: 100%;
+  }
+}
+

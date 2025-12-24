@@ -7,6 +7,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
 import ModalMoveColumn from '../ModalMoveColumn/ModalMoveColumn'
+import ModalAddCard from '../ModalAddCard/ModalAddCard'
 import Card from '../Card/Card'
 import './Column.css'
 
@@ -18,6 +19,7 @@ function Column({ boardId, column, showToast }) {
   const addCard = useBoardStore((state) => state.addCard)
   const [isEditing, setIsEditing] = useState(false)
   const [showAddCard, setShowAddCard] = useState(false)
+  const [showAddCardModal, setShowAddCardModal] = useState(false)
   const [newCardTitle, setNewCardTitle] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showMoveModal, setShowMoveModal] = useState(false)
@@ -181,6 +183,25 @@ function Column({ boardId, column, showToast }) {
     }
   }
 
+  const handleAddCardFromModal = async (title) => {
+    try {
+      await addCard(boardId, column.id, {
+        title: title,
+        description: '',
+        assignee: '',
+      })
+      setShowAddCardModal(false)
+      if (showToast) {
+        showToast(`Tarefa "${title}" criada`, 'success')
+      }
+    } catch (error) {
+      console.error('Erro ao criar card:', error)
+      if (showToast) {
+        showToast('Erro ao criar tarefa', 'error')
+      }
+    }
+  }
+
   const handleAddCardKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -336,7 +357,13 @@ function Column({ boardId, column, showToast }) {
           ) : (
             <button
               className="column-add-button"
-              onClick={() => setShowAddCard(true)}
+              onClick={() => {
+                if (isMobile) {
+                  setShowAddCardModal(true)
+                } else {
+                  setShowAddCard(true)
+                }
+              }}
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -377,6 +404,12 @@ function Column({ boardId, column, showToast }) {
           totalColumns={totalColumns}
           onClose={() => setShowMoveModal(false)}
           showToast={showToast}
+        />
+      )}
+      {showAddCardModal && (
+        <ModalAddCard
+          onConfirm={handleAddCardFromModal}
+          onCancel={() => setShowAddCardModal(false)}
         />
       )}
     </>

@@ -21,6 +21,27 @@ function Board() {
   useEffect(() => {
     // Scroll para o topo ao carregar a página
     window.scrollTo(0, 0)
+    
+    // No mobile, desabilitar scroll do body
+    const isMobile = window.innerWidth <= 768
+    if (isMobile) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+      document.body.style.height = '100vh'
+      document.body.style.maxHeight = '100vh'
+      document.documentElement.style.height = '100vh'
+      document.documentElement.style.maxHeight = '100vh'
+    }
+    
+    return () => {
+      // Restaurar scroll ao desmontar
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+      document.body.style.height = ''
+      document.body.style.maxHeight = ''
+      document.documentElement.style.height = ''
+      document.documentElement.style.maxHeight = ''
+    }
   }, [boardId])
 
   useEffect(() => {

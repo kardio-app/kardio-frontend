@@ -176,6 +176,15 @@ input::placeholder, textarea::placeholder {
   opacity: 0.6;
 }
 
+/* Prevenir zoom automático no mobile quando inputs recebem foco */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* iOS Safari não faz zoom se font-size >= 16px */
+  }
+}
+
 /* Scrollbar minimalista */
 ::-webkit-scrollbar {
   width: 8px;

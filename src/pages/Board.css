@@ -22,6 +22,21 @@ body.sidebar-open .board-page {
 }
 
 @media (max-width: 768px) {
+  /* Remover scroll do body e html no mobile */
+  body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
+
+  html {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+
   .board-page {
     height: 100vh;
     max-height: 100vh;

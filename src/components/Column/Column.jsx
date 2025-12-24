@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useDroppable } from '@dnd-kit/core'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -303,61 +304,61 @@ function Column({ boardId, column, showToast }) {
                 columns={currentBoard.columns}
               />
             ))}
+          
+          {showAddCard ? (
+            <div className="column-add-card-form">
+              <input
+                className="column-add-card-input"
+                value={newCardTitle}
+                onChange={(e) => setNewCardTitle(e.target.value)}
+                onKeyDown={handleAddCardKeyDown}
+                placeholder="Título do card..."
+                autoFocus
+              />
+              <div className="column-add-card-actions">
+                <button
+                  className="column-add-card-button"
+                  onClick={handleAddCard}
+                >
+                  Adicionar
+                </button>
+                <button
+                  className="column-add-card-button"
+                  onClick={() => {
+                    setShowAddCard(false)
+                    setNewCardTitle('')
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              className="column-add-button"
+              onClick={() => setShowAddCard(true)}
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14"></path>
+                <path d="m12 5 7 7-7 7"></path>
+              </svg>
+              Adicionar Tarefa
+            </button>
+          )}
         </div>
       </SortableContext>
-
-      {showAddCard ? (
-        <div className="column-add-card-form">
-          <input
-            className="column-add-card-input"
-            value={newCardTitle}
-            onChange={(e) => setNewCardTitle(e.target.value)}
-            onKeyDown={handleAddCardKeyDown}
-            placeholder="Título do card..."
-            autoFocus
-          />
-          <div className="column-add-card-actions">
-            <button
-              className="column-add-card-button"
-              onClick={handleAddCard}
-            >
-              Adicionar
-            </button>
-            <button
-              className="column-add-card-button"
-              onClick={() => {
-                setShowAddCard(false)
-                setNewCardTitle('')
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button
-          className="column-add-button"
-          onClick={() => setShowAddCard(true)}
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="16" 
-            height="16" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <path d="M5 12h14"></path>
-            <path d="m12 5 7 7-7 7"></path>
-          </svg>
-          Adicionar Tarefa
-        </button>
-      )}
       </div>
-      {showDeleteConfirm && (
+      {showDeleteConfirm && createPortal(
         <ModalConfirm
           title="Excluir Coluna"
           message="Tem certeza que deseja excluir esta coluna? Todas as tarefas dentro dela serão excluídas. Esta ação não pode ser desfeita."
@@ -365,7 +366,8 @@ function Column({ boardId, column, showToast }) {
           onCancel={() => setShowDeleteConfirm(false)}
           confirmText="Excluir"
           cancelText="Cancelar"
-        />
+        />,
+        document.body
       )}
       {showMoveModal && (
         <ModalMoveColumn

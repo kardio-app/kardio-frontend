@@ -139,6 +139,7 @@
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
+
 .column-cards.has-scrollbar {
   padding-right: 0.5rem;
 }
@@ -306,12 +307,14 @@ body.sidebar-open .column-cards.has-scrollbar {
     min-width: 280px;
     max-width: 280px;
     padding: 1rem;
-    padding-bottom: 1rem; /* Espaço entre a coluna e o footer */
+    padding-bottom: 1rem; /* Padding normal */
     height: auto;
     max-height: none; /* Removido limite de altura - a coluna cresce conforme necessário */
-    margin-bottom: 0; /* Removido margin-bottom - o padding-bottom já cria o espaço */
+    margin-bottom: 0;
     position: relative;
     z-index: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .column-header {
@@ -340,10 +343,15 @@ body.sidebar-open .column-cards.has-scrollbar {
   }
 
   .column-cards {
-    max-height: calc(100vh - 60px - 80px - 100px - 120px); /* Altura para mostrar ~2.5 cards antes de scrollar */
+    max-height: calc(100vh - 60px - 80px - 100px); /* Altura considerando navbar (60px), header (80px) e footer (~100px) */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0 0 0; /* Padding apenas no topo - o botão terá seu próprio espaçamento */
   }
 
   .column-drag-handle {
@@ -355,7 +363,18 @@ body.sidebar-open .column-cards.has-scrollbar {
   }
 
   .column-add-button {
-    margin-bottom: 1rem; /* Espaço entre o botão e o footer */
+    margin-top: 0.75rem; /* Espaçamento após o último card */
+    margin-bottom: 1rem; /* Espaçamento inferior para não colar no footer */
+    position: relative; /* Removido sticky - botão segue o fluxo normal */
+    z-index: 1;
+  }
+
+  .column-add-card-form {
+    margin-top: 0.75rem; /* Espaçamento após o último card */
+    margin-bottom: 1rem; /* Espaçamento inferior para não colar no footer */
+    position: relative; /* Removido sticky - formulário segue o fluxo normal */
+    z-index: 1;
+    padding: 0.5rem 0; /* Espaçamento interno */
   }
 }
 

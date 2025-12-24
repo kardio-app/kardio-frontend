@@ -96,8 +96,20 @@
 
 /* Ajustes para melhor visualização no mobile */
 @media (max-width: 768px) {
+  .column-carousel-container {
+    max-height: calc(100vh - 60px - 80px - 90px); /* Altura total menos navbar (60px), header (80px) e footer (~90px) */
+    overflow: hidden;
+  }
+
+  .column-carousel-wrapper {
+    max-height: 100%;
+    overflow: hidden;
+  }
+
   .column-carousel-slide {
     padding: 0;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .column-carousel-slide .column {
@@ -105,7 +117,7 @@
     width: 100%;
     max-width: 100%;
     height: auto;
-    max-height: calc(100vh - 60px - 80px - 100px); /* Altura total menos navbar, header e footer */
+    max-height: 100%;
   }
 
   .column-carousel-indicators {

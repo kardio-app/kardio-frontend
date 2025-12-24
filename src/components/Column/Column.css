@@ -307,18 +307,20 @@ body.sidebar-open .column-cards.has-scrollbar {
     min-width: 280px;
     max-width: 280px;
     padding: 1rem;
-    padding-bottom: 1rem; /* Padding normal */
+    padding-bottom: 0;
     height: auto;
-    max-height: none; /* Removido limite de altura - a coluna cresce conforme necessário */
+    max-height: calc(100vh - 60px - 80px - 90px); /* Altura total menos navbar (60px), header (80px) e footer (~90px) */
     margin-bottom: 0;
     position: relative;
     z-index: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Garante que a coluna não ultrapasse o limite */
   }
 
   .column-header {
     padding-left: 2.25rem;
+    flex-shrink: 0; /* Header não encolhe */
   }
 
   .column-drag-handle {
@@ -343,12 +345,11 @@ body.sidebar-open .column-cards.has-scrollbar {
   }
 
   .column-cards {
-    max-height: calc(100vh - 60px - 80px - 100px); /* Altura considerando navbar (60px), header (80px) e footer (~100px) */
+    flex: 1;
+    min-height: 0; /* Importante para flexbox funcionar com overflow */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: column;
     padding: 0.5rem 0 0 0; /* Padding apenas no topo - o botão terá seu próprio espaçamento */
@@ -364,17 +365,19 @@ body.sidebar-open .column-cards.has-scrollbar {
 
   .column-add-button {
     margin-top: 0.75rem; /* Espaçamento após o último card */
-    margin-bottom: 1rem; /* Espaçamento inferior para não colar no footer */
-    position: relative; /* Removido sticky - botão segue o fluxo normal */
+    margin-bottom: 0.75rem; /* Espaçamento inferior para não colar no footer */
+    position: relative;
     z-index: 1;
+    flex-shrink: 0; /* Botão não encolhe */
   }
 
   .column-add-card-form {
     margin-top: 0.75rem; /* Espaçamento após o último card */
-    margin-bottom: 1rem; /* Espaçamento inferior para não colar no footer */
-    position: relative; /* Removido sticky - formulário segue o fluxo normal */
+    margin-bottom: 0.75rem; /* Espaçamento inferior para não colar no footer */
+    position: relative;
     z-index: 1;
     padding: 0.5rem 0; /* Espaçamento interno */
+    flex-shrink: 0; /* Formulário não encolhe */
   }
 }
 

@@ -1,0 +1,113 @@
+.column-carousel-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 0;
+  flex: 1;
+}
+
+.column-carousel-wrapper {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  touch-action: pan-y pinch-zoom;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 0;
+}
+
+.column-carousel-track {
+  display: flex;
+  width: 100%;
+  will-change: transform;
+  align-items: flex-start;
+}
+
+.column-carousel-slide {
+  min-width: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.column-carousel-slide .column {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  height: auto;
+  max-height: none;
+}
+
+.column-carousel-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.column-carousel-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--text-gray);
+  opacity: 0.4;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.column-carousel-indicator:hover {
+  opacity: 0.7;
+  transform: scale(1.2);
+}
+
+.column-carousel-indicator.active {
+  opacity: 1;
+  background-color: var(--text-white);
+  width: 24px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+[data-theme="light"] .column-carousel-indicator {
+  background-color: #666666;
+}
+
+[data-theme="light"] .column-carousel-indicator.active {
+  background-color: #000000;
+}
+
+/* Ajustes para melhor visualização no mobile */
+@media (max-width: 768px) {
+  .column-carousel-slide {
+    padding: 0;
+  }
+
+  .column-carousel-slide .column {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .column-carousel-indicators {
+    padding: 1rem 0 0.5rem 0;
+  }
+}
+

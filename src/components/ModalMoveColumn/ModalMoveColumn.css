@@ -1,0 +1,217 @@
+.modal-move-column-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+  animation: fadeIn 0.2s ease;
+  padding: 1rem;
+}
+
+.modal-move-column-content {
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-move-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-move-column-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.modal-move-column-close {
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.modal-move-column-close:hover {
+  color: var(--text-white);
+  background-color: var(--card-bg);
+}
+
+.modal-move-column-body {
+  padding: 1.5rem;
+}
+
+.modal-move-column-message {
+  color: var(--text-white);
+  font-size: 0.9375rem;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.modal-move-column-message strong {
+  color: var(--text-white);
+  font-weight: 600;
+}
+
+.modal-move-column-positions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.modal-move-column-position {
+  min-width: 50px;
+  height: 50px;
+  border-radius: var(--border-radius);
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  position: relative;
+}
+
+.modal-move-column-position:hover:not(:disabled) {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--text-gray);
+  transform: scale(1.05);
+}
+
+.modal-move-column-position.active {
+  background-color: var(--button-bg);
+  border-color: var(--button-bg);
+  color: var(--text-white);
+  box-shadow: 0 0 0 3px rgba(var(--button-bg-rgb, 59, 130, 246), 0.3);
+}
+
+.modal-move-column-position.current {
+  border-color: var(--text-gray);
+  opacity: 0.4;
+  background-color: var(--bg-gray);
+  cursor: not-allowed;
+}
+
+.modal-move-column-position.current span {
+  opacity: 0.6;
+}
+
+.modal-move-column-position-lock {
+  width: 14px;
+  height: 14px;
+  color: var(--text-gray);
+  opacity: 0.8;
+}
+
+.modal-move-column-position:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: var(--bg-gray);
+}
+
+.modal-move-column-position:disabled:hover {
+  transform: none;
+  background-color: var(--bg-gray);
+}
+
+.modal-move-column-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-move-column-button {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.modal-move-column-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-move-column-button-cancel {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+.modal-move-column-button-cancel:hover:not(:disabled) {
+  background-color: var(--bg-gray-hover);
+}
+
+.modal-move-column-button-confirm {
+  background-color: var(--button-bg);
+  color: var(--text-white);
+}
+
+.modal-move-column-button-confirm:hover:not(:disabled) {
+  background-color: var(--button-hover);
+}
+
+[data-theme="light"] .modal-move-column-button-confirm {
+  background-color: #333333;
+  color: #FFFFFF;
+}
+
+[data-theme="light"] .modal-move-column-button-confirm:hover:not(:disabled) {
+  background-color: #000000;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

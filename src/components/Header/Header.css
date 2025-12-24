@@ -270,6 +270,13 @@
 @media (max-width: 768px) {
   .header {
     padding: 1.5rem 1rem 0.75rem 1rem;
+    position: fixed;
+    top: 60px; /* Altura da navbar */
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: var(--bg-black);
+    border-bottom: 1px solid var(--border-color);
   }
 
   .header-left {

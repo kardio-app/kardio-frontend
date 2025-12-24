@@ -9,6 +9,7 @@ import ToastContainer from '../components/Toast/ToastContainer'
 import { useToast } from '../hooks/useToast'
 import { createProject } from '../services/api'
 import { saveProject } from '../utils/savedProjects'
+import { fixEncoding } from '../utils/fixEncoding'
 import './Home.css'
 
 function Home() {
@@ -49,9 +50,10 @@ function Home() {
           if (commits.length > 0) {
             const lastCommit = commits[0]
             const commitMessage = lastCommit.commit.message.split('\n')[0]
-            const truncatedMessage = commitMessage.length > 50 
-              ? commitMessage.substring(0, 50) + '...' 
-              : commitMessage
+            const fixedMessage = fixEncoding(commitMessage)
+            const truncatedMessage = fixedMessage.length > 50 
+              ? fixedMessage.substring(0, 50) + '...' 
+              : fixedMessage
             
             // Notificação sobre atualização
             setTimeout(() => {

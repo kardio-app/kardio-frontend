@@ -11,6 +11,8 @@
   scrollbar-color: var(--text-gray) transparent;
 }
 
+/* Cursor de bloqueado será aplicado apenas no DragOverlay */
+
 .board-columns {
   display: flex;
   gap: 1.5rem;
@@ -155,12 +157,18 @@
 
 @media (max-width: 768px) {
   .board-container {
-    padding: 1rem;
-    overflow-x: auto;
-    overflow-y: visible;
-    min-height: 100%;
-    height: auto;
-    touch-action: pan-x pan-y;
+    padding: 0;
+    padding-top: 80px; /* Espaço para o header fixo */
+    padding-bottom: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    min-height: 0;
+    height: 100%;
+    touch-action: pan-y;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 
   .board-columns {
@@ -168,20 +176,90 @@
     width: max-content;
   }
 
+  .board-columns-mobile {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    padding: 1rem;
+    padding-bottom: 160px; /* Espaço para o footer fixo (indicadores + botão) */
+    overflow: visible;
+  }
+
+  .board-mobile-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-black);
+    padding: 1rem;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-top: 1px solid var(--border-color);
+  }
+
   .board-add-column-button-main,
   .board-add-column-form {
-    min-width: 280px;
-    max-width: 280px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .board-add-column-button-main {
-    max-height: calc(100vh - 60px - 60px - 2rem - 1rem);
-    margin-bottom: 1rem;
+    margin-bottom: 0;
   }
 
   .board-add-column-form {
-    max-height: calc(100vh - 60px - 60px - 2rem - 1rem);
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+  }
+
+  .column-carousel-indicators {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .column-carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--text-gray);
+    opacity: 0.4;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .column-carousel-indicator:hover {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+
+  .column-carousel-indicator.active {
+    opacity: 1;
+    background-color: var(--text-white);
+    width: 24px;
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  [data-theme="light"] .column-carousel-indicator {
+    background-color: #666666;
+  }
+
+  [data-theme="light"] .column-carousel-indicator.active {
+    background-color: #000000;
   }
 }
 

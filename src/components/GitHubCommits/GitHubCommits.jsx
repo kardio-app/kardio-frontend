@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { fixEncoding } from '../../utils/fixEncoding'
 import './GitHubCommits.css'
 
 function GitHubCommits() {
@@ -10,14 +11,22 @@ function GitHubCommits() {
     const fetchCommits = async () => {
       try {
         const response = await fetch(
-          'https://api.github.com/repos/kardio-app/kardio-frontend/commits?sha=main&per_page=5'
+          'https://api.github.com/repos/kardio-app/kardio-frontend/commits?sha=main&per_page=5',
+          {
+            headers: {
+              'Accept': 'application/json',
+              'Accept-Charset': 'utf-8'
+            }
+          }
         )
         
         if (!response.ok) {
           throw new Error('Erro ao buscar commits')
         }
         
-        const data = await response.json()
+        // Garantir que a resposta seja tratada como UTF-8
+        const text = await response.text()
+        const data = JSON.parse(text)
         setCommits(data)
         setError(null)
       } catch (err) {
@@ -52,10 +61,13 @@ function GitHubCommits() {
     }
   }
 
+
   const truncateMessage = (message) => {
+    // Corrigir encoding antes de truncar
+    const fixedMessage = fixEncoding(message)
     const maxLength = 60
-    if (message.length <= maxLength) return message
-    return message.substring(0, maxLength) + '...'
+    if (fixedMessage.length <= maxLength) return fixedMessage
+    return fixedMessage.substring(0, maxLength) + '...'
   }
 
   if (loading) {
@@ -148,7 +160,7 @@ function GitHubCommits() {
             </div>
             <div className="github-commit-meta">
               <span className="github-commit-author">
-                {commit.author?.login || commit.commit.author.name}
+                {fixEncoding(commit.author?.login || commit.commit.author.name)}
               </span>
               <span className="github-commit-date">
                 {formatDate(commit.commit.author.date)}

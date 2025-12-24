@@ -36,7 +36,7 @@ function BoardPreview() {
                 src="https://drive.google.com/file/d/13830znP_wO3jnwO3sWXl2GxL5OsAW9Sy/preview"
                 width="100%"
                 height="100%"
-                allow="autoplay"
+                allow="autoplay; fullscreen"
                 style={{
                   border: 'none',
                   borderRadius: '8px',

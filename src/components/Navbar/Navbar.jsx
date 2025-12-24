@@ -24,7 +24,7 @@ function Navbar() {
   const [isExiting, setIsExiting] = useState(false)
   const [projectResult, setProjectResult] = useState(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100)
   const [isNavbarVisible, setIsNavbarVisible] = useState(true)
   const [showSaveProjectModal, setShowSaveProjectModal] = useState(false)
   const [projectCode, setProjectCode] = useState(null)
@@ -50,8 +50,8 @@ function Navbar() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 900)
-      if (window.innerWidth > 900) {
+      setIsMobile(window.innerWidth <= 1100)
+      if (window.innerWidth > 1100) {
         setIsMobileMenuOpen(false)
       }
     }

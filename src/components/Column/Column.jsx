@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
+import ModalMoveColumn from '../ModalMoveColumn/ModalMoveColumn'
 import Card from '../Card/Card'
 import './Column.css'
 
@@ -18,7 +19,18 @@ function Column({ boardId, column, showToast }) {
   const [showAddCard, setShowAddCard] = useState(false)
   const [newCardTitle, setNewCardTitle] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showMoveModal, setShowMoveModal] = useState(false)
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 768)
+  const [hasScrollbar, setHasScrollbar] = useState(false)
   const cardsRef = useRef(null)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const {
     attributes,
@@ -41,16 +53,52 @@ function Column({ boardId, column, showToast }) {
     setDroppableRef(node)
   }
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  // Otimizar cálculo do transform apenas quando necessário
+  const transformString = useMemo(() => {
+    return transform ? CSS.Transform.toString(transform) : undefined
+  }, [transform])
+
+  const style = useMemo(() => ({
+    transform: transformString,
+    transition: isDragging ? 'none' : transition,
     opacity: isDragging ? 0.5 : 1,
-  }
+  }), [transformString, transition, isDragging])
 
   // Atualizar coluna quando boards mudar
   const currentBoard = boards[boardId] || getBoard(boardId)
   const currentColumn = currentBoard.columns.find(col => col.id === column.id) || column
   const [title, setTitle] = useState(currentColumn.title)
+
+  // Verificar se há scrollbar
+  useEffect(() => {
+    const checkScrollbar = () => {
+      if (cardsRef.current) {
+        const hasScroll = cardsRef.current.scrollHeight > cardsRef.current.clientHeight
+        setHasScrollbar(hasScroll)
+      }
+    }
+
+    // Verificar imediatamente
+    checkScrollbar()
+    
+    // Verificar quando o tamanho do container ou conteúdo muda
+    const observer = new ResizeObserver(checkScrollbar)
+    if (cardsRef.current) {
+      observer.observe(cardsRef.current)
+    }
+
+    // Verificar também quando os cards mudam (usar timeout para aguardar renderização)
+    const timeoutId = setTimeout(checkScrollbar, 0)
+
+    return () => {
+      observer.disconnect()
+      clearTimeout(timeoutId)
+    }
+  }, [currentColumn.cards.length])
+  
+  // Encontrar posição atual da coluna
+  const currentPosition = currentBoard.columns.findIndex(col => col.id === column.id)
+  const totalColumns = currentBoard.columns.length
 
   // Sincronizar título quando coluna mudar
   useEffect(() => {
@@ -153,8 +201,14 @@ function Column({ boardId, column, showToast }) {
         <div className="column-header">
           <div 
             className="column-drag-handle"
-            {...attributes}
-            {...listeners}
+            {...(!isMobile ? attributes : {})}
+            {...(!isMobile ? listeners : {})}
+            onClick={(e) => {
+              if (isMobile) {
+                e.stopPropagation()
+                setShowMoveModal(true)
+              }
+            }}
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -231,7 +285,7 @@ function Column({ boardId, column, showToast }) {
       <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
         <div 
           ref={cardsRef}
-          className={`column-cards ${isOver ? 'drag-over' : ''}`}
+          className={`column-cards ${isOver ? 'drag-over' : ''} ${hasScrollbar ? 'has-scrollbar' : ''}`}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {currentColumn.cards.length === 0 && isOver && (
@@ -239,15 +293,16 @@ function Column({ boardId, column, showToast }) {
               Solte aqui
             </div>
           )}
-          {currentColumn.cards.map((card) => (
-            <Card
-              key={card.id}
-              boardId={boardId}
-              columnId={column.id}
-              card={card}
-              showToast={showToast}
-            />
-          ))}
+            {currentColumn.cards.map((card) => (
+              <Card
+                key={card.id}
+                boardId={boardId}
+                columnId={column.id}
+                card={card}
+                showToast={showToast}
+                columns={currentBoard.columns}
+              />
+            ))}
         </div>
       </SortableContext>
 
@@ -310,6 +365,16 @@ function Column({ boardId, column, showToast }) {
           onCancel={() => setShowDeleteConfirm(false)}
           confirmText="Excluir"
           cancelText="Cancelar"
+        />
+      )}
+      {showMoveModal && (
+        <ModalMoveColumn
+          boardId={boardId}
+          columnId={column.id}
+          currentPosition={currentPosition}
+          totalColumns={totalColumns}
+          onClose={() => setShowMoveModal(false)}
+          showToast={showToast}
         />
       )}
     </>

@@ -1,12 +1,32 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import useBoardStore from '../../store/useBoardStore'
 import ModalCard from '../ModalCard/ModalCard'
+import ModalMoveCard from '../ModalMoveCard/ModalMoveCard'
 import './Card.css'
 
-function Card({ boardId, columnId, card, showToast }) {
+function Card({ boardId, columnId, card, showToast, columns }) {
+  const boards = useBoardStore((state) => state.boards)
+  const getBoard = useBoardStore((state) => state.getBoard)
   const [showModal, setShowModal] = useState(false)
+  const [showMoveModal, setShowMoveModal] = useState(false)
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 768)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Obter informações do card atual
+  const currentBoard = boards[boardId] || getBoard(boardId)
+  const allColumns = columns || currentBoard.columns || []
+  const currentColumn = allColumns.find(col => col.id === columnId) || currentBoard.columns.find(col => col.id === columnId)
+  const currentPosition = currentColumn ? currentColumn.cards.findIndex(c => c.id === card.id) : -1
+  const totalCards = currentColumn ? currentColumn.cards.length : 0
 
   const {
     attributes,
@@ -19,12 +39,16 @@ function Card({ boardId, columnId, card, showToast }) {
     id: card.id,
   })
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  // Otimizar cálculo do transform apenas quando necessário
+  const transformString = useMemo(() => {
+    return transform ? CSS.Transform.toString(transform) : undefined
+  }, [transform])
+
+  const style = useMemo(() => ({
+    transform: transformString,
+    transition: isDragging ? 'none' : transition,
     opacity: isDragging ? 0.5 : 1,
-    cursor: isDragging ? 'grabbing' : 'grab',
-  }
+  }), [transformString, transition, isDragging])
 
   const handleClick = (e) => {
     // Não abrir modal se estiver arrastando ou se clicou no handle
@@ -38,14 +62,20 @@ function Card({ boardId, columnId, card, showToast }) {
       <div
         ref={setNodeRef}
         style={style}
-        {...attributes}
+        {...(!isMobile ? attributes : {})}
         className="card"
         onClick={handleClick}
         data-dragging={isDragging}
       >
         <div 
           className="card-drag-handle"
-          {...listeners}
+          {...(!isMobile ? listeners : {})}
+          onClick={(e) => {
+            if (isMobile) {
+              e.stopPropagation()
+              setShowMoveModal(true)
+            }
+          }}
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -83,6 +113,18 @@ function Card({ boardId, columnId, card, showToast }) {
           columnId={columnId}
           card={card}
           onClose={() => setShowModal(false)}
+          showToast={showToast}
+        />
+      )}
+      {showMoveModal && (
+        <ModalMoveCard
+          boardId={boardId}
+          columnId={columnId}
+          cardId={card.id}
+          currentPosition={currentPosition}
+          totalCards={totalCards}
+          columns={allColumns}
+          onClose={() => setShowMoveModal(false)}
           showToast={showToast}
         />
       )}

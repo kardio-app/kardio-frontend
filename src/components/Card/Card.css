@@ -10,6 +10,9 @@
   position: relative;
   cursor: default;
   touch-action: pan-y;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .card:hover {
@@ -54,6 +57,12 @@
   transform: rotate(2deg);
   box-shadow: 0 8px 16px var(--shadow-color);
   border-color: var(--text-gray);
+}
+
+.card-dragging.drag-invalid {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+  border-color: var(--error-color, #ff4444);
 }
 
 .card-title {
@@ -123,6 +132,14 @@
   .card[data-dragging="true"] .card-drag-handle {
     touch-action: none !important;
     opacity: 1 !important;
+  }
+
+  .card-drag-handle {
+    cursor: pointer;
+  }
+
+  .card-drag-handle:active {
+    cursor: pointer;
   }
 }
 

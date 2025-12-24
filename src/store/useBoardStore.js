@@ -210,103 +210,96 @@ const useBoardStore = create(
       },
 
       moveCard: async (boardId, sourceColumnId, destinationColumnId, sourceIndex, destinationIndex) => {
-        try {
-          const state = get()
+        const state = get()
+        const board = state.boards[boardId] || getDefaultBoard(boardId)
+        const sourceColumn = board.columns.find(col => col.id === sourceColumnId)
+        const destinationColumn = board.columns.find(col => col.id === destinationColumnId)
+        
+        if (!sourceColumn || !destinationColumn) return
+
+        const movedCard = sourceColumn.cards[sourceIndex]
+        if (!movedCard) return
+
+        // Salvar estado anterior para rollback em caso de erro
+        const previousBoardState = JSON.parse(JSON.stringify(board))
+
+        // Preparar arrays para atualização
+        const newSourceCards = [...sourceColumn.cards]
+        newSourceCards.splice(sourceIndex, 1)
+        
+        const newDestinationCards = sourceColumnId === destinationColumnId 
+          ? [...sourceColumn.cards]
+          : [...destinationColumn.cards]
+        
+        if (sourceColumnId === destinationColumnId) {
+          const [removedCard] = newDestinationCards.splice(sourceIndex, 1)
+          newDestinationCards.splice(destinationIndex, 0, removedCard)
+        } else {
+          newDestinationCards.splice(destinationIndex, 0, movedCard)
+        }
+
+        // OPTIMISTIC UPDATE: Atualizar estado imediatamente
+        set((state) => {
           const board = state.boards[boardId] || getDefaultBoard(boardId)
-          const sourceColumn = board.columns.find(col => col.id === sourceColumnId)
-          const destinationColumn = board.columns.find(col => col.id === destinationColumnId)
-          
-          if (!sourceColumn || !destinationColumn) return
+          const columns = board.columns.map(col => {
+            if (col.id === sourceColumnId && sourceColumnId === destinationColumnId) {
+              return { ...col, cards: newDestinationCards.map((card, idx) => ({ ...card, position: idx })) }
+            }
+            if (col.id === sourceColumnId) {
+              return { ...col, cards: newSourceCards.map((card, idx) => ({ ...card, position: idx })) }
+            }
+            if (col.id === destinationColumnId) {
+              return { ...col, cards: newDestinationCards.map((card, idx) => ({ ...card, position: idx })) }
+            }
+            return col
+          })
 
-          const movedCard = sourceColumn.cards[sourceIndex]
-          if (!movedCard) return
-
-          // Preparar arrays para atualização
-          const newSourceCards = [...sourceColumn.cards]
-          newSourceCards.splice(sourceIndex, 1)
-          
-          const newDestinationCards = sourceColumnId === destinationColumnId 
-            ? [...sourceColumn.cards]
-            : [...destinationColumn.cards]
-          
-          if (sourceColumnId === destinationColumnId) {
-            const [removedCard] = newDestinationCards.splice(sourceIndex, 1)
-            newDestinationCards.splice(destinationIndex, 0, removedCard)
-          } else {
-            newDestinationCards.splice(destinationIndex, 0, movedCard)
+          return {
+            boards: {
+              ...state.boards,
+              [boardId]: {
+                ...board,
+                columns
+              }
+            }
           }
+        })
 
-          // Se for a mesma coluna, precisamos reordenar todos os cards
+        // Fazer requisições em paralelo (sem bloquear a UI)
+        try {
           if (sourceColumnId === destinationColumnId) {
-            // Atualizar posições de todos os cards no backend
+            // Se for a mesma coluna, precisamos reordenar todos os cards
             await api.reorderCards(boardId, destinationColumnId, newDestinationCards.map((card, index) => ({
               id: card.id,
               position: index
             })))
           } else {
             // Se for coluna diferente, atualizar o card movido e reordenar ambas as colunas
-            // Atualizar card movido no backend
-            await api.updateCard(boardId, movedCard.id, {
-              columnId: destinationColumnId,
-              position: destinationIndex
-            })
-
-            // Reordenar cards na coluna de origem (removendo o card movido)
-            await api.reorderCards(boardId, sourceColumnId, newSourceCards.map((card, index) => ({
-              id: card.id,
-              position: index
-            })))
-
-            // Reordenar cards na coluna de destino (incluindo o card movido)
-            await api.reorderCards(boardId, destinationColumnId, newDestinationCards.map((card, index) => ({
-              id: card.id,
-              position: index
-            })))
+            // Fazer todas as requisições em paralelo
+            await Promise.all([
+              api.updateCard(boardId, movedCard.id, {
+                columnId: destinationColumnId,
+                position: destinationIndex
+              }),
+              api.reorderCards(boardId, sourceColumnId, newSourceCards.map((card, index) => ({
+                id: card.id,
+                position: index
+              }))),
+              api.reorderCards(boardId, destinationColumnId, newDestinationCards.map((card, index) => ({
+                id: card.id,
+                position: index
+              })))
+            ])
           }
-
-          set((state) => {
-            const board = state.boards[boardId] || getDefaultBoard(boardId)
-            const columns = board.columns.map(col => {
-              if (col.id === sourceColumnId && sourceColumnId === destinationColumnId) {
-                return { ...col, cards: newDestinationCards.map((card, idx) => ({ ...card, position: idx })) }
-              }
-              if (col.id === sourceColumnId) {
-                return { ...col, cards: newSourceCards.map((card, idx) => ({ ...card, position: idx })) }
-              }
-              if (col.id === destinationColumnId) {
-                return { ...col, cards: newDestinationCards.map((card, idx) => ({ ...card, position: idx })) }
-              }
-              return col
-            })
-
-            return {
-              boards: {
-                ...state.boards,
-                [boardId]: {
-                  ...board,
-                  columns
-                }
-              }
-            }
-          })
         } catch (error) {
           console.error('Erro ao mover card:', error)
-          // Recarregar board em caso de erro
-          try {
-            const data = await api.getBoard(boardId)
-            set((state) => ({
-              boards: {
-                ...state.boards,
-                [boardId]: {
-                  id: data.id,
-                  name: data.name,
-                  columns: data.columns || []
-                }
-              }
-            }))
-          } catch (reloadError) {
-            console.error('Erro ao recarregar board:', reloadError)
-          }
+          // ROLLBACK: Reverter para o estado anterior em caso de erro
+          set((state) => ({
+            boards: {
+              ...state.boards,
+              [boardId]: previousBoardState
+            }
+          }))
           throw error
         }
       },
@@ -354,34 +347,119 @@ const useBoardStore = create(
       },
 
       moveColumn: async (boardId, sourceIndex, destinationIndex) => {
-        try {
-          const state = get()
-          const board = state.boards[boardId] || getDefaultBoard(boardId)
-          const newColumns = [...board.columns]
-          const [movedColumn] = newColumns.splice(sourceIndex, 1)
-          newColumns.splice(destinationIndex, 0, movedColumn)
+        const state = get()
+        const board = state.boards[boardId] || getDefaultBoard(boardId)
+        
+        // Salvar estado anterior para rollback em caso de erro
+        const previousBoardState = JSON.parse(JSON.stringify(board))
+        
+        const newColumns = [...board.columns]
+        const [movedColumn] = newColumns.splice(sourceIndex, 1)
+        newColumns.splice(destinationIndex, 0, movedColumn)
 
-          // Atualizar posições no backend
-          for (let i = 0; i < newColumns.length; i++) {
-            if (newColumns[i].position !== i) {
-              await api.updateColumn(boardId, newColumns[i].id, { position: i })
+        // OPTIMISTIC UPDATE: Atualizar estado imediatamente
+        set({
+          boards: {
+            ...state.boards,
+            [boardId]: {
+              ...board,
+              columns: newColumns.map((col, idx) => ({ ...col, position: idx }))
             }
           }
+        })
 
-          // Atualizar estado local
-          set({
+        // Fazer requisições em paralelo (sem bloquear a UI)
+        try {
+          // Preparar todas as atualizações necessárias
+          const updatePromises = []
+          for (let i = 0; i < newColumns.length; i++) {
+            if (newColumns[i].position !== i) {
+              updatePromises.push(
+                api.updateColumn(boardId, newColumns[i].id, { position: i })
+              )
+            }
+          }
+          
+          // Executar todas as atualizações em paralelo
+          if (updatePromises.length > 0) {
+            await Promise.all(updatePromises)
+          }
+        } catch (error) {
+          console.error('Erro ao mover coluna:', error)
+          // ROLLBACK: Reverter para o estado anterior em caso de erro
+          set((state) => ({
+            boards: {
+              ...state.boards,
+              [boardId]: previousBoardState
+            }
+          }))
+          throw error
+        }
+      },
+
+      // Função temporária para preview durante o drag (não persiste)
+      previewMoveCard: (boardId, sourceColumnId, destinationColumnId, sourceIndex, destinationIndex) => {
+        const state = get()
+        const board = state.boards[boardId] || getDefaultBoard(boardId)
+        const sourceColumn = board.columns.find(col => col.id === sourceColumnId)
+        const destinationColumn = board.columns.find(col => col.id === destinationColumnId)
+        
+        if (!sourceColumn || !destinationColumn) return
+
+        const movedCard = sourceColumn.cards[sourceIndex]
+        if (!movedCard) return
+
+        // Preparar arrays para preview
+        const newSourceCards = [...sourceColumn.cards]
+        newSourceCards.splice(sourceIndex, 1)
+        
+        const newDestinationCards = sourceColumnId === destinationColumnId 
+          ? [...sourceColumn.cards]
+          : [...destinationColumn.cards]
+        
+        if (sourceColumnId === destinationColumnId) {
+          const [removedCard] = newDestinationCards.splice(sourceIndex, 1)
+          newDestinationCards.splice(destinationIndex, 0, removedCard)
+        } else {
+          newDestinationCards.splice(destinationIndex, 0, movedCard)
+        }
+
+        // Atualizar estado temporariamente para preview
+        set((state) => {
+          const board = state.boards[boardId] || getDefaultBoard(boardId)
+          const columns = board.columns.map(col => {
+            if (col.id === sourceColumnId && sourceColumnId === destinationColumnId) {
+              return { ...col, cards: newDestinationCards.map((card, idx) => ({ ...card, position: idx })) }
+            }
+            if (col.id === sourceColumnId) {
+              return { ...col, cards: newSourceCards.map((card, idx) => ({ ...card, position: idx })) }
+            }
+            if (col.id === destinationColumnId) {
+              return { ...col, cards: newDestinationCards.map((card, idx) => ({ ...card, position: idx })) }
+            }
+            return col
+          })
+
+          return {
             boards: {
               ...state.boards,
               [boardId]: {
                 ...board,
-                columns: newColumns.map((col, idx) => ({ ...col, position: idx }))
+                columns
               }
             }
-          })
-        } catch (error) {
-          console.error('Erro ao mover coluna:', error)
-          throw error
-        }
+          }
+        })
+      },
+
+      // Reverter preview para o estado original
+      revertPreview: (boardId, previousBoardState) => {
+        set((state) => ({
+          boards: {
+            ...state.boards,
+            [boardId]: previousBoardState
+          }
+        }))
       }
     }),
     {

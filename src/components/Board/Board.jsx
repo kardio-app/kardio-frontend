@@ -4,6 +4,7 @@ import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortabl
 import { useState, useRef, useEffect } from 'react'
 import useBoardStore from '../../store/useBoardStore'
 import Column from '../Column/Column'
+import ColumnCarousel from '../ColumnCarousel/ColumnCarousel'
 import './Board.css'
 
 function Board({ boardId, showToast }) {
@@ -17,6 +18,7 @@ function Board({ boardId, showToast }) {
   const [activeType, setActiveType] = useState(null) // 'card' ou 'column'
   const [showAddColumn, setShowAddColumn] = useState(false)
   const [newColumnTitle, setNewColumnTitle] = useState('')
+  const [currentColumnIndex, setCurrentColumnIndex] = useState(0)
   const boardContainerRef = useRef(null)
 
   // Forçar re-render quando boards mudar
@@ -53,11 +55,18 @@ function Board({ boardId, showToast }) {
   }
 
   // Detectar se é mobile/touch device
-  const isMobile = typeof window !== 'undefined' && (
-    window.innerWidth <= 768 || 
-    'ontouchstart' in window || 
-    navigator.maxTouchPoints > 0
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' && window.innerWidth <= 768
   )
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -94,7 +103,7 @@ function Board({ boardId, showToast }) {
     }
   }
 
-  const handleDragEnd = async (event) => {
+  const handleDragEnd = (event) => {
     const { active, over } = event
     const activeId = active.id.toString()
 
@@ -112,17 +121,19 @@ function Board({ boardId, showToast }) {
       const destinationIndex = boardData.columns.findIndex(col => col.id === overId)
       
       if (sourceIndex !== -1 && destinationIndex !== -1 && sourceIndex !== destinationIndex) {
-        try {
-          await moveColumn(boardId, sourceIndex, destinationIndex)
-          if (showToast) {
-            showToast('Coluna movida', 'success')
-          }
-        } catch (error) {
-          console.error('Erro ao mover coluna:', error)
-          if (showToast) {
-            showToast('Erro ao mover coluna', 'error')
-          }
-        }
+        // Chamar sem await para não bloquear - o estado já foi atualizado otimisticamente
+        moveColumn(boardId, sourceIndex, destinationIndex)
+          .then(() => {
+            if (showToast) {
+              showToast('Coluna movida', 'success')
+            }
+          })
+          .catch((error) => {
+            console.error('Erro ao mover coluna:', error)
+            if (showToast) {
+              showToast('Erro ao mover coluna', 'error')
+            }
+          })
       }
     } else {
       // Se estiver arrastando um card
@@ -183,21 +194,23 @@ function Board({ boardId, showToast }) {
           }
         }
 
-        try {
-          await moveCard(boardId, sourceColumnId, destinationColumnId, sourceIndex, destinationIndex)
-          if (showToast) {
-            const sourceCol = boardData.columns.find(col => col.id === sourceColumnId)
-            const destCol = boardData.columns.find(col => col.id === destinationColumnId)
-            if (sourceCol && destCol && sourceCol.id !== destCol.id) {
-              showToast('Tarefa movida', 'success')
+        // Chamar sem await para não bloquear - o estado já foi atualizado otimisticamente
+        moveCard(boardId, sourceColumnId, destinationColumnId, sourceIndex, destinationIndex)
+          .then(() => {
+            if (showToast) {
+              const sourceCol = boardData.columns.find(col => col.id === sourceColumnId)
+              const destCol = boardData.columns.find(col => col.id === destinationColumnId)
+              if (sourceCol && destCol && sourceCol.id !== destCol.id) {
+                showToast('Tarefa movida', 'success')
+              }
             }
-          }
-        } catch (error) {
-          console.error('Erro ao mover card:', error)
-          if (showToast) {
-            showToast('Erro ao mover tarefa', 'error')
-          }
-        }
+          })
+          .catch((error) => {
+            console.error('Erro ao mover card:', error)
+            if (showToast) {
+              showToast('Erro ao mover tarefa', 'error')
+            }
+          })
       }
     }
 
@@ -254,68 +267,146 @@ function Board({ boardId, showToast }) {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
-          <div className="board-columns">
-            {boardData.columns.map((column) => (
-              <Column
-                key={column.id}
+        {isMobile ? (
+          <>
+            <div className="board-columns-mobile">
+              <ColumnCarousel
                 boardId={boardId}
-                column={column}
+                columns={boardData.columns}
                 showToast={showToast}
+                currentIndex={currentColumnIndex}
+                setCurrentIndex={setCurrentColumnIndex}
               />
-            ))}
-          {showAddColumn ? (
-            <div className="board-add-column-form">
-              <input
-                className="board-add-column-input"
-                value={newColumnTitle}
-                onChange={(e) => setNewColumnTitle(e.target.value)}
-                onKeyDown={handleAddColumnKeyDown}
-                placeholder="Nome da coluna..."
-                autoFocus
-              />
-              <div className="board-add-column-actions">
-                <button
-                  className="board-add-column-button"
-                  onClick={handleAddColumn}
-                >
-                  Adicionar
-                </button>
-                <button
-                  className="board-add-column-button"
-                  onClick={() => {
-                    setShowAddColumn(false)
-                    setNewColumnTitle('')
-                  }}
-                >
-                  Cancelar
-                </button>
-              </div>
             </div>
-          ) : (
-            <button
-              className="board-add-column-button-main"
-              onClick={() => setShowAddColumn(true)}
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
+            <div className="board-mobile-footer">
+              {boardData.columns.length > 1 && (
+                <div className="column-carousel-indicators">
+                  {boardData.columns.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`column-carousel-indicator ${index === currentColumnIndex ? 'active' : ''}`}
+                      onClick={() => setCurrentColumnIndex(index)}
+                      aria-label={`Ir para coluna ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+              {showAddColumn ? (
+                <div className="board-add-column-form">
+                  <input
+                    className="board-add-column-input"
+                    value={newColumnTitle}
+                    onChange={(e) => setNewColumnTitle(e.target.value)}
+                    onKeyDown={handleAddColumnKeyDown}
+                    placeholder="Nome da coluna..."
+                    autoFocus
+                  />
+                  <div className="board-add-column-actions">
+                    <button
+                      className="board-add-column-button"
+                      onClick={handleAddColumn}
+                    >
+                      Adicionar
+                    </button>
+                    <button
+                      className="board-add-column-button"
+                      onClick={() => {
+                        setShowAddColumn(false)
+                        setNewColumnTitle('')
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="board-add-column-button-main"
+                  onClick={() => setShowAddColumn(true)}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                  </svg>
+                  Adicionar Coluna
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
+            <div className="board-columns">
+              {boardData.columns.map((column) => (
+                <Column
+                  key={column.id}
+                  boardId={boardId}
+                  column={column}
+                  showToast={showToast}
+                />
+              ))}
+            {showAddColumn ? (
+              <div className="board-add-column-form">
+                <input
+                  className="board-add-column-input"
+                  value={newColumnTitle}
+                  onChange={(e) => setNewColumnTitle(e.target.value)}
+                  onKeyDown={handleAddColumnKeyDown}
+                  placeholder="Nome da coluna..."
+                  autoFocus
+                />
+                <div className="board-add-column-actions">
+                  <button
+                    className="board-add-column-button"
+                    onClick={handleAddColumn}
+                  >
+                    Adicionar
+                  </button>
+                  <button
+                    className="board-add-column-button"
+                    onClick={() => {
+                      setShowAddColumn(false)
+                      setNewColumnTitle('')
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="board-add-column-button-main"
+                onClick={() => setShowAddColumn(true)}
               >
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
-              Adicionar Coluna
-            </button>
-          )}
-          </div>
-        </SortableContext>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+                Adicionar Coluna
+              </button>
+            )}
+            </div>
+          </SortableContext>
+        )}
         <DragOverlay>
           {activeCard ? (
             <div className="card card-dragging">

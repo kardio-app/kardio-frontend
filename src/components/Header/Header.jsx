@@ -32,23 +32,35 @@ function Header({ boardId, boardName, showToast, onNameUpdate }) {
   const handleNameBlur = async () => {
     setIsEditing(false)
     if (name.trim() && name.trim() !== currentBoard.name) {
-      try {
-        await updateProjectName(boardId, name.trim())
-        const newName = name.trim()
-        updateBoard(boardId, { name: newName })
-        if (onNameUpdate) {
-          onNameUpdate(newName)
-        }
-        if (showToast) {
-          showToast('Nome do projeto atualizado', 'success')
-        }
-      } catch (error) {
-        console.error('Erro ao atualizar nome do projeto:', error)
-        if (showToast) {
-          showToast('Erro ao atualizar nome do projeto', 'error')
-        }
-        setName(currentBoard.name)
+      const newName = name.trim()
+      const previousName = currentBoard.name
+      
+      // OPTIMISTIC UPDATE: Atualizar visualmente imediatamente
+      updateBoard(boardId, { name: newName })
+      setName(newName) // Atualizar estado local também
+      if (onNameUpdate) {
+        onNameUpdate(newName)
       }
+      
+      // Fazer request em paralelo (sem bloquear a UI)
+      updateProjectName(boardId, newName)
+        .then(() => {
+          if (showToast) {
+            showToast('Nome do projeto atualizado', 'success')
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao atualizar nome do projeto:', error)
+          // ROLLBACK: Reverter para o nome anterior em caso de erro
+          updateBoard(boardId, { name: previousName })
+          setName(previousName)
+          if (onNameUpdate) {
+            onNameUpdate(previousName)
+          }
+          if (showToast) {
+            showToast('Erro ao atualizar nome do projeto', 'error')
+          }
+        })
     } else {
       setName(currentBoard.name)
     }

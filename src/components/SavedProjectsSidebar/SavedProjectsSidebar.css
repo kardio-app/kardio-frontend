@@ -475,8 +475,9 @@
   .saved-projects-sidebar {
     width: 100%;
     max-width: 100%;
-    top: 60px;
-    height: calc(100vh - 60px);
+    top: 0;
+    height: 100vh;
+    z-index: 200; /* Acima de tudo (navbar: 100, header: 100, footer: 50) */
   }
 
   body.sidebar-open .board-page {

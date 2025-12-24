@@ -1,4 +1,4 @@
-import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core'
+import { DndContext, closestCorners, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay, getFirstCollision } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable'
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 import { useState, useRef, useEffect } from 'react'
@@ -20,6 +20,7 @@ function Board({ boardId, showToast }) {
   const [newColumnTitle, setNewColumnTitle] = useState('')
   const [currentColumnIndex, setCurrentColumnIndex] = useState(0)
   const boardContainerRef = useRef(null)
+  const activeTypeRef = useRef(null) // Ref para acessar activeType na função de colisão
 
   // Forçar re-render quando boards mudar
   const boardData = boards[boardId] || getBoard(boardId)
@@ -94,13 +95,63 @@ function Board({ boardId, showToast }) {
     // Verificar se é uma coluna ou um card
     const activeId = event.active.id.toString()
     const isColumn = boardData.columns.some(col => col.id === activeId)
-    setActiveType(isColumn ? 'column' : 'card')
+    const type = isColumn ? 'column' : 'card'
+    setActiveType(type)
+    activeTypeRef.current = type // Atualizar ref também
     
     // Prevenir scroll durante o drag no mobile
     if (boardContainerRef.current) {
       boardContainerRef.current.style.overflowX = 'hidden'
       boardContainerRef.current.style.touchAction = 'none'
     }
+  }
+
+  // Detecção de colisão customizada para colunas horizontais
+  const horizontalCollisionDetection = (args) => {
+    // Se não for uma coluna, usar detecção padrão
+    if (activeTypeRef.current !== 'column') {
+      return closestCenter(args)
+    }
+
+    const { active, collisionRect, droppableRects, droppableContainers } = args
+    
+    // Para colunas, usar detecção baseada na posição horizontal do cursor
+    const activeRect = collisionRect
+    const activeCenterX = activeRect.left + activeRect.width / 2
+    
+    // Encontrar a coluna mais próxima baseada na posição X do centro do elemento ativo
+    let closestColumn = null
+    let closestDistance = Infinity
+    
+    droppableContainers.forEach((container) => {
+      const rect = droppableRects.get(container.id)
+      if (!rect) return
+      
+      // Verificar se é uma coluna (não um droppable de card)
+      const isColumn = boardData.columns.some(col => col.id === container.id)
+      if (!isColumn) return
+      
+      const containerCenterX = rect.left + rect.width / 2
+      const distance = Math.abs(activeCenterX - containerCenterX)
+      
+      if (distance < closestDistance) {
+        closestDistance = distance
+        closestColumn = container
+      }
+    })
+    
+    if (closestColumn) {
+      return [{
+        id: closestColumn.id,
+        data: {
+          droppableContainer: closestColumn,
+          value: closestColumn.id,
+        }
+      }]
+    }
+    
+    // Fallback para detecção padrão
+    return closestCenter(args)
   }
 
   const handleDragEnd = (event) => {
@@ -121,8 +172,15 @@ function Board({ boardId, showToast }) {
       const destinationIndex = boardData.columns.findIndex(col => col.id === overId)
       
       if (sourceIndex !== -1 && destinationIndex !== -1 && sourceIndex !== destinationIndex) {
+        // Calcular o índice de destino baseado na direção do movimento
+        let finalDestinationIndex = destinationIndex
+        
+        // Se estiver movendo para a direita, o índice já está correto
+        // Se estiver movendo para a esquerda, também está correto
+        // O problema pode ser que o @dnd-kit está detectando a coluna errada
+        
         // Chamar sem await para não bloquear - o estado já foi atualizado otimisticamente
-        moveColumn(boardId, sourceIndex, destinationIndex)
+        moveColumn(boardId, sourceIndex, finalDestinationIndex)
           .then(() => {
             if (showToast) {
               showToast('Coluna movida', 'success')
@@ -216,6 +274,7 @@ function Board({ boardId, showToast }) {
 
     setActiveId(null)
     setActiveType(null)
+    activeTypeRef.current = null // Limpar ref também
     
     // Reabilitar scroll após o drag
     if (boardContainerRef.current) {
@@ -263,7 +322,7 @@ function Board({ boardId, showToast }) {
     <div className="board-container" ref={boardContainerRef}>
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={horizontalCollisionDetection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >

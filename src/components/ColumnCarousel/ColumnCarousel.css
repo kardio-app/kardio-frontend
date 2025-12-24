@@ -104,6 +104,8 @@
     margin: 0;
     width: 100%;
     max-width: 100%;
+    height: auto;
+    max-height: calc(100vh - 60px - 80px - 100px); /* Altura total menos navbar, header e footer */
   }
 
   .column-carousel-indicators {

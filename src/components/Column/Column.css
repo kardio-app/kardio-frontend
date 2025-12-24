@@ -133,7 +133,7 @@
   max-height: calc(100vh - 70px - 80px - 4rem - 120px - 1.5rem);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0.5rem 0 1.75rem 0;
+  padding: 0.5rem 0 1rem 0;
   position: relative;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
@@ -306,9 +306,10 @@ body.sidebar-open .column-cards.has-scrollbar {
     min-width: 280px;
     max-width: 280px;
     padding: 1rem;
+    padding-bottom: 1rem; /* Espaço entre a coluna e o footer */
     height: auto;
-    max-height: calc(100vh - 60px - 80px - 160px - 2rem); /* Considera navbar + header + footer */
-    margin-bottom: 1rem;
+    max-height: none; /* Removido limite de altura - a coluna cresce conforme necessário */
+    margin-bottom: 0; /* Removido margin-bottom - o padding-bottom já cria o espaço */
     position: relative;
     z-index: 0;
   }
@@ -339,7 +340,7 @@ body.sidebar-open .column-cards.has-scrollbar {
   }
 
   .column-cards {
-    max-height: calc(100vh - 60px - 80px - 160px - 2rem - 100px - 1rem); /* Considera navbar + header + footer */
+    max-height: calc(100vh - 60px - 80px - 100px - 120px); /* Altura para mostrar ~2.5 cards antes de scrollar */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -351,6 +352,10 @@ body.sidebar-open .column-cards.has-scrollbar {
 
   .column-drag-handle:active {
     cursor: pointer;
+  }
+
+  .column-add-button {
+    margin-bottom: 1rem; /* Espaço entre o botão e o footer */
   }
 }
 

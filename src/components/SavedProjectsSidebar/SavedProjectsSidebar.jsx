@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { getSavedProjects, deleteSavedProject, updateSavedProjectName, saveProject } from '../../utils/savedProjects';
-import { accessProject, getBoard, getProject } from '../../services/api';
+import { accessProject, getBoard, getProject, linkProjectToManager, getManagersForPersonalProject, unlinkManagerFromPersonalProject } from '../../services/api';
 import Loading from '../Loading/Loading';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import ModalConfirm from '../ModalConfirm/ModalConfirm';
@@ -30,9 +30,24 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [showShareCodeModal, setShowShareCodeModal] = useState(false);
+  const [showLinkManagerModal, setShowLinkManagerModal] = useState(false);
+  const [managerCode, setManagerCode] = useState('');
+  const [isLinking, setIsLinking] = useState(false);
+  const [projectType, setProjectType] = useState(null);
+  const [showManagersDropdown, setShowManagersDropdown] = useState(false);
+  const [savedManagers, setSavedManagers] = useState([]);
+  const [loadingManagers, setLoadingManagers] = useState(false);
+  const [shareCode, setShareCode] = useState(null);
+  const [loadingCodes, setLoadingCodes] = useState(false);
+  const [showAccessCode, setShowAccessCode] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const boardId = location.pathname.startsWith('/board/') 
     ? location.pathname.split('/board/')[1] 
+    : location.pathname.startsWith('/board-gerencial/')
+    ? location.pathname.split('/board-gerencial/')[1]
     : null;
 
   const handleBackToHome = () => {
@@ -47,8 +62,97 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
   useEffect(() => {
     if (isOpen) {
       loadProjects();
+      if (boardId && !location.pathname.startsWith('/board-gerencial/')) {
+        loadProjectType();
+        // Não carregar gestores automaticamente, apenas quando o dropdown for aberto
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, boardId]);
+
+  const loadSavedManagers = async () => {
+    if (!boardId) return;
+    
+    setLoadingManagers(true);
+    try {
+      // Buscar gestores diretamente do banco de dados
+      const backendManagers = await getManagersForPersonalProject(boardId);
+      
+      // Formatar para o formato esperado pelo componente (sem código por segurança)
+      const formattedManagers = backendManagers.map(manager => ({
+        id: manager.encrypted_id, // Usar encrypted_id como ID único
+        name: manager.name,
+        encryptedLink: manager.encrypted_id
+      }));
+      
+      setSavedManagers(formattedManagers);
+    } catch (error) {
+      console.error('Erro ao buscar gestores do backend:', error);
+      setSavedManagers([]);
+      // Não mostrar toast de erro aqui para não poluir a interface
+      // O erro já será logado no console
+    } finally {
+      setLoadingManagers(false);
+    }
+  };
+
+  const loadProjectType = async () => {
+    if (!boardId) return;
+    try {
+      const projectData = await getProject(boardId);
+      setProjectType(projectData.type || 'personal');
+    } catch (error) {
+      console.error('Erro ao buscar tipo do projeto:', error);
+    }
+  };
+
+  const handleLinkManager = async (e) => {
+    e.preventDefault();
+    if (!managerCode.trim() || !boardId) return;
+
+    setIsLinking(true);
+    try {
+      // boardId é o encrypted_id do projeto pessoal atual
+      // managerCode é o código de compartilhamento do projeto gerencial
+      await linkProjectToManager(boardId, managerCode.trim());
+      
+      setShowLinkManagerModal(false);
+      setManagerCode('');
+      // Recarregar lista de gestores diretamente do banco de dados
+      await loadSavedManagers();
+      // Disparar evento para atualizar board-gerencial
+      window.dispatchEvent(new CustomEvent('manager-link-changed'));
+      if (showToast) {
+        showToast('Gestor vinculado com sucesso!', 'success');
+      }
+    } catch (error) {
+      if (showToast) {
+        showToast('Erro ao vincular gestor: ' + error.message, 'error');
+      }
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const handleDeleteManager = async (e, manager) => {
+    e.stopPropagation();
+    if (!boardId || !manager.encryptedLink) return;
+    
+    try {
+      await unlinkManagerFromPersonalProject(boardId, manager.encryptedLink);
+      // Recarregar lista do banco de dados
+      await loadSavedManagers();
+      // Disparar evento para atualizar board-gerencial
+      window.dispatchEvent(new CustomEvent('manager-link-changed'));
+      if (showToast) {
+        showToast('Gestor removido com sucesso', 'success');
+      }
+    } catch (error) {
+      console.error('Erro ao remover gestor:', error);
+      if (showToast) {
+        showToast('Erro ao remover gestor: ' + error.message, 'error');
+      }
+    }
+  };
 
   const loadAccessCode = async () => {
     if (!boardId) return;
@@ -63,6 +167,41 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
     }
   };
 
+  const handleShowAccess = async () => {
+    setShowAccessModal(true);
+    setLoadingCodes(true);
+    setShowAccessCode(false);
+    
+    try {
+      const projectData = await getProject(boardId);
+      setAccessCode(projectData.accessCode);
+    } catch (error) {
+      console.error('Erro ao buscar código de acesso:', error);
+      if (showToast) {
+        showToast('Erro ao buscar código de acesso', 'error');
+      }
+    } finally {
+      setLoadingCodes(false);
+    }
+  };
+
+  const handleShowShareCode = async () => {
+    setShowShareCodeModal(true);
+    setLoadingCodes(true);
+    
+    try {
+      const projectData = await getProject(boardId);
+      setShareCode(projectData.shareCode);
+    } catch (error) {
+      console.error('Erro ao buscar código de compartilhamento:', error);
+      if (showToast) {
+        showToast('Erro ao buscar código de compartilhamento', 'error');
+      }
+    } finally {
+      setLoadingCodes(false);
+    }
+  };
+
   const handleShare = async () => {
     setShowShareModal(true);
     setLoadingAccessCode(true);
@@ -74,6 +213,42 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       console.error('Erro ao buscar código de acesso:', error);
     } finally {
       setLoadingAccessCode(false);
+    }
+  };
+
+  const handleCopyAccessCode = async () => {
+    if (accessCode) {
+      try {
+        await navigator.clipboard.writeText(accessCode);
+        setCopiedCode(true);
+        if (showToast) {
+          showToast('Código de acesso copiado!', 'success');
+        }
+        setTimeout(() => setCopiedCode(false), 2000);
+      } catch (error) {
+        console.error('Erro ao copiar código:', error);
+        if (showToast) {
+          showToast('Erro ao copiar código', 'error');
+        }
+      }
+    }
+  };
+
+  const handleCopyShareCode = async () => {
+    if (shareCode) {
+      try {
+        await navigator.clipboard.writeText(shareCode);
+        setCopiedCode(true);
+        if (showToast) {
+          showToast('Código de compartilhamento copiado!', 'success');
+        }
+        setTimeout(() => setCopiedCode(false), 2000);
+      } catch (error) {
+        console.error('Erro ao copiar código:', error);
+        if (showToast) {
+          showToast('Erro ao copiar código', 'error');
+        }
+      }
     }
   };
 
@@ -222,16 +397,23 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         // Continua mesmo se falhar o salvamento
       }
       
-      // Pré-carregar dados do board
-      try {
-        const boardData = await getBoard(result.encryptedLink);
-        sessionStorage.setItem(`board_preload_${result.encryptedLink}`, JSON.stringify(boardData));
-      } catch (boardError) {
-        console.error('Erro ao pré-carregar board:', boardError);
+      // Pré-carregar dados do board (apenas para projetos pessoais)
+      if (result.type !== 'managerial') {
+        try {
+          const boardData = await getBoard(result.encryptedLink);
+          sessionStorage.setItem(`board_preload_${result.encryptedLink}`, JSON.stringify(boardData));
+        } catch (boardError) {
+          console.error('Erro ao pré-carregar board:', boardError);
+        }
       }
       
-      // Navegar para o board
-      navigate(`/board/${result.encryptedLink}`);
+      // Verificar o tipo do projeto e navegar para a rota correta
+      const projectType = result.type || 'personal'
+      const route = projectType === 'managerial' 
+        ? `/board-gerencial/${result.encryptedLink}`
+        : `/board/${result.encryptedLink}`
+      
+      navigate(route);
       onClose();
       
       if (onLoadProject) {
@@ -366,31 +548,186 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
             <div className="saved-projects-theme">
               <ThemeToggle />
             </div>
-            {boardId && (
-              <button
-                className="saved-projects-copy-button"
-                onClick={handleShare}
-                title="Compartilhar projeto"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
+            {boardId && location.pathname.startsWith('/board-gerencial/') && (
+              <>
+                <button
+                  className="saved-projects-copy-button"
+                  onClick={handleShowAccess}
+                  title="Código de acesso"
                 >
-                  <circle cx="18" cy="5" r="3"></circle>
-                  <circle cx="6" cy="12" r="3"></circle>
-                  <circle cx="18" cy="19" r="3"></circle>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                </svg>
-                Compartilhar
-              </button>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  Código de Acesso
+                </button>
+                <button
+                  className="saved-projects-copy-button"
+                  onClick={handleShowShareCode}
+                  title="Código de compartilhamento"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  Compartilhar
+                </button>
+              </>
+            )}
+            {boardId && !location.pathname.startsWith('/board-gerencial/') && (
+              <>
+                <button
+                  className="saved-projects-copy-button"
+                  onClick={handleShare}
+                  title="Compartilhar projeto"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  Compartilhar
+                </button>
+                <div className="saved-projects-managers-section">
+                  <button
+                    className="saved-projects-link-manager-button"
+                    onClick={() => {
+                      const newState = !showManagersDropdown;
+                      setShowManagersDropdown(newState);
+                      // Carregar gestores quando abrir o dropdown
+                      if (newState && boardId) {
+                        loadSavedManagers();
+                      }
+                    }}
+                    title="Gestores vinculados"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Gestores Vinculados
+                    <svg 
+                      className={`saved-projects-dropdown-icon ${showManagersDropdown ? 'saved-projects-dropdown-icon-expanded' : ''}`}
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2"
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  
+                  {showManagersDropdown && (
+                    <div className="saved-projects-managers-dropdown">
+                      <button
+                        className="saved-projects-add-manager-button"
+                        onClick={() => setShowLinkManagerModal(true)}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Adicionar Gestor
+                      </button>
+                      
+                      {loadingManagers ? (
+                        <div className="saved-projects-managers-empty">
+                          <p>Carregando gestores...</p>
+                        </div>
+                      ) : savedManagers.length > 0 ? (
+                        <div className="saved-projects-managers-list">
+                          {savedManagers.map((manager) => (
+                            <div
+                              key={manager.id}
+                              className="saved-project-item saved-project-item-manager"
+                            >
+                              <div className="saved-project-content">
+                                <div className="saved-project-icon">
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                  </svg>
+                                </div>
+                                <div className="saved-project-info">
+                                  <p className="saved-project-name">{manager.name}</p>
+                                  <p className="saved-project-manager-label">Gestor vinculado</p>
+                                </div>
+                              </div>
+                              <div className="saved-project-actions">
+                                <button
+                                  className="saved-project-delete-btn"
+                                  onClick={(e) => handleDeleteManager(e, manager)}
+                                  title="Remover gestor"
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="saved-projects-managers-empty">
+                          <p>Nenhum gestor vinculado ainda.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
             <button
               className="saved-projects-back-button"
@@ -680,6 +1017,241 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
               <p className="share-modal-hint">
                 Compartilhe este código para que outras pessoas possam acessar o projeto
               </p>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {showLinkManagerModal && createPortal(
+        <div className="share-modal-overlay" onClick={() => setShowLinkManagerModal(false)}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h2>Vincular Gestor</h2>
+              <button className="share-modal-close" onClick={() => setShowLinkManagerModal(false)}>
+                ×
+              </button>
+            </div>
+            <form className="share-modal-content" onSubmit={handleLinkManager}>
+              <p className="share-modal-label">Código de Compartilhamento do Gestor:</p>
+              <input
+                type="text"
+                className="share-modal-input"
+                value={managerCode}
+                onChange={(e) => setManagerCode(e.target.value.toUpperCase().slice(0, 6))}
+                placeholder="Digite o código de compartilhamento"
+                maxLength={6}
+                required
+                disabled={isLinking}
+              />
+              <p className="share-modal-hint">
+                Digite o código de compartilhamento fornecido pelo gestor para vincular este projeto pessoal.
+              </p>
+              <div className="share-modal-actions">
+                <button
+                  type="button"
+                  className="share-modal-button-cancel"
+                  onClick={() => setShowLinkManagerModal(false)}
+                  disabled={isLinking}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="share-modal-button-submit"
+                  disabled={!managerCode.trim() || isLinking}
+                >
+                  {isLinking ? 'Vinculando...' : 'Vincular'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* Modal de Código de Acesso (apenas para projetos gerenciais) */}
+      {boardId && location.pathname.startsWith('/board-gerencial/') && showAccessModal && createPortal(
+        <div className="share-modal-overlay" onClick={() => {
+          setShowAccessModal(false);
+          setAccessCode(null);
+          setShowAccessCode(false);
+          setCopiedCode(false);
+        }}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h2>Código de Acesso</h2>
+              <button className="share-modal-close" onClick={() => {
+                setShowAccessModal(false);
+                setAccessCode(null);
+                setShowAccessCode(false);
+                setCopiedCode(false);
+              }}>
+                ×
+              </button>
+            </div>
+            <div className="share-modal-content">
+              <p className="share-modal-label">Código de Acesso:</p>
+              {loadingCodes ? (
+                <div className="share-modal-loading">Carregando...</div>
+              ) : accessCode ? (
+                <div className="share-modal-code-container">
+                  <div className="share-modal-code-with-eye">
+                    <span className="share-modal-code-masked">
+                      {showAccessCode ? accessCode : '******'}
+                    </span>
+                    <button
+                      className="share-modal-eye-button"
+                      onClick={() => setShowAccessCode(!showAccessCode)}
+                      title={showAccessCode ? 'Ocultar código' : 'Mostrar código'}
+                    >
+                      {showAccessCode ? (
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="20" 
+                          height="20" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        >
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                          <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                      ) : (
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="20" 
+                          height="20" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        >
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  <button
+                    className="share-modal-copy-button"
+                    onClick={handleCopyAccessCode}
+                    title="Copiar código"
+                  >
+                    {copiedCode ? (
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="20" 
+                        height="20" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 6L9 17l-5-5"></path>
+                      </svg>
+                    ) : (
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="20" 
+                        height="20" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                        <path d="M4 16c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2"></path>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="share-modal-error">Erro ao carregar código</div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* Modal de Código de Compartilhamento (apenas para projetos gerenciais) */}
+      {boardId && location.pathname.startsWith('/board-gerencial/') && showShareCodeModal && createPortal(
+        <div className="share-modal-overlay" onClick={() => {
+          setShowShareCodeModal(false);
+          setShareCode(null);
+          setCopiedCode(false);
+        }}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h2>Código de Compartilhamento</h2>
+              <button className="share-modal-close" onClick={() => {
+                setShowShareCodeModal(false);
+                setShareCode(null);
+                setCopiedCode(false);
+              }}>
+                ×
+              </button>
+            </div>
+            <div className="share-modal-content">
+              <p className="share-modal-label">Código de Compartilhamento:</p>
+              {loadingCodes ? (
+                <div className="share-modal-loading">Carregando...</div>
+              ) : shareCode ? (
+                <div className="share-modal-code-container">
+                  <button
+                    className="share-modal-code"
+                    onClick={handleCopyShareCode}
+                    title="Copiar código"
+                  >
+                    {shareCode}
+                  </button>
+                  <button
+                    className="share-modal-copy-button"
+                    onClick={handleCopyShareCode}
+                    title="Copiar código"
+                  >
+                    {copiedCode ? (
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="20" 
+                        height="20" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 6L9 17l-5-5"></path>
+                      </svg>
+                    ) : (
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="20" 
+                        height="20" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                        <path d="M4 16c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2"></path>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="share-modal-error">Erro ao carregar código</div>
+              )}
             </div>
           </div>
         </div>,

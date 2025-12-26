@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar/Navbar'
 import BoardPreview from '../components/BoardPreview/BoardPreview'
 import Loading from '../components/Loading/Loading'
 import GitHubCommits from '../components/GitHubCommits/GitHubCommits'
 import ScrollVelocity from '../components/ScrollVelocity/ScrollVelocity'
 import ToastContainer from '../components/Toast/ToastContainer'
+import ModalCreateProject from '../components/ModalCreateProject/ModalCreateProject'
 import { useToast } from '../hooks/useToast'
 import { createProject } from '../services/api'
 import { saveProject } from '../utils/savedProjects'
@@ -14,9 +15,11 @@ import './Home.css'
 
 function Home() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { showToast, hideToast, toasts } = useToast()
   const [isCreating, setIsCreating] = useState(false)
   const [projectResult, setProjectResult] = useState(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const notificationsShownRef = useRef(false)
 
   const scrollToBoardPreview = useCallback(() => {
@@ -30,7 +33,14 @@ function Home() {
     document.title = '@kardiosoftware'
     // Scroll para o topo ao carregar a página
     window.scrollTo(0, 0)
-  }, [])
+    
+    // Verificar se deve abrir o modal de criação
+    if (searchParams.get('create') === 'true') {
+      setShowCreateModal(true)
+      // Remover o query param da URL
+      setSearchParams({})
+    }
+  }, [searchParams, setSearchParams])
 
   useEffect(() => {
     // Mostrar notificações apenas uma vez
@@ -77,7 +87,11 @@ function Home() {
   useEffect(() => {
     if (isCreating && projectResult) {
       const timer = setTimeout(() => {
-        navigate(`/board/${projectResult.encryptedLink}`)
+        if (projectResult.type === 'managerial') {
+          navigate(`/board-gerencial/${projectResult.encryptedLink}`)
+        } else {
+          navigate(`/board/${projectResult.encryptedLink}`)
+        }
         setIsCreating(false)
         setProjectResult(null)
       }, 5000)
@@ -86,22 +100,26 @@ function Home() {
     }
   }, [isCreating, projectResult, navigate])
 
-  const handleCreateBoard = async () => {
+  const handleCreateBoard = () => {
+    setShowCreateModal(true)
+  }
+
+  const handleCreateProjectConfirm = async (projectData) => {
+    setShowCreateModal(false)
     setIsCreating(true)
     try {
-      const result = await createProject('Novo Projeto')
+      const result = await createProject(projectData.name, projectData.type)
       setProjectResult(result)
       
-      // Salvar automaticamente no localStorage
+      // Salvar automaticamente no localStorage para projetos pessoais e gerenciais
       try {
         saveProject({
-          name: 'Novo Projeto',
+          name: projectData.name,
           code: result.accessCode,
           encryptedLink: result.encryptedLink
         })
       } catch (saveError) {
         console.error('Erro ao salvar projeto automaticamente:', saveError)
-        // Continua mesmo se falhar o salvamento
       }
     } catch (error) {
       console.error('Erro ao criar projeto:', error)
@@ -109,6 +127,10 @@ function Home() {
       setIsCreating(false)
       setProjectResult(null)
     }
+  }
+
+  const handleCreateProjectCancel = () => {
+    setShowCreateModal(false)
   }
 
   return (
@@ -347,6 +369,12 @@ function Home() {
         </footer>
       </div>
       <ToastContainer toasts={toasts} onClose={hideToast} />
+      {showCreateModal && (
+        <ModalCreateProject
+          onConfirm={handleCreateProjectConfirm}
+          onCancel={handleCreateProjectCancel}
+        />
+      )}
     </>
   )
 }

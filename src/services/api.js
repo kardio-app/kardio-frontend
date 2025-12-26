@@ -65,7 +65,7 @@ async function handleResponseError(response) {
 }
 
 // Criar novo projeto
-export async function createProject(name) {
+export async function createProject(name, type = 'personal') {
   try {
     const url = `${API_URL}/projects/create`
     
@@ -74,7 +74,7 @@ export async function createProject(name) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, type }),
     })
 
     if (!response.ok) {
@@ -82,7 +82,8 @@ export async function createProject(name) {
       throw new Error(errorMessage)
     }
 
-    return await response.json()
+    const result = await response.json()
+    return { ...result, type }
   } catch (error) {
     console.error('Erro na API createProject:', error)
     if (error.message.includes('Failed to fetch') || error.message.includes('404')) {
@@ -322,7 +323,8 @@ export async function updateCard(encryptedId, cardId, data) {
       description: result.description,
       assignee: result.assignee,
       position: result.position,
-      columnId: result.columnId || result.column_id
+      columnId: result.columnId || result.column_id,
+      is_completed: result.is_completed || false
     }
   } catch (error) {
     console.error('Erro na API updateCard:', error)
@@ -370,4 +372,262 @@ export async function deleteCard(encryptedId, cardId) {
   }
 
   return response.json()
+}
+
+// ============================================
+// Funções de API para Legendas
+// ============================================
+
+// Listar todas as legendas do projeto
+export async function getLabels(encryptedId) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/labels`, {
+      method: 'GET',
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API getLabels:', error)
+    throw error
+  }
+}
+
+// Criar legenda
+export async function createLabel(encryptedId, data) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/labels`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API createLabel:', error)
+    throw error
+  }
+}
+
+// Atualizar legenda
+export async function updateLabel(encryptedId, labelId, data) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/labels/${labelId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API updateLabel:', error)
+    throw error
+  }
+}
+
+// Deletar legenda
+export async function deleteLabel(encryptedId, labelId) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/labels/${labelId}`, {
+      method: 'DELETE',
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API deleteLabel:', error)
+    throw error
+  }
+}
+
+// ============================================
+// Funções de API para Comentários
+// ============================================
+
+// Listar comentários de um card
+export async function getComments(encryptedId, cardId) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/cards/${cardId}/comments`, {
+      method: 'GET',
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API getComments:', error)
+    throw error
+  }
+}
+
+// Criar comentário
+export async function createComment(encryptedId, cardId, data) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/cards/${cardId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API createComment:', error)
+    throw error
+  }
+}
+
+// Atualizar comentário
+export async function updateComment(encryptedId, commentId, data) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/comments/${commentId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API updateComment:', error)
+    throw error
+  }
+}
+
+// Deletar comentário
+export async function deleteComment(encryptedId, commentId) {
+  try {
+    const response = await fetch(`${API_URL}/boards/${encryptedId}/comments/${commentId}`, {
+      method: 'DELETE',
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API deleteComment:', error)
+    throw error
+  }
+}
+
+// ============================================
+// Funções de API para Projetos Gerenciais
+// ============================================
+
+// Vincular projeto pessoal a um projeto gerencial
+// personalEncryptedId: encrypted_id do projeto pessoal atual
+// managerialCode: código de acesso do projeto gerencial (gestor)
+export async function linkProjectToManager(personalEncryptedId, managerialCode) {
+  try {
+    const response = await fetch(`${API_URL}/projects/managerial/${managerialCode}/link`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ personalEncryptedId }),
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API linkProjectToManager:', error)
+    throw error
+  }
+}
+
+// Obter projetos vinculados a um projeto gerencial
+export async function getLinkedProjects(managerialEncryptedId) {
+  try {
+    const response = await fetch(`${API_URL}/projects/managerial/${managerialEncryptedId}/linked`)
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API getLinkedProjects:', error)
+    throw error
+  }
+}
+
+// Obter gestores vinculados a um projeto pessoal (relação inversa)
+export async function getManagersForPersonalProject(personalEncryptedId) {
+  try {
+    const response = await fetch(`${API_URL}/projects/personal/${personalEncryptedId}/managers`)
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API getManagersForPersonalProject:', error)
+    throw error
+  }
+}
+
+// Desvincular gestor de um projeto pessoal
+export async function unlinkManagerFromPersonalProject(personalEncryptedId, managerialEncryptedId) {
+  try {
+    const response = await fetch(`${API_URL}/projects/personal/${personalEncryptedId}/managers/${managerialEncryptedId}`, {
+      method: 'DELETE'
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API unlinkManagerFromPersonalProject:', error)
+    throw error
+  }
 }

@@ -1,22 +1,24 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import useBoardStore from '../store/useBoardStore'
 import Navbar from '../components/Navbar/Navbar'
 import Header from '../components/Header/Header'
 import BoardComponent from '../components/Board/Board'
-import { getBoard } from '../services/api'
+import { getBoard, getProject } from '../services/api'
 import { useToast } from '../hooks/useToast'
 import ToastContainer from '../components/Toast/ToastContainer'
 import './Board.css'
 
 function Board() {
   const { boardId } = useParams() // boardId agora é o encryptedId
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const updateBoard = useBoardStore((state) => state.updateBoard)
   const [boardData, setBoardData] = useState(null)
   const { showToast, hideToast, toasts } = useToast()
   const boardDataRef = useRef(null)
+  const [projectTypeValidated, setProjectTypeValidated] = useState(false)
 
   useEffect(() => {
     // Scroll para o topo ao carregar a página
@@ -44,7 +46,48 @@ function Board() {
     }
   }, [boardId])
 
+  // Validar tipo do projeto antes de carregar o board
   useEffect(() => {
+    let isMounted = true
+
+    const validateProjectType = async () => {
+      try {
+        const projectData = await getProject(boardId)
+        const projectType = projectData.type || 'personal'
+        
+        if (projectType === 'managerial') {
+          // Se for gerencial, redirecionar para a página correta
+          showToast('Este projeto é gerencial. Redirecionando...', 'warning')
+          setTimeout(() => {
+            navigate(`/board-gerencial/${boardId}`)
+          }, 1000)
+          return
+        }
+        
+        // Se for pessoal, continuar normalmente
+        if (isMounted) {
+          setProjectTypeValidated(true)
+        }
+      } catch (err) {
+        console.error('Erro ao validar tipo do projeto:', err)
+        // Em caso de erro, continuar mesmo assim (pode ser um projeto antigo sem tipo)
+        if (isMounted) {
+          setProjectTypeValidated(true)
+        }
+      }
+    }
+
+    validateProjectType()
+
+    return () => {
+      isMounted = false
+    }
+  }, [boardId, navigate, showToast])
+
+  useEffect(() => {
+    // Não carregar o board até validar o tipo do projeto
+    if (!projectTypeValidated) return
+
     let isMounted = true
     let pollInterval = null
     let consecutiveErrors = 0
@@ -89,6 +132,10 @@ function Board() {
           if (oldCard.description !== newCard.description) return true
           if (oldCard.assignee !== newCard.assignee) return true
           if (oldCard.position !== newCard.position) return true
+          // Comparar label_ids
+          const oldLabelIds = JSON.stringify((oldCard.label_ids || []).sort())
+          const newLabelIds = JSON.stringify((newCard.label_ids || []).sort())
+          if (oldLabelIds !== newLabelIds) return true
         }
       }
       
@@ -140,7 +187,8 @@ function Board() {
           updateBoard(boardId, {
             id: boardDataToUse.id,
             name: boardDataToUse.name,
-            columns: boardDataToUse.columns || []
+            columns: boardDataToUse.columns || [],
+            labels: boardDataToUse.labels || []
           })
           
           setBoardData(boardDataToUse)
@@ -254,7 +302,7 @@ function Board() {
         clearInterval(pollInterval)
       }
     }
-  }, [boardId, updateBoard])
+  }, [boardId, updateBoard, projectTypeValidated])
 
   if (loading) {
     return (

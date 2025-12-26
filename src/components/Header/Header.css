@@ -167,6 +167,47 @@
   margin-bottom: 1rem;
 }
 
+.share-modal-code-with-eye {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  background-color: var(--bg-gray);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.share-modal-code-masked {
+  flex: 1;
+  color: var(--text-white);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.1em;
+  text-align: center;
+  user-select: none;
+}
+
+.share-modal-eye-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.share-modal-eye-button:hover {
+  color: var(--text-white);
+  background-color: var(--bg-gray-light);
+}
+
 .share-modal-code {
   flex: 1;
   padding: 0.875rem 1rem;
@@ -245,6 +286,78 @@
   font-size: 0.75rem;
   margin: 0;
   line-height: 1.5;
+}
+
+.share-modal-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background-color: var(--bg-gray-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-white);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: var(--transition);
+  margin-bottom: 1rem;
+}
+
+.share-modal-input:focus {
+  outline: none;
+  background-color: var(--bg-gray-hover);
+  border-color: var(--text-gray);
+}
+
+.share-modal-input::placeholder {
+  color: var(--text-gray);
+  opacity: 0.6;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.share-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.share-modal-button-cancel,
+.share-modal-button-submit {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.share-modal-button-cancel {
+  background-color: transparent;
+  color: var(--text-gray);
+}
+
+.share-modal-button-cancel:hover:not(:disabled) {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+.share-modal-button-submit {
+  background-color: var(--button-bg);
+  color: var(--text-white);
+}
+
+.share-modal-button-submit:hover:not(:disabled) {
+  background-color: var(--button-hover);
+}
+
+.share-modal-button-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @keyframes fadeIn {

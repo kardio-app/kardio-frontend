@@ -32,8 +32,9 @@ function Navbar() {
   const lastScrollY = useRef(0)
 
   const isHome = location.pathname === '/home'
-  const isBoard = location.pathname.startsWith('/board/')
-  const boardId = isBoard ? location.pathname.split('/board/')[1] : null
+  const isBoard = location.pathname.startsWith('/board/') && !location.pathname.startsWith('/board-gerencial/')
+  const isBoardGerencial = location.pathname.startsWith('/board-gerencial/')
+  const boardId = isBoard ? location.pathname.split('/board/')[1] : isBoardGerencial ? location.pathname.split('/board-gerencial/')[1] : null
 
   // Estado da sidebar persistido no localStorage
   const getInitialSidebarState = () => {
@@ -130,28 +131,15 @@ function Navbar() {
     }
   }, [isCreating, projectResult, navigate])
 
-  const handleStartProject = async () => {
-    setIsCreating(true)
-    try {
-      const result = await createProject('Novo Projeto')
-      setProjectResult(result)
-      
-      // Salvar automaticamente no localStorage
-      try {
-        saveProject({
-          name: 'Novo Projeto',
-          code: result.accessCode,
-          encryptedLink: result.encryptedLink
-        })
-      } catch (saveError) {
-        console.error('Erro ao salvar projeto automaticamente:', saveError)
-        // Continua mesmo se falhar o salvamento
-      }
-    } catch (error) {
-      console.error('Erro ao criar projeto:', error)
-      alert('Erro ao criar projeto. Tente novamente.')
-      setIsCreating(false)
-      setProjectResult(null)
+  const handleStartProject = () => {
+    if (isHome) {
+      // Se já estiver na home, abrir o modal diretamente
+      // Precisamos passar uma função ou usar um contexto
+      // Por enquanto, vamos usar query params
+      navigate('/home?create=true')
+    } else {
+      // Redirecionar para /home com query param para abrir o modal
+      navigate('/home?create=true')
     }
   }
 
@@ -280,8 +268,8 @@ function Navbar() {
     }
   }, [showSavedProjects, isBoard])
 
-  // Navbar simplificada para /board
-  if (isBoard) {
+  // Navbar simplificada para /board e /board-gerencial
+  if (isBoard || isBoardGerencial) {
     return (
       <>
         {isCreating && <Loading />}
@@ -292,7 +280,7 @@ function Navbar() {
               <Breadcrumb
                 items={[
                   { label: 'Home', href: '/home' },
-                  { label: 'Board' }
+                  { label: isBoardGerencial ? 'Board Gerencial' : 'Board' }
                 ]}
                 onNavigate={handleExitClick}
               />

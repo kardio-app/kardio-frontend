@@ -145,13 +145,18 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
       const result = await accessProject(project.code);
       setProjectResult(result);
       
-      // Pré-carregar dados do board durante o loading
-      try {
-        const boardData = await getBoard(result.encryptedLink);
-        setBoardData(boardData);
-      } catch (boardError) {
-        console.error('Erro ao pré-carregar board:', boardError);
-        // Continua mesmo se falhar o pré-carregamento
+      // Pré-carregar dados do board durante o loading (apenas para projetos pessoais)
+      if (result.type !== 'managerial') {
+        try {
+          const boardData = await getBoard(result.encryptedLink);
+          setBoardData(boardData);
+        } catch (boardError) {
+          console.error('Erro ao pré-carregar board:', boardError);
+          // Continua mesmo se falhar o pré-carregamento
+        }
+      } else {
+        // Para projetos gerenciais, definir boardData como vazio para permitir navegação
+        setBoardData({});
       }
     } catch (error) {
       console.error('Erro ao carregar projeto:', error);
@@ -163,12 +168,20 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
   };
 
   useEffect(() => {
-    if (isLoading && projectResult && boardData) {
-      // Armazenar dados pré-carregados no sessionStorage
-      sessionStorage.setItem(`board_preload_${projectResult.encryptedLink}`, JSON.stringify(boardData));
+    if (isLoading && projectResult && boardData !== undefined) {
+      // Armazenar dados pré-carregados no sessionStorage (apenas se houver dados)
+      if (boardData && Object.keys(boardData).length > 0) {
+        sessionStorage.setItem(`board_preload_${projectResult.encryptedLink}`, JSON.stringify(boardData));
+      }
       
       const timer = setTimeout(() => {
-        navigate(`/board/${projectResult.encryptedLink}`);
+        // Verificar o tipo do projeto e redirecionar corretamente
+        const projectType = projectResult.type || 'personal'
+        const route = projectType === 'managerial' 
+          ? `/board-gerencial/${projectResult.encryptedLink}`
+          : `/board/${projectResult.encryptedLink}`
+        
+        navigate(route);
         setIsLoading(false);
         setProjectResult(null);
         setBoardData(null);

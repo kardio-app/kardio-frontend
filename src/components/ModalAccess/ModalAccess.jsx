@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import Loading from '../Loading/Loading'
-import { accessProject, getBoard } from '../../services/api'
+import { accessProject, getBoard, getProject } from '../../services/api'
 import { saveProject } from '../../utils/savedProjects'
 import './ModalAccess.css'
 
@@ -15,12 +15,22 @@ function ModalAccess({ onClose }) {
   const [boardData, setBoardData] = useState(null)
 
   useEffect(() => {
-    if (isLoading && projectResult && boardData) {
-      // Armazenar dados pré-carregados no sessionStorage
-      sessionStorage.setItem(`board_preload_${projectResult.encryptedLink}`, JSON.stringify(boardData))
+    // Para projetos gerenciais, boardData será um objeto vazio {}
+    // Para projetos pessoais, boardData será o objeto do board
+    if (isLoading && projectResult && boardData !== undefined) {
+      // Armazenar dados pré-carregados no sessionStorage (apenas se houver dados)
+      if (boardData && Object.keys(boardData).length > 0) {
+        sessionStorage.setItem(`board_preload_${projectResult.encryptedLink}`, JSON.stringify(boardData))
+      }
       
       const timer = setTimeout(() => {
-        navigate(`/board/${projectResult.encryptedLink}`)
+        // Verificar o tipo do projeto e redirecionar corretamente
+        const projectType = projectResult.type || 'personal'
+        const route = projectType === 'managerial' 
+          ? `/board-gerencial/${projectResult.encryptedLink}`
+          : `/board/${projectResult.encryptedLink}`
+        
+        navigate(route)
         setIsLoading(false)
         setProjectResult(null)
         setBoardData(null)
@@ -58,13 +68,19 @@ function ModalAccess({ onClose }) {
         // Continua mesmo se falhar o salvamento
       }
       
-      // Pré-carregar dados do board durante o loading
-      try {
-        const boardData = await getBoard(result.encryptedLink)
-        setBoardData(boardData)
-      } catch (boardError) {
-        console.error('Erro ao pré-carregar board:', boardError)
-        // Continua mesmo se falhar o pré-carregamento
+      // Pré-carregar dados do board durante o loading (apenas para projetos pessoais)
+      // Projetos gerenciais não têm board, então não precisa pré-carregar
+      if (result.type !== 'managerial') {
+        try {
+          const boardData = await getBoard(result.encryptedLink)
+          setBoardData(boardData)
+        } catch (boardError) {
+          console.error('Erro ao pré-carregar board:', boardError)
+          // Continua mesmo se falhar o pré-carregamento
+        }
+      } else {
+        // Para projetos gerenciais, definir boardData como vazio para permitir navegação
+        setBoardData({})
       }
     } catch (error) {
       setError(error.message || 'Código inválido')

@@ -28,12 +28,14 @@ function Board({ boardId, showToast }) {
 
   const handleAddColumn = async () => {
     if (newColumnTitle.trim()) {
+      const columnTitle = newColumnTitle.trim()
+      // Fechar formulário imediatamente (atualização otimista já mostra a coluna)
+      setNewColumnTitle('')
+      setShowAddColumn(false)
       try {
-        await addColumn(boardId, { title: newColumnTitle.trim() })
-        setNewColumnTitle('')
-        setShowAddColumn(false)
+        await addColumn(boardId, { title: columnTitle })
         if (showToast) {
-          showToast(`Coluna "${newColumnTitle.trim()}" criada`, 'success')
+          showToast(`Coluna "${columnTitle}" criada`, 'success')
         }
       } catch (error) {
         console.error('Erro ao criar coluna:', error)

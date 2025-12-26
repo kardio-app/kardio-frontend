@@ -125,6 +125,133 @@
   flex-shrink: 0;
 }
 
+.saved-projects-link-manager-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.saved-projects-link-manager-button:hover:not(:disabled) {
+  color: var(--text-white);
+}
+
+.saved-projects-link-manager-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--text-white);
+  transition: var(--transition);
+}
+
+.saved-projects-link-manager-button:hover:not(:disabled)::after {
+  width: 100%;
+}
+
+.saved-projects-link-manager-button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.saved-projects-dropdown-icon {
+  margin-left: auto;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.saved-projects-dropdown-icon-expanded {
+  transform: rotate(180deg);
+}
+
+.saved-projects-managers-section {
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.saved-projects-managers-dropdown {
+  margin-top: 0.5rem;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 10;
+  opacity: 1;
+  visibility: visible;
+}
+
+.saved-projects-add-manager-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--bg-gray-light);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-gray);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+  justify-content: center;
+}
+
+.saved-projects-add-manager-button:hover {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--text-gray);
+  border-style: solid;
+  color: var(--text-white);
+}
+
+.saved-projects-managers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.saved-projects-managers-empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-gray);
+  font-size: 0.875rem;
+}
+
+.saved-project-item-manager {
+  cursor: default;
+  /* Herda todos os estilos do .saved-project-item */
+}
+
+.saved-project-item-manager:hover {
+  /* Mantém o hover, mas sem transformação já que não é clicável */
+  transform: none;
+}
+
+.saved-project-manager-label {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  margin-top: 0.25rem;
+}
+
 .saved-projects-back-button {
   display: inline-flex;
   align-items: center;

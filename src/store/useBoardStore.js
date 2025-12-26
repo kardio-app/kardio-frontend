@@ -5,7 +5,8 @@ import * as api from '../services/api'
 const getDefaultBoard = (boardId) => ({
   id: boardId,
   name: 'Novo Projeto',
-  columns: []
+  columns: [],
+  labels: []
 })
 
 const useBoardStore = create(
@@ -56,15 +57,58 @@ const useBoardStore = create(
       },
 
       addCard: async (boardId, columnId, card) => {
+        const state = get()
+        const board = state.boards[boardId] || getDefaultBoard(boardId)
+        
+        // Salvar estado anterior para rollback em caso de erro
+        const previousBoardState = JSON.parse(JSON.stringify(board))
+        
+        // Criar card temporário com ID temporário
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        const tempCard = {
+          id: tempId,
+          title: card.title,
+          description: card.description || null,
+          assignee: card.assignee || null,
+          label_ids: card.label_ids || [],
+          position: board.columns.find(col => col.id === columnId)?.cards.length || 0
+        }
+        
+        // OPTIMISTIC UPDATE: Atualizar estado imediatamente
+        set((state) => {
+          const board = state.boards[boardId] || getDefaultBoard(boardId)
+          const columns = board.columns.map(col => {
+            if (col.id === columnId) {
+              return {
+                ...col,
+                cards: [...col.cards, tempCard]
+              }
+            }
+            return col
+          })
+          return {
+            boards: {
+              ...state.boards,
+              [boardId]: {
+                ...board,
+                columns
+              }
+            }
+          }
+        })
+        
+        // Fazer requisição em paralelo (sem bloquear a UI)
         try {
           const newCard = await api.createCard(boardId, columnId, card)
+          
+          // Substituir card temporário pelo card real retornado da API
           set((state) => {
             const board = state.boards[boardId] || getDefaultBoard(boardId)
             const columns = board.columns.map(col => {
               if (col.id === columnId) {
                 return {
                   ...col,
-                  cards: [...col.cards, newCard]
+                  cards: col.cards.map(c => c.id === tempId ? newCard : c)
                 }
               }
               return col
@@ -81,50 +125,126 @@ const useBoardStore = create(
           })
         } catch (error) {
           console.error('Erro ao criar card:', error)
+          // ROLLBACK: Reverter para o estado anterior em caso de erro
+          set((state) => ({
+            boards: {
+              ...state.boards,
+              [boardId]: previousBoardState
+            }
+          }))
           throw error
         }
       },
 
       updateCard: async (boardId, columnId, cardId, updates) => {
-        try {
-          const state = get()
+        const state = get()
+        const board = state.boards[boardId] || getDefaultBoard(boardId)
+        
+        // Salvar estado anterior para rollback em caso de erro
+        const previousBoardState = JSON.parse(JSON.stringify(board))
+        
+        let currentColumnId = columnId
+        
+        // Se o card mudou de coluna, encontrar a coluna atual
+        if (updates.columnId) {
+          currentColumnId = updates.columnId
+          delete updates.columnId
+        }
+
+        // Encontrar o card atual
+        let currentCard = null
+        let cardColumnId = columnId
+        board.columns.forEach(col => {
+          const card = col.cards.find(c => c.id === cardId)
+          if (card) {
+            currentCard = card
+            cardColumnId = col.id
+          }
+        })
+
+        if (!currentCard) {
+          throw new Error('Card não encontrado')
+        }
+
+        // Preparar dados para API (sem columnId se não mudou)
+        const apiUpdates = { ...updates }
+        if (currentColumnId !== columnId) {
+          apiUpdates.columnId = currentColumnId
+        }
+
+        // OPTIMISTIC UPDATE: Atualizar estado imediatamente
+        set((state) => {
           const board = state.boards[boardId] || getDefaultBoard(boardId)
-          let currentColumnId = columnId
           
-          // Se o card mudou de coluna, encontrar a coluna atual
-          if (updates.columnId) {
-            currentColumnId = updates.columnId
-            delete updates.columnId
+          const columns = board.columns.map(col => {
+            // Se mudou de coluna
+            if (currentColumnId !== cardColumnId) {
+              if (col.id === cardColumnId) {
+                // Remover da coluna antiga
+                return {
+                  ...col,
+                  cards: col.cards.filter(card => card.id !== cardId)
+                }
+              }
+              if (col.id === currentColumnId) {
+                // Adicionar na nova coluna com dados atualizados
+                const updatedCard = {
+                  ...currentCard,
+                  ...updates,
+                  id: cardId,
+                  label_ids: updates.label_ids !== undefined ? updates.label_ids : currentCard.label_ids || []
+                }
+                return {
+                  ...col,
+                  cards: [...col.cards, updatedCard]
+                }
+              }
+            } else {
+              // Mesma coluna - atualizar card existente mantendo posição
+              if (col.id === cardColumnId) {
+                return {
+                  ...col,
+                  cards: col.cards.map((card) =>
+                    card.id === cardId 
+                      ? { 
+                          ...card, 
+                          ...updates,
+                          id: cardId,
+                          position: card.position, // Preservar posição
+                          label_ids: updates.label_ids !== undefined ? updates.label_ids : card.label_ids || []
+                        } 
+                      : card
+                  )
+                }
+              }
+            }
+            return col
+          })
+          
+          return {
+            boards: {
+              ...state.boards,
+              [boardId]: {
+                ...board,
+                columns
+              }
+            }
           }
+        })
 
-          // Preparar dados para API (sem columnId se não mudou)
-          const apiUpdates = { ...updates }
-          if (currentColumnId !== columnId) {
-            apiUpdates.columnId = currentColumnId
-          }
-
+        // Fazer requisição em paralelo (sem bloquear a UI)
+        try {
           // Chamar API e obter card atualizado
           const updatedCardData = await api.updateCard(boardId, cardId, apiUpdates)
 
-          // Atualizar estado local com dados retornados da API
+          // Atualizar estado local com dados retornados da API (garantir sincronização)
           set((state) => {
             const board = state.boards[boardId] || getDefaultBoard(boardId)
             
-            // Encontrar o card atual para preservar a posição
-            let currentCard = null
-            let cardIndex = -1
-            board.columns.forEach(col => {
-              const idx = col.cards.findIndex(c => c.id === cardId)
-              if (idx !== -1) {
-                currentCard = col.cards[idx]
-                cardIndex = idx
-              }
-            })
-
             const columns = board.columns.map(col => {
               // Se mudou de coluna
-              if (currentColumnId !== columnId) {
-                if (col.id === columnId) {
+              if (currentColumnId !== cardColumnId) {
+                if (col.id === cardColumnId) {
                   // Remover da coluna antiga
                   return {
                     ...col,
@@ -132,11 +252,11 @@ const useBoardStore = create(
                   }
                 }
                 if (col.id === currentColumnId) {
-                  // Adicionar na nova coluna com dados atualizados, preservando posição se possível
+                  // Adicionar na nova coluna com dados atualizados
                   const newCard = {
                     ...currentCard,
                     ...updatedCardData,
-                    id: cardId // Garantir que o ID seja preservado
+                    id: cardId
                   }
                   return {
                     ...col,
@@ -145,15 +265,15 @@ const useBoardStore = create(
                 }
               } else {
                 // Mesma coluna - atualizar card existente mantendo posição
-                if (col.id === columnId) {
+                if (col.id === cardColumnId) {
                   return {
                     ...col,
-                    cards: col.cards.map((card, idx) =>
+                    cards: col.cards.map((card) =>
                       card.id === cardId 
                         ? { 
                             ...card, 
                             ...updatedCardData,
-                            id: cardId, // Garantir que o ID seja preservado
+                            id: cardId,
                             position: card.position // Preservar posição
                           } 
                         : card
@@ -163,6 +283,7 @@ const useBoardStore = create(
               }
               return col
             })
+            
             return {
               boards: {
                 ...state.boards,
@@ -175,6 +296,13 @@ const useBoardStore = create(
           })
         } catch (error) {
           console.error('Erro ao atualizar card:', error)
+          // ROLLBACK: Reverter para o estado anterior em caso de erro
+          set((state) => ({
+            boards: {
+              ...state.boards,
+              [boardId]: previousBoardState
+            }
+          }))
           throw error
         }
       },
@@ -305,8 +433,40 @@ const useBoardStore = create(
       },
 
       addColumn: async (boardId, column) => {
+        const state = get()
+        const board = state.boards[boardId] || getDefaultBoard(boardId)
+        
+        // Salvar estado anterior para rollback em caso de erro
+        const previousBoardState = JSON.parse(JSON.stringify(board))
+        
+        // Criar coluna temporária com ID temporário
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        const tempColumn = {
+          id: tempId,
+          title: column.title,
+          position: board.columns.length,
+          cards: []
+        }
+        
+        // OPTIMISTIC UPDATE: Atualizar estado imediatamente
+        set((state) => {
+          const board = state.boards[boardId] || getDefaultBoard(boardId)
+          return {
+            boards: {
+              ...state.boards,
+              [boardId]: {
+                ...board,
+                columns: [...board.columns, tempColumn]
+              }
+            }
+          }
+        })
+        
+        // Fazer requisição em paralelo (sem bloquear a UI)
         try {
           const newColumn = await api.createColumn(boardId, column.title)
+          
+          // Substituir coluna temporária pela coluna real retornada da API
           set((state) => {
             const board = state.boards[boardId] || getDefaultBoard(boardId)
             return {
@@ -314,13 +474,20 @@ const useBoardStore = create(
                 ...state.boards,
                 [boardId]: {
                   ...board,
-                  columns: [...board.columns, { ...newColumn, cards: [] }]
+                  columns: board.columns.map(col => col.id === tempId ? { ...newColumn, cards: [] } : col)
                 }
               }
             }
           })
         } catch (error) {
           console.error('Erro ao criar coluna:', error)
+          // ROLLBACK: Reverter para o estado anterior em caso de erro
+          set((state) => ({
+            boards: {
+              ...state.boards,
+              [boardId]: previousBoardState
+            }
+          }))
           throw error
         }
       },

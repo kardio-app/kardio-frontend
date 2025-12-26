@@ -163,16 +163,18 @@ function Column({ boardId, column, showToast }) {
 
   const handleAddCard = async () => {
     if (newCardTitle.trim()) {
+      const cardTitle = newCardTitle.trim()
+      // Fechar formulário imediatamente (atualização otimista já mostra o card)
+      setNewCardTitle('')
+      setShowAddCard(false)
       try {
         await addCard(boardId, column.id, {
-          title: newCardTitle.trim(),
+          title: cardTitle,
           description: '',
           assignee: '',
         })
-        setNewCardTitle('')
-        setShowAddCard(false)
         if (showToast) {
-          showToast(`Tarefa "${newCardTitle.trim()}" criada`, 'success')
+          showToast(`Tarefa "${cardTitle}" criada`, 'success')
         }
       } catch (error) {
         console.error('Erro ao criar card:', error)
@@ -184,13 +186,14 @@ function Column({ boardId, column, showToast }) {
   }
 
   const handleAddCardFromModal = async (title) => {
+    // Fechar modal imediatamente (atualização otimista já mostra o card)
+    setShowAddCardModal(false)
     try {
       await addCard(boardId, column.id, {
         title: title,
         description: '',
         assignee: '',
       })
-      setShowAddCardModal(false)
       if (showToast) {
         showToast(`Tarefa "${title}" criada`, 'success')
       }

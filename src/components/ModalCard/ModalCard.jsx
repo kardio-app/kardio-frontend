@@ -2,32 +2,128 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
+import CommentsSection from '../CommentsSection/CommentsSection'
 import './ModalCard.css'
 
 function ModalCard({ boardId, columnId, card, onClose, showToast }) {
+  const boards = useBoardStore((state) => state.boards)
+  const getBoard = useBoardStore((state) => state.getBoard)
   const updateCard = useBoardStore((state) => state.updateCard)
   const deleteCard = useBoardStore((state) => state.deleteCard)
   const [title, setTitle] = useState(card.title)
   const [description, setDescription] = useState(card.description || '')
   const [assignee, setAssignee] = useState(card.assignee || '')
+  const [labelIds, setLabelIds] = useState(card.label_ids || [])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [activeTab, setActiveTab] = useState('card')
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   const initialValues = useRef({
     title: card.title,
     description: card.description || '',
-    assignee: card.assignee || ''
+    assignee: card.assignee || '',
+    label_ids: card.label_ids || []
   })
+
+  const board = boards[boardId] || getBoard(boardId)
+  const labels = board.labels || []
+  
+  // Buscar o card atualizado do store
+  const currentCard = board.columns
+    .flatMap(col => col.cards)
+    .find(c => c.id === card.id) || card
+
+  // Atualizar valores quando o modal é aberto ou quando o card é atualizado no store
+  const isInitialMount = useRef(true)
+  const cardIdRef = useRef(card.id)
+  const lastSavedLabelIds = useRef(currentCard.label_ids || [])
+  
+  useEffect(() => {
+    // Se o card mudou (modal foi fechado e reaberto), resetar valores
+    if (cardIdRef.current !== card.id) {
+      cardIdRef.current = card.id
+      isInitialMount.current = true
+      lastSavedLabelIds.current = currentCard.label_ids || []
+    }
+    
+    // Se é a primeira renderização ou se o card foi atualizado no store (e não há alterações não salvas)
+    if (isInitialMount.current) {
+      const cardToUse = currentCard
+      const initialLabelIds = Array.isArray(cardToUse.label_ids) ? cardToUse.label_ids : []
+      setTitle(cardToUse.title)
+      setDescription(cardToUse.description || '')
+      setAssignee(cardToUse.assignee || '')
+      setLabelIds(initialLabelIds)
+      initialValues.current = {
+        title: cardToUse.title,
+        description: cardToUse.description || '',
+        assignee: cardToUse.assignee || '',
+        label_ids: [...initialLabelIds]
+      }
+      lastSavedLabelIds.current = [...initialLabelIds]
+      isInitialMount.current = false
+    } else {
+      // Se o card foi atualizado no store (por outro usuário ou sincronização)
+      // Verificar se há alterações não salvas comparando com valores iniciais
+      const hasLocalChanges = 
+        title.trim() !== initialValues.current.title ||
+        description.trim() !== initialValues.current.description ||
+        assignee.trim() !== initialValues.current.assignee ||
+        JSON.stringify((Array.isArray(labelIds) ? labelIds : []).sort()) !== 
+        JSON.stringify((Array.isArray(initialValues.current.label_ids) ? initialValues.current.label_ids : []).sort())
+      
+      // Se não há alterações locais não salvas, atualizar com dados do store
+      if (!hasLocalChanges) {
+        const currentLabelIds = Array.isArray(currentCard.label_ids) ? currentCard.label_ids : []
+        const currentLabelIdsStr = JSON.stringify(currentLabelIds.sort())
+        const savedLabelIdsStr = JSON.stringify(lastSavedLabelIds.current.sort())
+        
+        // Se as legendas mudaram no store
+        if (currentLabelIdsStr !== savedLabelIdsStr) {
+          setLabelIds(currentLabelIds)
+          initialValues.current.label_ids = [...currentLabelIds]
+          lastSavedLabelIds.current = [...currentLabelIds]
+        }
+        
+        // Atualizar outros campos se mudaram no store
+        if (currentCard.title !== title) {
+          setTitle(currentCard.title)
+          initialValues.current.title = currentCard.title
+        }
+        if ((currentCard.description || '') !== description) {
+          setDescription(currentCard.description || '')
+          initialValues.current.description = currentCard.description || ''
+        }
+        if ((currentCard.assignee || '') !== assignee) {
+          setAssignee(currentCard.assignee || '')
+          initialValues.current.assignee = currentCard.assignee || ''
+        }
+      }
+    }
+  }, [card.id, currentCard.label_ids, currentCard.title, currentCard.description, currentCard.assignee, title, description, assignee, labelIds])
 
   // Verificar se há alterações não salvas
   useEffect(() => {
+    const currentLabelIds = Array.isArray(labelIds) ? labelIds : []
+    const initialLabelIds = Array.isArray(initialValues.current.label_ids) ? initialValues.current.label_ids : []
     const hasChanges = 
       title.trim() !== initialValues.current.title ||
       description.trim() !== initialValues.current.description ||
-      assignee.trim() !== initialValues.current.assignee
+      assignee.trim() !== initialValues.current.assignee ||
+      JSON.stringify(currentLabelIds.sort()) !== JSON.stringify(initialLabelIds.sort())
     
     setHasUnsavedChanges(hasChanges)
-  }, [title, description, assignee])
+  }, [title, description, assignee, labelIds])
 
   const handleClose = useCallback(() => {
     if (hasUnsavedChanges) {
@@ -56,14 +152,18 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
         title: title.trim() || card.title,
         description: description.trim(),
         assignee: assignee.trim(),
+        label_ids: labelIds
       })
       
       // Atualizar valores iniciais após salvar
+      const savedLabelIds = Array.isArray(labelIds) ? labelIds : []
       initialValues.current = {
         title: title.trim() || card.title,
         description: description.trim(),
-        assignee: assignee.trim()
+        assignee: assignee.trim(),
+        label_ids: [...savedLabelIds]
       }
+      lastSavedLabelIds.current = [...savedLabelIds]
       setHasUnsavedChanges(false)
       
       if (showToast) {
@@ -110,60 +210,223 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
 
   return createPortal(
     <div className="modal-backdrop" onClick={handleBackdropClick}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content modal-content-with-comments" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <input
-            className="modal-title-input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título do card"
-          />
-          <button
-            className="modal-close-button"
-            onClick={handleClose}
-            aria-label="Fechar"
-          >
-            ×
-          </button>
+          <div className="modal-header-content">
+            <div className="modal-title-wrapper">
+              <svg className="modal-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <input
+                className="modal-title-input"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Título do card"
+              />
+            </div>
+            <div className="modal-header-right">
+              <div className="modal-header-divider"></div>
+              <button
+                className="modal-close-button"
+                onClick={handleClose}
+                aria-label="Fechar"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          {isMobile && (
+            <div className="modal-tabs">
+              <button
+                className={`modal-tab ${activeTab === 'card' ? 'active' : ''}`}
+                onClick={() => setActiveTab('card')}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                Card
+              </button>
+              <button
+                className={`modal-tab ${activeTab === 'comments' ? 'active' : ''}`}
+                onClick={() => setActiveTab('comments')}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Comentários
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="modal-body">
-          <div className="modal-field">
-            <label className="modal-label">Descrição</label>
-            <textarea
-              className="modal-textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Adicione uma descrição..."
-              rows={6}
-            />
-          </div>
+        <div className="modal-body-wrapper">
+          {(!isMobile || activeTab === 'card') && (
+            <div className="modal-left-panel">
+              <div className="modal-body">
+                <div className="modal-main-content">
+                  <div className="modal-section">
+                    <div className="modal-section-header">
+                      <svg className="modal-section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                      </svg>
+                      <label className="modal-label">Descrição</label>
+                    </div>
+                    <textarea
+                      className="modal-textarea"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Adicione uma descrição detalhada..."
+                      rows={6}
+                    />
+                  </div>
 
-          <div className="modal-field">
-            <label className="modal-label">Responsável</label>
-            <input
-              className="modal-input"
-              value={assignee}
-              onChange={(e) => setAssignee(e.target.value)}
-              placeholder="Nome do responsável"
-            />
-          </div>
-        </div>
+                  <div className="modal-details-grid">
+                    <div className="modal-section">
+                      <div className="modal-section-header">
+                        <svg className="modal-section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <label className="modal-label">Responsável</label>
+                      </div>
+                      <input
+                        className="modal-input"
+                        value={assignee}
+                        onChange={(e) => setAssignee(e.target.value)}
+                        placeholder="Nome do responsável"
+                      />
+                    </div>
 
-        <div className="modal-footer">
-          <button
-            className="modal-button modal-button-delete"
-            onClick={handleDelete}
-          >
-            Excluir
-          </button>
-          <button
-            className="modal-button modal-button-save"
-            onClick={handleSave}
-            disabled={isSaving || !hasUnsavedChanges}
-          >
-            {isSaving ? 'Salvando...' : 'Salvar'}
-          </button>
+                    <div className="modal-section">
+                      <div className="modal-section-header">
+                        <svg className="modal-section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M7 7h.01"></path>
+                          <path d="M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A1.994 1.994 0 0 1 3 12V7a4 4 0 0 1 4-4z"></path>
+                        </svg>
+                        <label className="modal-label">Legendas</label>
+                      </div>
+                      {labels.length === 0 ? (
+                        <div className="modal-no-labels-wrapper">
+                          <p className="modal-no-labels">Nenhuma legenda criada ainda. Crie legendas no menu do header.</p>
+                        </div>
+                      ) : (
+                        <div className="modal-labels-list">
+                          {labels.map((label) => {
+                            const isSelected = labelIds.includes(label.id)
+                            return (
+                              <label key={label.id} className={`modal-label-checkbox-item ${isSelected ? 'selected' : ''}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    setLabelIds(prevIds => {
+                                      const currentIds = Array.isArray(prevIds) ? prevIds : []
+                                      if (e.target.checked) {
+                                        // Adicionar se não estiver já na lista
+                                        if (!currentIds.includes(label.id)) {
+                                          return [...currentIds, label.id]
+                                        }
+                                        return currentIds
+                                      } else {
+                                        // Remover da lista
+                                        return currentIds.filter(id => id !== label.id)
+                                      }
+                                    })
+                                  }}
+                                  className="modal-label-checkbox"
+                                />
+                                <div 
+                                  className="modal-label-checkbox-preview" 
+                                  style={{ backgroundColor: label.color }}
+                                >
+                                  {isSelected && (
+                                    <svg 
+                                      className="modal-label-check-icon" 
+                                      width="14" 
+                                      height="14" 
+                                      viewBox="0 0 24 24" 
+                                      fill="none" 
+                                      stroke={getContrastColor(label.color)} 
+                                      strokeWidth="3"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                  )}
+                                  <span 
+                                    className="modal-label-checkbox-text" 
+                                    style={{ color: getContrastColor(label.color) }}
+                                  >
+                                    {label.name}
+                                  </span>
+                                </div>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  className="modal-button modal-button-delete"
+                  onClick={handleDelete}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  Excluir
+                </button>
+                <button
+                  className="modal-button modal-button-save"
+                  onClick={handleSave}
+                  disabled={isSaving || !hasUnsavedChanges}
+                >
+                  {isSaving ? (
+                    <>
+                      <svg className="modal-button-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                      </svg>
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      Salvar
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!isMobile && <div className="modal-divider"></div>}
+
+          {(!isMobile || activeTab === 'comments') && (
+            <CommentsSection 
+              boardId={boardId} 
+              cardId={card.id} 
+              showToast={showToast}
+            />
+          )}
         </div>
       </div>
       {showDeleteConfirm && (
@@ -179,6 +442,21 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
     </div>,
     document.body
   )
+}
+
+// Função para determinar a cor do texto com melhor contraste
+function getContrastColor(hexColor) {
+  if (!hexColor || hexColor.length !== 7) return '#FFFFFF'
+  
+  const r = parseInt(hexColor.substr(1, 2), 16)
+  const g = parseInt(hexColor.substr(3, 2), 16)
+  const b = parseInt(hexColor.substr(5, 2), 16)
+  
+  // Calcular luminância relativa
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  
+  // Retornar preto para cores claras e branco para cores escuras
+  return luminance > 0.5 ? '#000000' : '#FFFFFF'
 }
 
 export default ModalCard

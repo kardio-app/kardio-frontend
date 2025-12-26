@@ -1,0 +1,227 @@
+.modal-create-project-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-color);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-create-project-content {
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 500px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-create-project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-create-project-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.modal-create-project-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  background: transparent;
+  border: none;
+  color: var(--text-white);
+  cursor: pointer;
+}
+
+.modal-create-project-close:hover {
+  background-color: var(--bg-gray-light);
+}
+
+.modal-create-project-body {
+  padding: 1.5rem;
+}
+
+.modal-create-project-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-create-project-question {
+  font-size: 1rem;
+  color: var(--text-white);
+  margin: 0;
+  text-align: center;
+}
+
+.modal-create-project-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-create-project-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: var(--bg-gray-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  width: 100%;
+}
+
+.modal-create-project-option:hover {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--text-gray);
+}
+
+.modal-create-project-option svg {
+  flex-shrink: 0;
+  color: var(--text-gray);
+}
+
+.modal-create-project-option-content {
+  flex: 1;
+}
+
+.modal-create-project-option-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0 0 0.25rem 0;
+}
+
+.modal-create-project-option-content p {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.modal-create-project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-create-project-input {
+  padding: 0.875rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  color: var(--text-white);
+  border: 1px solid transparent;
+  transition: var(--transition);
+  font-family: inherit;
+  width: 100%;
+}
+
+.modal-create-project-input:focus {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--border-color);
+  outline: none;
+}
+
+.modal-create-project-input::placeholder {
+  color: var(--text-gray);
+  opacity: 0.6;
+}
+
+.modal-create-project-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.modal-create-project-button {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.modal-create-project-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-create-project-button-cancel {
+  background-color: transparent;
+  color: var(--text-gray);
+}
+
+.modal-create-project-button-cancel:hover:not(:disabled) {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+.modal-create-project-button-submit {
+  background-color: var(--button-bg);
+  color: var(--text-white);
+}
+
+.modal-create-project-button-submit:hover:not(:disabled) {
+  background-color: var(--button-hover);
+}
+
+@media (max-width: 768px) {
+  .modal-create-project-backdrop {
+    padding: 1rem;
+  }
+
+  .modal-create-project-content {
+    max-width: 100%;
+  }
+}
+

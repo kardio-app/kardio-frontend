@@ -159,7 +159,7 @@ function Card({ boardId, columnId, card, showToast, columns }) {
             <span className="card-assignee-name">{card.assignee}</span>
           </div>
         )}
-        {card.description && card.description.trim() && (
+        {card.description && typeof card.description === 'string' && card.description.trim().length > 0 && (
           <div 
             className="card-completion-checkbox-container"
             onClick={(e) => e.stopPropagation()}

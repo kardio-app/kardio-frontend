@@ -108,7 +108,8 @@ function Home() {
     setShowCreateModal(false)
     setIsCreating(true)
     try {
-      const result = await createProject(projectData.name, projectData.type)
+      const linkedProjects = projectData.linkedProjects || []
+      const result = await createProject(projectData.name, projectData.type, linkedProjects)
       setProjectResult(result)
       
       // Salvar automaticamente no localStorage para projetos pessoais e gerenciais
@@ -118,6 +119,21 @@ function Home() {
           code: result.accessCode,
           encryptedLink: result.encryptedLink
         })
+
+        // Salvar também os projetos pessoais vinculados criados
+        if (result.linkedProjects && result.linkedProjects.length > 0) {
+          result.linkedProjects.forEach(linkedProject => {
+            try {
+              saveProject({
+                name: linkedProject.name,
+                code: linkedProject.accessCode,
+                encryptedLink: linkedProject.encryptedId
+              })
+            } catch (saveError) {
+              console.error('Erro ao salvar projeto vinculado:', saveError)
+            }
+          })
+        }
       } catch (saveError) {
         console.error('Erro ao salvar projeto automaticamente:', saveError)
       }

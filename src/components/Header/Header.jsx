@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
-import { updateProjectName, getProject } from '../../services/api'
+import { updateProjectName, getProject, linkPersonalProjectToManager } from '../../services/api'
 import LabelsManager from '../LabelsManager/LabelsManager'
 import './Header.css'
 
@@ -18,6 +18,9 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
   const [copied, setCopied] = useState(false)
   const [showAccessCode, setShowAccessCode] = useState(false)
   const [showLabelsManager, setShowLabelsManager] = useState(false)
+  const [showLinkProjectModal, setShowLinkProjectModal] = useState(false)
+  const [linkProjectCode, setLinkProjectCode] = useState('')
+  const [isLinking, setIsLinking] = useState(false)
   
   const currentBoard = boards[boardId] || getBoard(boardId)
   // Priorizar boardName (vem do banco) sobre currentBoard.name (pode estar desatualizado)
@@ -180,8 +183,37 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
 
   const handleCloseShareModal = () => {
     setShowShareModal(false)
+    setAccessCode(null)
     setShareCode(null)
     setCopied(false)
+  }
+
+  const handleLinkProject = async (e) => {
+    e.preventDefault()
+    if (!linkProjectCode.trim() || !boardId) return
+
+    setIsLinking(true)
+    try {
+      await linkPersonalProjectToManager(boardId, linkProjectCode.trim().toUpperCase())
+      setShowLinkProjectModal(false)
+      setLinkProjectCode('')
+      // Disparar evento para atualizar lista de projetos vinculados
+      window.dispatchEvent(new CustomEvent('manager-link-changed'))
+      if (showToast) {
+        showToast('Projeto vinculado com sucesso!', 'success')
+      }
+    } catch (error) {
+      if (showToast) {
+        showToast('Erro ao vincular projeto: ' + error.message, 'error')
+      }
+    } finally {
+      setIsLinking(false)
+    }
+  }
+
+  const handleCloseLinkProjectModal = () => {
+    setShowLinkProjectModal(false)
+    setLinkProjectCode('')
   }
 
   return (
@@ -230,6 +262,26 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         )}
         {isManagerial ? (
           <>
+            <button
+              className="header-button header-button-icon"
+              onClick={() => setShowLinkProjectModal(true)}
+              title="Adicionar projeto vinculado"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
             <button
               className="header-button header-button-icon"
               onClick={handleShowAccess}
@@ -478,6 +530,102 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                 Compartilhe este código para que projetos pessoais possam vincular este gestor
               </p>
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal para Vincular Projeto (para projetos gerenciais) */}
+      {isManagerial && showLinkProjectModal && createPortal(
+        <div className="share-modal-overlay" onClick={handleCloseLinkProjectModal}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h2>Adicionar Projeto Vinculado</h2>
+              <button className="share-modal-close" onClick={handleCloseLinkProjectModal}>
+                ×
+              </button>
+            </div>
+            <form className="share-modal-content" onSubmit={handleLinkProject}>
+              <p className="share-modal-label">Código de Acesso do Projeto Pessoal:</p>
+              <input
+                type="text"
+                className="share-modal-input"
+                value={linkProjectCode}
+                onChange={(e) => setLinkProjectCode(e.target.value.toUpperCase())}
+                placeholder="Digite o código de acesso"
+                maxLength={20}
+                required
+                autoFocus
+              />
+              <p className="share-modal-hint">
+                Insira o código de acesso do projeto pessoal que deseja vincular a este projeto gerencial.
+              </p>
+              <div className="share-modal-actions">
+                <button
+                  type="button"
+                  className="share-modal-button-cancel"
+                  onClick={handleCloseLinkProjectModal}
+                  disabled={isLinking}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="share-modal-button-submit"
+                  disabled={!linkProjectCode.trim() || isLinking}
+                >
+                  {isLinking ? 'Vinculando...' : 'Vincular'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal para Vincular Projeto (para projetos gerenciais) */}
+      {isManagerial && showLinkProjectModal && createPortal(
+        <div className="share-modal-overlay" onClick={handleCloseLinkProjectModal}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h2>Adicionar Projeto Vinculado</h2>
+              <button className="share-modal-close" onClick={handleCloseLinkProjectModal}>
+                ×
+              </button>
+            </div>
+            <form className="share-modal-content" onSubmit={handleLinkProject}>
+              <p className="share-modal-label">Código de Acesso do Projeto Pessoal:</p>
+              <input
+                type="text"
+                className="share-modal-input"
+                value={linkProjectCode}
+                onChange={(e) => setLinkProjectCode(e.target.value.toUpperCase())}
+                placeholder="Digite o código de acesso"
+                maxLength={20}
+                required
+                autoFocus
+              />
+              <p className="share-modal-hint">
+                Insira o código de acesso do projeto pessoal que deseja vincular a este projeto gerencial.
+              </p>
+              <div className="share-modal-actions">
+                <button
+                  type="button"
+                  className="share-modal-button-cancel"
+                  onClick={handleCloseLinkProjectModal}
+                  disabled={isLinking}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="share-modal-button-submit"
+                  disabled={!linkProjectCode.trim() || isLinking}
+                >
+                  {isLinking ? 'Vinculando...' : 'Vincular'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>,
         document.body

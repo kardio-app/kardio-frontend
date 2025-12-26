@@ -65,7 +65,7 @@ async function handleResponseError(response) {
 }
 
 // Criar novo projeto
-export async function createProject(name, type = 'personal') {
+export async function createProject(name, type = 'personal', linkedProjects = []) {
   try {
     const url = `${API_URL}/projects/create`
     
@@ -74,7 +74,7 @@ export async function createProject(name, type = 'personal') {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, type }),
+      body: JSON.stringify({ name, type, linkedProjects }),
     })
 
     if (!response.ok) {
@@ -575,6 +575,29 @@ export async function linkProjectToManager(personalEncryptedId, managerialCode) 
     return await response.json()
   } catch (error) {
     console.error('Erro na API linkProjectToManager:', error)
+    throw error
+  }
+}
+
+// Vincular projeto pessoal a um projeto gerencial usando código de acesso
+export async function linkPersonalProjectToManager(managerialEncryptedId, personalAccessCode) {
+  try {
+    const response = await fetch(`${API_URL}/projects/managerial/${managerialEncryptedId}/link-by-code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ personalAccessCode }),
+    })
+
+    if (!response.ok) {
+      const errorMessage = await handleResponseError(response)
+      throw new Error(errorMessage)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Erro na API linkPersonalProjectToManager:', error)
     throw error
   }
 }

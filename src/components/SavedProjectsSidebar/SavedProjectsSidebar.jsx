@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { getSavedProjects, deleteSavedProject, updateSavedProjectName, saveProject } from '../../utils/savedProjects';
-import { accessProject, getBoard, getProject, linkProjectToManager, getManagersForPersonalProject, unlinkManagerFromPersonalProject } from '../../services/api';
+import { accessProject, getBoard, getProject, linkProjectToManager, getManagersForPersonalProject, unlinkManagerFromPersonalProject, linkPersonalProjectToManager } from '../../services/api';
 import Loading from '../Loading/Loading';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import ModalConfirm from '../ModalConfirm/ModalConfirm';
@@ -43,6 +43,9 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
   const [loadingCodes, setLoadingCodes] = useState(false);
   const [showAccessCode, setShowAccessCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [showLinkProjectModal, setShowLinkProjectModal] = useState(false);
+  const [linkProjectCode, setLinkProjectCode] = useState('');
+  const [isLinkingProject, setIsLinkingProject] = useState(false);
 
   const boardId = location.pathname.startsWith('/board/') 
     ? location.pathname.split('/board/')[1] 
@@ -274,6 +277,34 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
     setShowShareModal(false);
     setAccessCode(null);
     setCopied(false);
+  };
+
+  const handleLinkProject = async (e) => {
+    e.preventDefault();
+    if (!linkProjectCode.trim() || !boardId) return;
+
+    setIsLinkingProject(true);
+    try {
+      await linkPersonalProjectToManager(boardId, linkProjectCode.trim().toUpperCase());
+      setShowLinkProjectModal(false);
+      setLinkProjectCode('');
+      // Disparar evento para atualizar lista de projetos vinculados
+      window.dispatchEvent(new CustomEvent('manager-link-changed'));
+      if (showToast) {
+        showToast('Projeto vinculado com sucesso!', 'success');
+      }
+    } catch (error) {
+      if (showToast) {
+        showToast('Erro ao vincular projeto: ' + error.message, 'error');
+      }
+    } finally {
+      setIsLinkingProject(false);
+    }
+  };
+
+  const handleCloseLinkProjectModal = () => {
+    setShowLinkProjectModal(false);
+    setLinkProjectCode('');
   };
 
   const handleSaveProject = async (e) => {
@@ -594,6 +625,27 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
                     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                   </svg>
                   Compartilhar
+                </button>
+                <button
+                  className="saved-projects-copy-button"
+                  onClick={() => setShowLinkProjectModal(true)}
+                  title="Adicionar projeto vinculado"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Adicionar Projeto
                 </button>
               </>
             )}
@@ -1162,6 +1214,53 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         document.body
       )}
       {/* Modal de Código de Compartilhamento (apenas para projetos gerenciais) */}
+      {boardId && location.pathname.startsWith('/board-gerencial/') && showLinkProjectModal && createPortal(
+        <div className="share-modal-overlay" onClick={handleCloseLinkProjectModal}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h2>Adicionar Projeto Vinculado</h2>
+              <button className="share-modal-close" onClick={handleCloseLinkProjectModal}>
+                ×
+              </button>
+            </div>
+            <form className="share-modal-content" onSubmit={handleLinkProject}>
+              <p className="share-modal-label">Código de Acesso do Projeto Pessoal:</p>
+              <input
+                type="text"
+                className="share-modal-input"
+                value={linkProjectCode}
+                onChange={(e) => setLinkProjectCode(e.target.value.toUpperCase())}
+                placeholder="Digite o código de acesso"
+                maxLength={20}
+                required
+                autoFocus
+              />
+              <p className="share-modal-hint">
+                Insira o código de acesso do projeto pessoal que deseja vincular a este projeto gerencial.
+              </p>
+              <div className="share-modal-actions">
+                <button
+                  type="button"
+                  className="share-modal-button-cancel"
+                  onClick={handleCloseLinkProjectModal}
+                  disabled={isLinkingProject}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="share-modal-button-submit"
+                  disabled={!linkProjectCode.trim() || isLinkingProject}
+                >
+                  {isLinkingProject ? 'Vinculando...' : 'Vincular'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {boardId && location.pathname.startsWith('/board-gerencial/') && showShareCodeModal && createPortal(
         <div className="share-modal-overlay" onClick={() => {
           setShowShareCodeModal(false);

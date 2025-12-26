@@ -291,10 +291,34 @@
 .saved-projects-list {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  overflow-x: hidden;
+  padding: 1rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Estilos para DocsSidebar dentro do saved-projects-sidebar */
+.saved-projects-sidebar .docs-sidebar-wrapper {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.saved-projects-sidebar .docs-sidebar-title {
+  display: none;
+}
+
+.saved-projects-sidebar .docs-sidebar-search {
+  margin: 0 0 1rem 0;
+}
+
+.saved-projects-sidebar .docs-sidebar-nav {
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .saved-projects-save-form {

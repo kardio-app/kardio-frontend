@@ -5,7 +5,7 @@ import BoardComponent from '../Board/Board'
 import useBoardStore from '../../store/useBoardStore'
 import './BoardGerencial.css'
 
-function BoardGerencial({ encryptedId, projectData }) {
+function BoardGerencial({ encryptedId, projectData, showToast }) {
   const navigate = useNavigate()
   const [linkedProjects, setLinkedProjects] = useState([])
   const [loading, setLoading] = useState(true)
@@ -13,6 +13,7 @@ function BoardGerencial({ encryptedId, projectData }) {
   const [selectedProjectData, setSelectedProjectData] = useState(null)
   const [boardLoading, setBoardLoading] = useState(false)
   const [isProjectsExpanded, setIsProjectsExpanded] = useState(true)
+  const [copiedProjectId, setCopiedProjectId] = useState(null)
   const updateBoard = useBoardStore((state) => state.updateBoard)
 
   const loadLinkedProjects = useCallback(async () => {
@@ -64,6 +65,29 @@ function BoardGerencial({ encryptedId, projectData }) {
   const maskAccessCode = (code) => {
     if (!code || code.length < 2) return '**'
     return code.substring(0, 2) + '*'.repeat(Math.max(0, code.length - 2))
+  }
+
+  const handleShareProject = async (e, project) => {
+    e.stopPropagation() // Prevenir que o clique abra o projeto
+    
+    try {
+      // Copiar código de acesso para a área de transferência
+      await navigator.clipboard.writeText(project.access_code)
+      setCopiedProjectId(project.id)
+      if (showToast) {
+        showToast('Código de acesso copiado!', 'success')
+      }
+      
+      // Resetar estado após 2 segundos
+      setTimeout(() => {
+        setCopiedProjectId(null)
+      }, 2000)
+    } catch (error) {
+      console.error('Erro ao copiar código:', error)
+      if (showToast) {
+        showToast('Erro ao copiar código', 'error')
+      }
+    }
   }
 
   const loadSelectedProjectBoard = useCallback(async (projectEncryptedId, silent = false) => {
@@ -191,7 +215,29 @@ function BoardGerencial({ encryptedId, projectData }) {
                   className={`board-gerencial-project-card ${selectedProjectId === project.encrypted_id ? 'board-gerencial-project-card-selected' : ''}`}
                   onClick={() => handleOpenProject(project.encrypted_id)}
                 >
-                  <h3 className="board-gerencial-project-name">{project.name}</h3>
+                  <div className="board-gerencial-project-card-header">
+                    <h3 className="board-gerencial-project-name">{project.name}</h3>
+                    <button
+                      className="board-gerencial-project-share"
+                      onClick={(e) => handleShareProject(e, project)}
+                      title="Compartilhar código de acesso"
+                      aria-label="Compartilhar código de acesso"
+                    >
+                      {copiedProjectId === project.id ? (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="18" cy="5" r="3"></circle>
+                          <circle cx="6" cy="12" r="3"></circle>
+                          <circle cx="18" cy="19" r="3"></circle>
+                          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                   <p className="board-gerencial-project-code">Código: {maskAccessCode(project.access_code)}</p>
                 </div>
               ))}

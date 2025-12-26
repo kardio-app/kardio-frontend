@@ -106,11 +106,47 @@
   border-width: 2px;
 }
 
+.board-gerencial-project-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
 .board-gerencial-project-name {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-white);
-  margin: 0 0 0.5rem 0;
+  margin: 0;
+  flex: 1;
+}
+
+.board-gerencial-project-share {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-gray-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.board-gerencial-project-share:hover {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--text-gray);
+  color: var(--text-white);
+}
+
+.board-gerencial-project-share svg {
+  width: 18px;
+  height: 18px;
 }
 
 .board-gerencial-project-code {

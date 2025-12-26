@@ -34,7 +34,7 @@
   flex-direction: column;
   animation: slideUp 0.2s ease;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: none;
 }
 
 @keyframes slideUp {
@@ -121,6 +121,12 @@
 .modal-create-project-option:hover {
   background-color: var(--bg-gray-hover);
   border-color: var(--text-gray);
+}
+
+.modal-create-project-option.selected {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--button-bg);
+  border-width: 2px;
 }
 
 .modal-create-project-option svg {
@@ -215,6 +221,194 @@
   background-color: var(--button-hover);
 }
 
+/* Steps Indicator */
+.modal-create-project-steps-container {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-gray-light);
+}
+
+/* Desktop Steps */
+.modal-create-project-steps-desktop {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 0.5rem;
+  align-items: start;
+  justify-items: start;
+}
+
+.modal-create-project-steps-mobile {
+  display: none;
+}
+
+.modal-create-project-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.modal-create-project-step-indicator-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.modal-create-project-step-indicator {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.modal-create-project-step-indicator.completed {
+  background: var(--button-bg);
+}
+
+.modal-create-project-step-indicator.current {
+  background: var(--button-bg);
+  box-shadow: 0 0 0 2px var(--bg-gray), 0 0 0 3px rgba(106, 135, 255, 0.3);
+}
+
+.modal-create-project-step-indicator.pending {
+  background-color: var(--bg-gray-hover);
+  border: 1.5px solid var(--border-color);
+}
+
+.step-check-icon {
+  width: 10px;
+  height: 10px;
+  color: white;
+}
+
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--text-white);
+}
+
+.step-dot.current-dot {
+  background-color: var(--text-white);
+}
+
+.modal-create-project-step-connector {
+  position: absolute;
+  top: 50%;
+  left: 53%;
+  width: 100%;
+  flex: 1;
+  transform: translateY(-50%);
+  border-top: 2px solid var(--border-color);
+  z-index: 0;
+}
+
+.modal-create-project-step-connector.completed {
+  border-top-color: var(--button-bg);
+}
+
+.modal-create-project-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.step-title {
+  width: 100%;
+  text-align: center;
+  font-size: 0.52rem !important;
+  font-weight: 500;
+  color: var(--text-gray);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.step-title.current-title {
+  color: var(--text-white);
+}
+
+
+/* Mobile Steps */
+/* Linked Projects Styles */
+.linked-projects-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.linked-projects-label {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.linked-project-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.linked-project-input {
+  flex: 1;
+}
+
+.linked-project-remove {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius);
+  background-color: var(--bg-gray-light);
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.linked-project-remove:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+.linked-project-add {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--bg-gray-light);
+  color: var(--text-gray);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  justify-content: center;
+}
+
+.linked-project-add:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+  border-color: var(--text-gray);
+}
+
+.linked-project-add svg {
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .modal-create-project-backdrop {
     padding: 1rem;
@@ -222,6 +416,86 @@
 
   .modal-create-project-content {
     max-width: 100%;
+  }
+
+  .modal-create-project-steps-desktop {
+    display: none;
+  }
+
+  .modal-create-project-steps-mobile {
+    display: block;
+  }
+
+  .modal-create-project-step-item-mobile {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .modal-create-project-step-item-mobile:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  .modal-create-project-step-indicator-wrapper-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .modal-create-project-step-indicator-mobile {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .modal-create-project-step-indicator-mobile.completed {
+    background: var(--button-bg);
+  }
+
+  .modal-create-project-step-indicator-mobile.current {
+    background: var(--button-bg);
+    box-shadow: 0 0 0 2px var(--bg-gray), 0 0 0 3px rgba(106, 135, 255, 0.3);
+  }
+
+  .modal-create-project-step-indicator-mobile.pending {
+    background-color: var(--bg-gray-hover);
+    border: 1.5px solid var(--border-color);
+  }
+
+  .modal-create-project-step-connector-mobile {
+    flex: 1;
+    width: 2px;
+    border-left: 2px solid var(--border-color);
+    margin: 0.25rem 0;
+    min-height: 1.5rem;
+  }
+
+  .modal-create-project-step-connector-mobile.completed {
+    border-left-color: var(--button-bg);
+  }
+
+  .modal-create-project-step-content-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding-top: 0.125rem;
+    flex: 1;
+  }
+
+  .modal-create-project-step-content-mobile .step-title {
+    text-align: left;
+    font-size: 0.52rem !important;
+    line-height: 1.2;
   }
 }
 

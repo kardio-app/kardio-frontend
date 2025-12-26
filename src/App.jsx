@@ -1,9 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useTheme } from './hooks/useTheme'
+import { DocsProvider } from './contexts/DocsContext'
 import CookieBanner from './components/CookieBanner/CookieBanner'
 import Home from './pages/Home'
 import Board from './pages/Board'
 import BoardGerencial from './pages/BoardGerencial'
+import Docs from './pages/Docs'
 import Privacidade from './pages/Privacidade'
 import Termos from './pages/Termos'
 import Cookies from './pages/Cookies'
@@ -19,6 +21,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/docs" element={
+          <DocsProvider>
+            <Docs />
+          </DocsProvider>
+        } />
         <Route path="/board/:boardId" element={<Board />} />
         <Route path="/board-gerencial/:boardId" element={<BoardGerencial />} />
         <Route path="/privacidade" element={<Privacidade />} />

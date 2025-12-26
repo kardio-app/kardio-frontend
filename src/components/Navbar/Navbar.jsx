@@ -8,6 +8,8 @@ import Loading from '../Loading/Loading'
 import Breadcrumb from '../Breadcrumb/Breadcrumb'
 import SearchBar from '../SearchBar/SearchBar'
 import SavedProjectsSidebar from '../SavedProjectsSidebar/SavedProjectsSidebar'
+import DocsSidebar from '../DocsSidebar/DocsSidebar'
+import { useDocsContext } from '../../contexts/DocsContext'
 import ModalSaveProject from '../ModalSaveProject/ModalSaveProject'
 import { createProject, getProject, accessProject } from '../../services/api'
 import { saveProject, getSavedProjects, deleteSavedProject, updateSavedProjectName } from '../../utils/savedProjects'
@@ -45,6 +47,22 @@ function Navbar() {
   const [isSavingProject, setIsSavingProject] = useState(false)
   const [saveProjectError, setSaveProjectError] = useState('')
   const lastScrollY = useRef(0)
+  
+  // Estados locais para docs quando contexto não está disponível
+  const [localDocsSelectedTopic, setLocalDocsSelectedTopic] = useState(null)
+  const [localDocsExpandedItems, setLocalDocsExpandedItems] = useState({})
+  const [localDocsShowOverview, setLocalDocsShowOverview] = useState(false)
+  
+  // Usar o contexto de Docs se disponível, senão usar estados locais
+  const docsContextFromHook = useDocsContext()
+  const docsContext = docsContextFromHook || {
+    selectedTopic: localDocsSelectedTopic,
+    setSelectedTopic: setLocalDocsSelectedTopic,
+    expandedItems: localDocsExpandedItems,
+    setExpandedItems: setLocalDocsExpandedItems,
+    showOverview: localDocsShowOverview,
+    setShowOverview: setLocalDocsShowOverview,
+  }
 
   const maskCode = (code) => {
     if (!code || code.length < 2) return code
@@ -52,6 +70,7 @@ function Navbar() {
   }
 
   const isHome = location.pathname === '/home'
+  const isDocs = location.pathname === '/docs'
   const isBoard = location.pathname.startsWith('/board/') && !location.pathname.startsWith('/board-gerencial/')
   const isBoardGerencial = location.pathname.startsWith('/board-gerencial/')
   const boardId = isBoard ? location.pathname.split('/board/')[1] : isBoardGerencial ? location.pathname.split('/board-gerencial/')[1] : null
@@ -223,6 +242,12 @@ function Navbar() {
   }
 
   const handleExitClick = () => {
+    // Se estiver na página /docs, navegar diretamente sem modal
+    if (isDocs) {
+      navigate('/home')
+      return
+    }
+    
     if (isProjectSaved()) {
       // Se estiver salvo, mostrar modal normal
       setShowExitModal(true)
@@ -521,8 +546,8 @@ function Navbar() {
     }
   }, [showSavedProjects, isBoard])
 
-  // Navbar simplificada para /board e /board-gerencial
-  if (isBoard || isBoardGerencial) {
+  // Navbar simplificada para /board, /board-gerencial e /docs
+  if (isBoard || isBoardGerencial || isDocs) {
     return (
       <>
         {isCreating && <Loading />}
@@ -533,9 +558,9 @@ function Navbar() {
               <Breadcrumb
                 items={[
                   { label: 'Home', href: '/home' },
-                  { label: isBoardGerencial ? 'Board Gerencial' : 'Board' }
+                  { label: isDocs ? 'Docs' : isBoardGerencial ? 'Board Gerencial' : 'Board' }
                 ]}
-                onNavigate={handleExitClick}
+                onNavigate={isDocs ? (href) => navigate(href) : handleExitClick}
               />
             </div>
             {!isMobile && (
@@ -557,6 +582,9 @@ function Navbar() {
                       } else {
                         setShowSavedProjects(true);
                       }
+                    } else if (isDocs) {
+                      // No /docs, abrir o menu mobile com sidebar de docs
+                      setIsMobileMenuOpen(true);
                     } else {
                       setIsMobileMenuOpen(true);
                     }
@@ -610,7 +638,73 @@ function Navbar() {
         </nav>
         {isMobileMenuOpen && !isBoard && (
           <>
-            {isBoardGerencial && boardId ? (
+            {isDocs ? (
+              <div className="saved-projects-sidebar saved-projects-sidebar-open" style={{ zIndex: 200 }}>
+                <div className="saved-projects-header">
+                  <h3 className="saved-projects-title">Documentação</h3>
+                  <button
+                    className="saved-projects-close"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label="Fechar"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+                <div className="saved-projects-actions">
+                  <div className="saved-projects-theme">
+                    <ThemeToggle />
+                  </div>
+                  <button
+                    className="saved-projects-back-button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false)
+                      navigate('/home')
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m12 19-7-7 7-7"></path>
+                      <path d="M19 12H5"></path>
+                    </svg>
+                    Voltar para Home
+                  </button>
+                </div>
+                <div className="saved-projects-list" style={{ padding: '1rem 1.5rem', overflowY: 'auto', flex: 1 }}>
+                  <DocsSidebar
+                    selectedTopic={docsContext?.selectedTopic || null}
+                    setSelectedTopic={docsContext?.setSelectedTopic || (() => {})}
+                    showOverview={docsContext?.showOverview || false}
+                    setShowOverview={docsContext?.setShowOverview || (() => {})}
+                    expandedItems={docsContext?.expandedItems || {}}
+                    setExpandedItems={docsContext?.setExpandedItems || (() => {})}
+                    onItemClick={() => setIsMobileMenuOpen(false)}
+                    isMobile={false}
+                  />
+                </div>
+              </div>
+            ) : isBoardGerencial && boardId ? (
               <div className="saved-projects-sidebar saved-projects-sidebar-open" style={{ zIndex: 200 }}>
                 <div className="saved-projects-header">
                   <h3 className="saved-projects-title">Configurações</h3>
@@ -1178,6 +1272,12 @@ function Navbar() {
               <div className="navbar-search-wrapper">
                 <SearchBar onSearch={handleSearch} placeholder="Pesquisar projetos..." />
               </div>
+              <button
+                className="navbar-link"
+                onClick={() => navigate('/docs')}
+              >
+                Docs
+              </button>
               <div className="navbar-separator"></div>
               <button
                 className="navbar-link"
@@ -1212,7 +1312,7 @@ function Navbar() {
           </div>
         </div>
       </nav>
-      {isMobileMenuOpen && (
+      {isMobileMenuOpen && !isBoard && !isDocs && (
         <div className="navbar-mobile-menu">
           <div className="navbar-mobile-header">
             <span className="navbar-logo">
@@ -1255,6 +1355,15 @@ function Navbar() {
                 Início
               </button>
             )}
+            <button
+              className="navbar-mobile-link"
+              onClick={() => {
+                setIsMobileMenuOpen(false)
+                navigate('/docs')
+              }}
+            >
+              Docs
+            </button>
             <div className="navbar-mobile-search-wrapper">
               <SearchBar onSearch={handleSearch} placeholder="Pesquisar projetos..." />
             </div>

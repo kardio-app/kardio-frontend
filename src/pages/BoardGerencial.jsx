@@ -129,6 +129,7 @@ function BoardGerencial() {
         <BoardGerencialComponent 
           encryptedId={boardId}
           projectData={projectData}
+          showToast={showToast}
         />
       </div>
       <ToastContainer toasts={toasts} onClose={hideToast} />

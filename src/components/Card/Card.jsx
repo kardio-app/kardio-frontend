@@ -159,25 +159,27 @@ function Card({ boardId, columnId, card, showToast, columns }) {
             <span className="card-assignee-name">{card.assignee}</span>
           </div>
         )}
-        <div 
-          className="card-completion-checkbox-container"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <label 
-            className="card-completion-checkbox-label"
+        {card.description && card.description.trim() && (
+          <div 
+            className="card-completion-checkbox-container"
             onClick={(e) => e.stopPropagation()}
           >
-            <input
-              type="checkbox"
-              className="card-completion-checkbox"
-              checked={card.is_completed || false}
-              onChange={handleCompletionToggle}
+            <label 
+              className="card-completion-checkbox-label"
               onClick={(e) => e.stopPropagation()}
-              title={card.is_completed ? 'Marcar como não concluído' : 'Marcar como concluído'}
-            />
-            <span className="card-completion-checkbox-custom"></span>
-          </label>
-        </div>
+            >
+              <input
+                type="checkbox"
+                className="card-completion-checkbox"
+                checked={card.is_completed || false}
+                onChange={handleCompletionToggle}
+                onClick={(e) => e.stopPropagation()}
+                title={card.is_completed ? 'Marcar como não concluído' : 'Marcar como concluído'}
+              />
+              <span className="card-completion-checkbox-custom"></span>
+            </label>
+          </div>
+        )}
       </div>
       {showModal && (
         <ModalCard

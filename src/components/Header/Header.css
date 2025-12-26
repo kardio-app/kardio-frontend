@@ -441,6 +441,11 @@
     flex-direction: column;
   }
 
+  .share-modal-code-with-eye {
+    width: 100%;
+    flex: none;
+  }
+
   .share-modal-code {
     width: 100%;
   }

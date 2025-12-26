@@ -9,6 +9,7 @@
   width: 100%;
   max-width: 100vw;
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 .board-gerencial-loading,
@@ -23,7 +24,18 @@
 
 @media (max-width: 768px) {
   .board-gerencial-page {
-    padding-top: 60px;
+    padding-top: 60px; /* Altura da navbar */
+    height: auto;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Garantir que o container fique abaixo do header fixo */
+  /* Navbar (60px) + Header (~50px) = ~110px total */
+  .board-gerencial-page .board-gerencial-container {
+    margin-top: 110px; /* Altura da navbar + header fixo */
+    padding-top: 1rem;
+    min-height: calc(100vh - 110px);
   }
 }
 

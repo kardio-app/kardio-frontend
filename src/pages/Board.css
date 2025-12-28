@@ -8,11 +8,11 @@
   width: 100%;
   max-width: 100vw;
   box-sizing: border-box;
-  transition: margin-right 0.3s ease-in-out;
+  /* Removida transição de margin-right pois não é mais usada */
 }
 
 body.sidebar-open .board-page {
-  margin-right: 400px;
+  /* Removido margin-right pois a sidebar está com position: fixed e não precisa empurrar o conteúdo */
 }
 
 @media (max-width: 768px) {

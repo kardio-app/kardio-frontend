@@ -104,12 +104,20 @@ function Navbar() {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = ''
+      // Quando fechar o menu mobile, restaurar scroll apenas se não estiver em /board
+      if (!isBoard && !isBoardGerencial) {
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+        document.body.style.height = ''
+        document.body.style.maxHeight = ''
+        document.documentElement.style.height = ''
+        document.documentElement.style.maxHeight = ''
+      }
     }
     return () => {
-      document.body.style.overflow = ''
+      // Não restaurar aqui para evitar conflitos com o Board.jsx
     }
-  }, [isMobileMenuOpen])
+  }, [isMobileMenuOpen, isBoard, isBoardGerencial])
 
   // Handler para fechar menu mobile quando clicar fora (apenas para board-gerencial)
   useEffect(() => {
@@ -260,6 +268,14 @@ function Navbar() {
   const handleExitConfirm = () => {
     setShowExitModal(false)
     setIsExiting(true)
+    
+    // Restaurar scroll antes de navegar
+    document.body.style.overflow = ''
+    document.documentElement.style.overflow = ''
+    document.body.style.height = ''
+    document.body.style.maxHeight = ''
+    document.documentElement.style.height = ''
+    document.documentElement.style.maxHeight = ''
     
     // Navegar após 2 segundos (menos tempo que criar/entrar)
     setTimeout(() => {
@@ -671,7 +687,17 @@ function Navbar() {
                     className="saved-projects-back-button"
                     onClick={() => {
                       setIsMobileMenuOpen(false)
-                      navigate('/home')
+                      // Restaurar scroll antes de navegar
+                      document.body.style.overflow = ''
+                      document.documentElement.style.overflow = ''
+                      document.body.style.height = ''
+                      document.body.style.maxHeight = ''
+                      document.documentElement.style.height = ''
+                      document.documentElement.style.maxHeight = ''
+                      // Pequeno delay para garantir que o estado seja limpo
+                      setTimeout(() => {
+                        navigate('/home')
+                      }, 0)
                     }}
                   >
                     <svg
@@ -787,8 +813,15 @@ function Navbar() {
                   <button
                     className="saved-projects-back-button"
                     onClick={() => {
-                      handleExitClick()
                       setIsMobileMenuOpen(false)
+                      // Restaurar scroll antes de navegar
+                      document.body.style.overflow = ''
+                      document.documentElement.style.overflow = ''
+                      document.body.style.height = ''
+                      document.body.style.maxHeight = ''
+                      document.documentElement.style.height = ''
+                      document.documentElement.style.maxHeight = ''
+                      handleExitClick()
                     }}
                   >
                     <svg 

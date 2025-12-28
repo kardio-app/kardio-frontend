@@ -188,7 +188,7 @@
 
 @media (max-width: 768px) {
   .home-board-preview {
-    padding: 3rem 1.5rem;
+    padding: 3rem 1.5rem 1.5rem 1.5rem; /* Reduzido padding inferior de 3rem para 1.5rem */
   }
 }
 

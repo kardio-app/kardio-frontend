@@ -20,6 +20,11 @@
   height: fit-content;
 }
 
+.column > .column-add-button,
+.column > .column-add-card-form {
+  margin-top: auto;
+}
+
 .column-dragging {
   opacity: 0.5;
 }
@@ -140,6 +145,7 @@
   position: relative;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  flex: 1;
 }
 
 
@@ -148,7 +154,8 @@
 }
 
 body.sidebar-open .column-cards.has-scrollbar {
-  padding-right: 1.25rem;
+  /* Padding mantido apenas para scrollbar, não afeta o layout dos cards */
+  padding-right: 0.5rem;
 }
 
 /* Customização da scrollbar para WebKit (Chrome, Safari, Edge) */
@@ -253,6 +260,8 @@ body.sidebar-open .column-cards.has-scrollbar {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .column-add-button:hover {
@@ -278,6 +287,8 @@ body.sidebar-open .column-cards.has-scrollbar {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .column-add-card-input {
@@ -356,6 +367,14 @@ body.sidebar-open .column-cards.has-scrollbar {
     display: flex;
     flex-direction: column;
     padding: 0.5rem 0 0 0; /* Padding apenas no topo - o botão terá seu próprio espaçamento */
+  }
+
+  .column-cards .column-add-button {
+    margin-top: auto;
+  }
+
+  .column-cards .column-add-card-form {
+    margin-top: auto;
   }
 
   .column-drag-handle {

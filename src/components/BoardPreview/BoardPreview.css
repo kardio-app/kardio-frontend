@@ -387,7 +387,7 @@
 
   .board-preview-content {
     padding: 0;
-    min-height: 300px;
+    /* Removido min-height para evitar espaço extra abaixo do vídeo */
   }
 
   .board-preview-board-content {

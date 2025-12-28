@@ -36,13 +36,15 @@ function Board() {
     }
     
     return () => {
-      // Restaurar scroll ao desmontar
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
-      document.body.style.height = ''
-      document.body.style.maxHeight = ''
-      document.documentElement.style.height = ''
-      document.documentElement.style.maxHeight = ''
+      // Restaurar scroll ao desmontar - usar setTimeout para garantir que execute após a navegação
+      setTimeout(() => {
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+        document.body.style.height = ''
+        document.body.style.maxHeight = ''
+        document.documentElement.style.height = ''
+        document.documentElement.style.maxHeight = ''
+      }, 0)
     }
   }, [boardId])
 

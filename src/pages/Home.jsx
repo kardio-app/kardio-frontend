@@ -34,11 +34,29 @@ function Home() {
     // Scroll para o topo ao carregar a página
     window.scrollTo(0, 0)
     
+    // Garantir que o scroll esteja habilitado na página Home
+    document.body.style.overflow = ''
+    document.documentElement.style.overflow = ''
+    document.body.style.height = ''
+    document.body.style.maxHeight = ''
+    document.documentElement.style.height = ''
+    document.documentElement.style.maxHeight = ''
+    
     // Verificar se deve abrir o modal de criação
     if (searchParams.get('create') === 'true') {
       setShowCreateModal(true)
       // Remover o query param da URL
       setSearchParams({})
+    }
+    
+    return () => {
+      // Limpar estilos ao desmontar
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+      document.body.style.height = ''
+      document.body.style.maxHeight = ''
+      document.documentElement.style.height = ''
+      document.documentElement.style.maxHeight = ''
     }
   }, [searchParams, setSearchParams])
 
@@ -230,6 +248,7 @@ function Home() {
           texts={['usekardio', 'usekardio', 'usekardio']}
           velocity={100}
           className="custom-scroll-text"
+          numCopies={20}
         />
 
         <section className="home-opensource">

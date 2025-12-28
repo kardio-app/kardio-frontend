@@ -1,6 +1,7 @@
 import Navbar from '../components/Navbar/Navbar'
 import DocsCommits from '../components/DocsCommits/DocsCommits'
 import DocsSidebar from '../components/DocsSidebar/DocsSidebar'
+import DocsContent from '../components/DocsContent/DocsContent'
 import { getDocTitleById } from '../utils/docsNavItems'
 import { useDocsContext } from '../contexts/DocsContext'
 import './Docs.css'
@@ -32,7 +33,7 @@ function Docs() {
               ) : selectedTopic ? (
                 <div className="docs-article">
                   <h1>{getDocTitleById(selectedTopic)}</h1>
-                  <p>Conteúdo da documentação será adicionado aqui...</p>
+                  <DocsContent topicId={selectedTopic} />
                 </div>
               ) : (
                 <div className="docs-welcome">

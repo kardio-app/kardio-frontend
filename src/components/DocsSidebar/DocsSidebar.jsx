@@ -174,6 +174,7 @@ function DocsSidebar({
 
   const handleSubItemClick = (subItem) => {
     setSelectedTopic(subItem.id)
+    setShowOverview(false) // Garantir que o Overview seja desativado ao selecionar um tópico
     if (onItemClick) {
       onItemClick()
     }

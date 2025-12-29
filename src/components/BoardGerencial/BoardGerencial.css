@@ -122,7 +122,15 @@
   flex: 1;
 }
 
-.board-gerencial-project-share {
+.board-gerencial-project-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.board-gerencial-project-share,
+.board-gerencial-project-unlink {
   width: 32px;
   height: 32px;
   display: flex;
@@ -138,13 +146,21 @@
   padding: 0;
 }
 
-.board-gerencial-project-share:hover {
+.board-gerencial-project-share:hover,
+.board-gerencial-project-unlink:hover {
   background-color: var(--bg-gray-hover);
   border-color: var(--text-gray);
   color: var(--text-white);
 }
 
-.board-gerencial-project-share svg {
+.board-gerencial-project-unlink:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+}
+
+.board-gerencial-project-share svg,
+.board-gerencial-project-unlink svg {
   width: 18px;
   height: 18px;
 }

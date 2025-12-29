@@ -46,6 +46,8 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
   const [showLinkProjectModal, setShowLinkProjectModal] = useState(false);
   const [linkProjectCode, setLinkProjectCode] = useState('');
   const [isLinkingProject, setIsLinkingProject] = useState(false);
+  const [showDeleteManagerModal, setShowDeleteManagerModal] = useState(false);
+  const [managerToDelete, setManagerToDelete] = useState(null);
 
   const boardId = location.pathname.startsWith('/board/') 
     ? location.pathname.split('/board/')[1] 
@@ -136,12 +138,21 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
     }
   };
 
-  const handleDeleteManager = async (e, manager) => {
+  const handleDeleteManager = (e, manager) => {
     e.stopPropagation();
-    if (!boardId || !manager.encryptedLink) return;
+    setManagerToDelete(manager);
+    setShowDeleteManagerModal(true);
+  };
+
+  const handleConfirmDeleteManager = async () => {
+    if (!boardId || !managerToDelete?.encryptedLink) {
+      setShowDeleteManagerModal(false);
+      setManagerToDelete(null);
+      return;
+    }
     
     try {
-      await unlinkManagerFromPersonalProject(boardId, manager.encryptedLink);
+      await unlinkManagerFromPersonalProject(boardId, managerToDelete.encryptedLink);
       // Recarregar lista do banco de dados
       await loadSavedManagers();
       // Disparar evento para atualizar board-gerencial
@@ -154,7 +165,15 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       if (showToast) {
         showToast('Erro ao remover gestor: ' + error.message, 'error');
       }
+    } finally {
+      setShowDeleteManagerModal(false);
+      setManagerToDelete(null);
     }
+  };
+
+  const handleCancelDeleteManager = () => {
+    setShowDeleteManagerModal(false);
+    setManagerToDelete(null);
   };
 
   const loadAccessCode = async () => {
@@ -1334,6 +1353,17 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
             </div>
           </div>
         </div>,
+        document.body
+      )}
+      {showDeleteManagerModal && createPortal(
+        <ModalConfirm
+          title="Remover Vínculo com Gestor?"
+          message={`Tem certeza que deseja remover o vínculo com o gestor "${managerToDelete?.name}"? Esta ação irá desvincular este projeto pessoal do projeto gerencial.`}
+          onConfirm={handleConfirmDeleteManager}
+          onCancel={handleCancelDeleteManager}
+          confirmText="Remover Vínculo"
+          cancelText="Cancelar"
+        />,
         document.body
       )}
     </>

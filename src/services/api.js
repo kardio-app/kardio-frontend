@@ -18,8 +18,8 @@ async function handleResponseError(response) {
         waitTime = `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`
       }
     } else {
-      // Se não tiver Retry-After, assumir 15 minutos (janela padrão do rate limit)
-      waitTime = '15 minutos'
+      // Se não tiver Retry-After, assumir 5 minutos (janela padrão do rate limit)
+      waitTime = '5 minutos'
     }
     
     return `Muitas ações: aguarde ${waitTime} antes de tentar novamente`
@@ -45,7 +45,7 @@ async function handleResponseError(response) {
           waitTime = `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`
         }
       } else {
-        waitTime = '15 minutos'
+        waitTime = '5 minutos'
       }
       
       return `Muitas ações: aguarde ${waitTime} antes de tentar novamente`

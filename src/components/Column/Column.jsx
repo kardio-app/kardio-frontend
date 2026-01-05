@@ -8,6 +8,8 @@ import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
 import ModalMoveColumn from '../ModalMoveColumn/ModalMoveColumn'
 import ModalAddCard from '../ModalAddCard/ModalAddCard'
+import ModalColumnLabel from '../ModalColumnLabel/ModalColumnLabel'
+import ColumnDropdown from '../ColumnDropdown/ColumnDropdown'
 import Card from '../Card/Card'
 import './Column.css'
 
@@ -23,9 +25,13 @@ function Column({ boardId, column, showToast }) {
   const [newCardTitle, setNewCardTitle] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showMoveModal, setShowMoveModal] = useState(false)
+  const [showLabelModal, setShowLabelModal] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 768)
   const [hasScrollbar, setHasScrollbar] = useState(false)
   const cardsRef = useRef(null)
+  const settingsButtonRef = useRef(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,6 +77,12 @@ function Column({ boardId, column, showToast }) {
   const currentBoard = boards[boardId] || getBoard(boardId)
   const currentColumn = currentBoard.columns.find(col => col.id === column.id) || column
   const [title, setTitle] = useState(currentColumn.title)
+  
+  // Buscar a legenda selecionada
+  const labels = currentBoard.labels || []
+  const selectedLabel = currentColumn.label_id 
+    ? labels.find(l => l.id === currentColumn.label_id) 
+    : null
 
   // Verificar se há scrollbar
   useEffect(() => {
@@ -111,6 +123,44 @@ function Column({ boardId, column, showToast }) {
   }, [currentColumn.title, isEditing])
 
   const cardIds = currentColumn.cards.map(card => card.id)
+
+  const handleSettingsClick = (e) => {
+    e.stopPropagation()
+    if (settingsButtonRef.current) {
+      const rect = settingsButtonRef.current.getBoundingClientRect()
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.left
+      })
+      setShowDropdown(true)
+    }
+  }
+
+  const handleEditLabel = () => {
+    setShowLabelModal(true)
+  }
+
+  const handleLabelConfirm = async (data) => {
+    try {
+      await updateColumn(boardId, column.id, data)
+      setShowLabelModal(false)
+      if (showToast) {
+        if (data.label_id) {
+          const label = labels.find(l => l.id === data.label_id)
+          if (label) {
+            showToast(`Legenda "${label.name}" adicionada à coluna`, 'success')
+          }
+        } else {
+          showToast('Legenda removida da coluna', 'success')
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar legenda da coluna:', error)
+      if (showToast) {
+        showToast('Erro ao atualizar legenda', 'error')
+      }
+    }
+  }
 
   const handleDeleteColumn = () => {
     setShowDeleteConfirm(true)
@@ -221,39 +271,33 @@ function Column({ boardId, column, showToast }) {
       <div
         ref={setNodeRef}
         style={style}
-        className={`column ${isDragging ? 'column-dragging' : ''}`}
+        className={`column ${isDragging ? 'column-dragging' : ''} ${selectedLabel ? 'has-label' : ''}`}
       >
-        <div className="column-header">
-          <div 
-            className="column-drag-handle"
-            {...(!isMobile ? attributes : {})}
-            {...(!isMobile ? listeners : {})}
-            onClick={(e) => {
-              if (isMobile) {
-                e.stopPropagation()
-                setShowMoveModal(true)
-              }
-            }}
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <circle cx="9" cy="12" r="1"></circle>
-              <circle cx="9" cy="5" r="1"></circle>
-              <circle cx="9" cy="19" r="1"></circle>
-              <circle cx="15" cy="12" r="1"></circle>
-              <circle cx="15" cy="5" r="1"></circle>
-              <circle cx="15" cy="19" r="1"></circle>
-            </svg>
-          </div>
+        <div 
+          className="column-label-bar"
+          style={{ 
+            backgroundColor: selectedLabel ? selectedLabel.color : 'transparent',
+            pointerEvents: selectedLabel ? 'auto' : 'auto'
+          }}
+          title={selectedLabel ? selectedLabel.name : ''}
+          {...(!isMobile && !isEditing ? attributes : {})}
+          {...(!isMobile && !isEditing ? listeners : {})}
+          onClick={(e) => {
+            if (isMobile) {
+              e.stopPropagation()
+              setShowMoveModal(true)
+            }
+          }}
+        />
+        <div 
+          className="column-header"
+          onClick={(e) => {
+            if (isMobile && !e.target.closest('.column-title') && !e.target.closest('.column-header-right')) {
+              e.stopPropagation()
+              setShowMoveModal(true)
+            }
+          }}
+        >
           {isEditing ? (
             <input
               className="column-title-input"
@@ -270,23 +314,49 @@ function Column({ boardId, column, showToast }) {
               className="column-title"
               onClick={(e) => {
                 e.stopPropagation()
+                e.preventDefault()
                 setIsEditing(true)
               }}
-              onMouseDown={(e) => e.stopPropagation()}
+              onMouseDown={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+              }}
             >
               {title}
             </h2>
           )}
-          <div className="column-header-right">
-            <span className="column-count">{currentColumn.cards.length}</span>
+          <div 
+            className="column-header-right"
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
+          >
+            <span 
+              className="column-count"
+              onMouseDown={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+              }}
+            >
+              {currentColumn.cards.length}
+            </span>
             <button
-              className="column-delete-button"
+              ref={settingsButtonRef}
+              className="column-settings-button"
               onClick={(e) => {
                 e.stopPropagation()
-                handleDeleteColumn()
+                e.preventDefault()
+                handleSettingsClick(e)
               }}
-              onMouseDown={(e) => e.stopPropagation()}
-              title="Excluir coluna"
+              onMouseDown={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+              }}
+              title="Configurações da coluna"
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -299,9 +369,8 @@ function Column({ boardId, column, showToast }) {
                 strokeLinecap="round" 
                 strokeLinejoin="round"
               >
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
               </svg>
             </button>
           </div>
@@ -333,30 +402,63 @@ function Column({ boardId, column, showToast }) {
           {isMobile && (
             showAddCard ? (
               <div className="column-add-card-form">
-                <input
-                  className="column-add-card-input"
-                  value={newCardTitle}
-                  onChange={(e) => setNewCardTitle(e.target.value)}
-                  onKeyDown={handleAddCardKeyDown}
-                  placeholder="Título do card..."
-                  autoFocus
-                />
-                <div className="column-add-card-actions">
-                  <button
-                    className="column-add-card-button"
-                    onClick={handleAddCard}
-                  >
-                    Adicionar
-                  </button>
-                  <button
-                    className="column-add-card-button"
-                    onClick={() => {
-                      setShowAddCard(false)
-                      setNewCardTitle('')
-                    }}
-                  >
-                    Cancelar
-                  </button>
+                <div className="column-add-card-input-wrapper">
+                  <input
+                    className="column-add-card-input"
+                    value={newCardTitle}
+                    onChange={(e) => setNewCardTitle(e.target.value)}
+                    onKeyDown={handleAddCardKeyDown}
+                    placeholder="Título do card..."
+                    autoFocus
+                  />
+                  <div className="column-add-card-input-actions">
+                    <button
+                      className="column-add-card-icon-button"
+                      onClick={handleAddCard}
+                      type="button"
+                      title="Adicionar"
+                      aria-label="Adicionar"
+                    >
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="18" 
+                        height="18" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </button>
+                    <button
+                      className="column-add-card-icon-button column-add-card-icon-button-cancel"
+                      onClick={() => {
+                        setShowAddCard(false)
+                        setNewCardTitle('')
+                      }}
+                      type="button"
+                      title="Cancelar"
+                      aria-label="Cancelar"
+                    >
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="18" 
+                        height="18" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -365,11 +467,13 @@ function Column({ boardId, column, showToast }) {
                 onClick={() => {
                   setShowAddCardModal(true)
                 }}
+                title="Adicionar Tarefa"
+                aria-label="Adicionar Tarefa"
               >
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
+                  width="20" 
+                  height="20" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   stroke="currentColor" 
@@ -377,10 +481,9 @@ function Column({ boardId, column, showToast }) {
                   strokeLinecap="round" 
                   strokeLinejoin="round"
                 >
+                  <path d="M12 5v14"></path>
                   <path d="M5 12h14"></path>
-                  <path d="m12 5 7 7-7 7"></path>
                 </svg>
-                Adicionar Tarefa
               </button>
             )
           )}
@@ -391,30 +494,63 @@ function Column({ boardId, column, showToast }) {
       {!isMobile && (
         showAddCard ? (
           <div className="column-add-card-form">
-            <input
-              className="column-add-card-input"
-              value={newCardTitle}
-              onChange={(e) => setNewCardTitle(e.target.value)}
-              onKeyDown={handleAddCardKeyDown}
-              placeholder="Título do card..."
-              autoFocus
-            />
-            <div className="column-add-card-actions">
-              <button
-                className="column-add-card-button"
-                onClick={handleAddCard}
-              >
-                Adicionar
-              </button>
-              <button
-                className="column-add-card-button"
-                onClick={() => {
-                  setShowAddCard(false)
-                  setNewCardTitle('')
-                }}
-              >
-                Cancelar
-              </button>
+            <div className="column-add-card-input-wrapper">
+              <input
+                className="column-add-card-input"
+                value={newCardTitle}
+                onChange={(e) => setNewCardTitle(e.target.value)}
+                onKeyDown={handleAddCardKeyDown}
+                placeholder="Título do card..."
+                autoFocus
+              />
+              <div className="column-add-card-input-actions">
+                <button
+                  className="column-add-card-icon-button"
+                  onClick={handleAddCard}
+                  type="button"
+                  title="Adicionar"
+                  aria-label="Adicionar"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="18" 
+                    height="18" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+                <button
+                  className="column-add-card-icon-button column-add-card-icon-button-cancel"
+                  onClick={() => {
+                    setShowAddCard(false)
+                    setNewCardTitle('')
+                  }}
+                  type="button"
+                  title="Cancelar"
+                  aria-label="Cancelar"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="18" 
+                    height="18" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         ) : (
@@ -423,11 +559,13 @@ function Column({ boardId, column, showToast }) {
             onClick={() => {
               setShowAddCard(true)
             }}
+            title="Adicionar Tarefa"
+            aria-label="Adicionar Tarefa"
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
+              width="20" 
+              height="20" 
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
@@ -435,10 +573,9 @@ function Column({ boardId, column, showToast }) {
               strokeLinecap="round" 
               strokeLinejoin="round"
             >
+              <path d="M12 5v14"></path>
               <path d="M5 12h14"></path>
-              <path d="m12 5 7 7-7 7"></path>
             </svg>
-            Adicionar Tarefa
           </button>
         )
       )}
@@ -468,6 +605,24 @@ function Column({ boardId, column, showToast }) {
         <ModalAddCard
           onConfirm={handleAddCardFromModal}
           onCancel={() => setShowAddCardModal(false)}
+        />
+      )}
+      {showDropdown && (
+        <ColumnDropdown
+          onEditLabel={handleEditLabel}
+          onDelete={handleDeleteColumn}
+          onClose={() => setShowDropdown(false)}
+          position={dropdownPosition}
+          hasLabel={!!currentColumn.label_id}
+        />
+      )}
+      {showLabelModal && (
+        <ModalColumnLabel
+          boardId={boardId}
+          column={currentColumn}
+          onConfirm={handleLabelConfirm}
+          onCancel={() => setShowLabelModal(false)}
+          showToast={showToast}
         />
       )}
     </>

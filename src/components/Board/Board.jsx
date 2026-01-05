@@ -354,30 +354,63 @@ function Board({ boardId, showToast }) {
               )}
               {showAddColumn ? (
                 <div className="board-add-column-form">
-                  <input
-                    className="board-add-column-input"
-                    value={newColumnTitle}
-                    onChange={(e) => setNewColumnTitle(e.target.value)}
-                    onKeyDown={handleAddColumnKeyDown}
-                    placeholder="Nome da coluna..."
-                    autoFocus
-                  />
-                  <div className="board-add-column-actions">
-                    <button
-                      className="board-add-column-button"
-                      onClick={handleAddColumn}
-                    >
-                      Adicionar
-                    </button>
-                    <button
-                      className="board-add-column-button"
-                      onClick={() => {
-                        setShowAddColumn(false)
-                        setNewColumnTitle('')
-                      }}
-                    >
-                      Cancelar
-                    </button>
+                  <div className="board-add-column-input-wrapper">
+                    <input
+                      className="board-add-column-input"
+                      value={newColumnTitle}
+                      onChange={(e) => setNewColumnTitle(e.target.value)}
+                      onKeyDown={handleAddColumnKeyDown}
+                      placeholder="Nome da coluna..."
+                      autoFocus
+                    />
+                    <div className="board-add-column-input-actions">
+                      <button
+                        className="board-add-column-icon-button"
+                        onClick={handleAddColumn}
+                        type="button"
+                        title="Adicionar"
+                        aria-label="Adicionar"
+                      >
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="18" 
+                          height="18" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </button>
+                      <button
+                        className="board-add-column-icon-button board-add-column-icon-button-cancel"
+                        onClick={() => {
+                          setShowAddColumn(false)
+                          setNewColumnTitle('')
+                        }}
+                        type="button"
+                        title="Cancelar"
+                        aria-label="Cancelar"
+                      >
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="18" 
+                          height="18" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -417,30 +450,63 @@ function Board({ boardId, showToast }) {
               ))}
             {showAddColumn ? (
               <div className="board-add-column-form">
-                <input
-                  className="board-add-column-input"
-                  value={newColumnTitle}
-                  onChange={(e) => setNewColumnTitle(e.target.value)}
-                  onKeyDown={handleAddColumnKeyDown}
-                  placeholder="Nome da coluna..."
-                  autoFocus
-                />
-                <div className="board-add-column-actions">
-                  <button
-                    className="board-add-column-button"
-                    onClick={handleAddColumn}
-                  >
-                    Adicionar
-                  </button>
-                  <button
-                    className="board-add-column-button"
-                    onClick={() => {
-                      setShowAddColumn(false)
-                      setNewColumnTitle('')
-                    }}
-                  >
-                    Cancelar
-                  </button>
+                <div className="board-add-column-input-wrapper">
+                  <input
+                    className="board-add-column-input"
+                    value={newColumnTitle}
+                    onChange={(e) => setNewColumnTitle(e.target.value)}
+                    onKeyDown={handleAddColumnKeyDown}
+                    placeholder="Nome da coluna..."
+                    autoFocus
+                  />
+                  <div className="board-add-column-input-actions">
+                    <button
+                      className="board-add-column-icon-button"
+                      onClick={handleAddColumn}
+                      type="button"
+                      title="Adicionar"
+                      aria-label="Adicionar"
+                    >
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="18" 
+                        height="18" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </button>
+                    <button
+                      className="board-add-column-icon-button board-add-column-icon-button-cancel"
+                      onClick={() => {
+                        setShowAddColumn(false)
+                        setNewColumnTitle('')
+                      }}
+                      type="button"
+                      title="Cancelar"
+                      aria-label="Cancelar"
+                    >
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="18" 
+                        height="18" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (

@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import useBoardStore from '../../store/useBoardStore'
-import { updateCard } from '../../services/api'
+import { updateCard, getComments } from '../../services/api'
 import ModalCard from '../ModalCard/ModalCard'
 import ModalMoveCard from '../ModalMoveCard/ModalMoveCard'
 import './Card.css'
@@ -14,6 +14,7 @@ function Card({ boardId, columnId, card, showToast, columns }) {
   const [showModal, setShowModal] = useState(false)
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 768)
+  const [commentsCount, setCommentsCount] = useState(0)
 
   useEffect(() => {
     const handleResize = () => {
@@ -22,6 +23,28 @@ function Card({ boardId, columnId, card, showToast, columns }) {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Buscar contagem de comentários
+  const loadCommentsCount = useCallback(async () => {
+    try {
+      const comments = await getComments(boardId, card.id)
+      setCommentsCount(comments?.length || 0)
+    } catch (error) {
+      console.error('Erro ao carregar comentários:', error)
+      setCommentsCount(0)
+    }
+  }, [boardId, card.id])
+
+  useEffect(() => {
+    loadCommentsCount()
+  }, [loadCommentsCount])
+
+  // Atualizar contagem quando o modal fechar (pode ter novos comentários)
+  useEffect(() => {
+    if (!showModal) {
+      loadCommentsCount()
+    }
+  }, [showModal, loadCommentsCount])
 
   // Obter informações do card atual
   const currentBoard = boards[boardId] || getBoard(boardId)
@@ -153,33 +176,65 @@ function Card({ boardId, columnId, card, showToast, columns }) {
             {card.description}
           </p>
         )}
-        {card.assignee && (
-          <div className={`card-assignee ${card.is_completed ? 'card-assignee-completed' : ''}`}>
-            <span className="card-assignee-label">Responsável:</span>
-            <span className="card-assignee-name">{card.assignee}</span>
-          </div>
-        )}
-        {card.description && typeof card.description === 'string' && card.description.trim().length > 0 && (
+        <div className="card-footer">
+          {card.assignee && (
+            <div className={`card-assignee ${card.is_completed ? 'card-assignee-completed' : ''}`}>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="14" 
+                height="14" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className="card-assignee-icon"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span className="card-assignee-name">{card.assignee}</span>
+            </div>
+          )}
           <div 
             className="card-completion-checkbox-container"
             onClick={(e) => e.stopPropagation()}
           >
-            <label 
-              className="card-completion-checkbox-label"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <input
-                type="checkbox"
-                className="card-completion-checkbox"
-                checked={card.is_completed || false}
-                onChange={handleCompletionToggle}
+            <div className="card-completion-checkbox-wrapper">
+              <label 
+                className="card-completion-checkbox-label"
                 onClick={(e) => e.stopPropagation()}
-                title={card.is_completed ? 'Marcar como não concluído' : 'Marcar como concluído'}
-              />
-              <span className="card-completion-checkbox-custom"></span>
-            </label>
+              >
+                <input
+                  type="checkbox"
+                  className="card-completion-checkbox"
+                  checked={card.is_completed || false}
+                  onChange={handleCompletionToggle}
+                  onClick={(e) => e.stopPropagation()}
+                  title={card.is_completed ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                />
+                <span className="card-completion-checkbox-custom"></span>
+              </label>
+            </div>
+            <div className="card-comments-indicator">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span className="card-comments-count">{commentsCount}</span>
+            </div>
           </div>
-        )}
+        </div>
       </div>
       {showModal && (
         <ModalCard

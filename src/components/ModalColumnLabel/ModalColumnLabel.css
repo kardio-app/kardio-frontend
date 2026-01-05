@@ -1,0 +1,221 @@
+.modal-column-label-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+  overflow-y: auto;
+}
+
+.modal-column-label-content {
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 500px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+}
+
+.modal-column-label-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid transparent;
+}
+
+.modal-column-label-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.modal-column-label-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  background: transparent;
+  border: none;
+  color: var(--text-white);
+  cursor: pointer;
+}
+
+.modal-column-label-close:hover {
+  background-color: var(--bg-gray-light);
+}
+
+.modal-column-label-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-column-label-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modal-column-label-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-column-label-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-gray);
+}
+
+.modal-column-label-empty-hint {
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+.modal-column-label-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.modal-column-label-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background-color: var(--bg-gray-light);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  width: 100%;
+}
+
+.modal-column-label-item:hover {
+  background-color: var(--bg-gray-hover);
+  border-color: var(--border-color);
+}
+
+.modal-column-label-item.selected {
+  border-color: var(--text-white);
+  background-color: var(--bg-gray-hover);
+}
+
+.modal-column-label-item-preview {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  transition: var(--transition);
+}
+
+.modal-column-label-item-name {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.modal-column-label-check-icon {
+  color: var(--text-white);
+  flex-shrink: 0;
+  margin-left: 0.75rem;
+}
+
+.modal-column-label-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.modal-column-label-button {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.modal-column-label-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-column-label-button-cancel {
+  background-color: transparent;
+  color: var(--text-gray);
+}
+
+.modal-column-label-button-cancel:hover:not(:disabled) {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+.modal-column-label-button-submit {
+  background-color: var(--bg-gray-light);
+  color: var(--text-white);
+}
+
+.modal-column-label-button-submit:hover:not(:disabled) {
+  background-color: var(--bg-gray-hover);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-column-label-backdrop {
+    padding: 1rem;
+  }
+
+  .modal-column-label-content {
+    max-width: 100%;
+  }
+}

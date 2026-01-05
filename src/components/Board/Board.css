@@ -64,17 +64,23 @@
   max-width: 300px;
   background-color: var(--bg-gray);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: 1rem 0.5rem 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0;
   max-height: calc(100vh - 70px - 80px - 4rem - 1.5rem);
   overflow-y: auto;
   margin-bottom: 1.5rem;
 }
 
+.board-add-column-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .board-add-column-input {
-  padding: 0.75rem;
+  padding: 0.75rem 3rem 0.75rem 0.75rem;
   background-color: var(--bg-gray-light);
   border-radius: var(--border-radius);
   font-size: 0.875rem;
@@ -82,17 +88,47 @@
   border: 1px solid transparent;
   transition: var(--transition);
   font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .board-add-column-input:focus {
-  background-color: var(--bg-gray-hover);
-  border-color: var(--border-color);
   outline: none;
+  border-color: var(--border-color);
+  background-color: var(--bg-gray-hover);
 }
 
-.board-add-column-actions {
+.board-add-column-input-actions {
+  position: absolute;
+  right: 0.5rem;
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.board-add-column-icon-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--text-gray);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.board-add-column-icon-button:hover {
+  background-color: var(--bg-gray-hover);
+  color: var(--text-white);
+}
+
+.board-add-column-icon-button-cancel:hover {
+  color: #FF6B6B;
 }
 
 .board-add-column-button {

@@ -57,6 +57,7 @@ function Card({ boardId, columnId, card, showToast, columns }) {
   const labels = currentBoard.labels || []
   const cardLabelIds = card.label_ids || []
   const cardLabels = cardLabelIds.map(labelId => labels.find(l => l.id === labelId)).filter(Boolean)
+  const highlightLabel = card.highlight_label_id ? labels.find(l => l.id === card.highlight_label_id) : null
 
   const {
     attributes,
@@ -127,16 +128,13 @@ function Card({ boardId, columnId, card, showToast, columns }) {
         onClick={handleClick}
         data-dragging={isDragging}
       >
-        {cardLabels.length > 0 && (
+        {highlightLabel && (
           <div className="card-labels-container">
-            {cardLabels.map((label) => (
-              <div
-                key={label.id}
-                className="card-label-bar"
-                style={{ backgroundColor: label.color }}
-                title={label.name}
-              />
-            ))}
+            <div
+              className="card-label-bar"
+              style={{ backgroundColor: highlightLabel.color }}
+              title={highlightLabel.name}
+            />
           </div>
         )}
         <div 
@@ -177,26 +175,84 @@ function Card({ boardId, columnId, card, showToast, columns }) {
           </p>
         )}
         <div className="card-footer">
-          {card.assignee && (
-            <div className={`card-assignee ${card.is_completed ? 'card-assignee-completed' : ''}`}>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                className="card-assignee-icon"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              <span className="card-assignee-name">{card.assignee}</span>
-            </div>
-          )}
+          <div className="card-footer-left">
+            {cardLabels.length > 0 && (
+              <div className="card-labels-badges">
+                {cardLabels.map((label) => (
+                  <div
+                    key={label.id}
+                    className={`card-label-badge ${card.is_completed ? 'card-label-badge-completed' : ''}`}
+                    style={{ 
+                      backgroundColor: label.color,
+                      color: getContrastColor(label.color)
+                    }}
+                    title={label.name}
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="12" 
+                      height="12" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      className="card-label-badge-icon"
+                    >
+                      <path d="M7 7h.01"></path>
+                      <path d="M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A1.994 1.994 0 0 1 3 12V7a4 4 0 0 1 4-4z"></path>
+                    </svg>
+                    <span className="card-label-badge-name">{label.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {card.created_at && (
+              <div className={`card-date-badge ${card.is_completed ? 'card-date-badge-completed' : ''}`}>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="14" 
+                  height="14" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="card-date-badge-icon"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span className="card-date-badge-text">
+                  {formatDate(card.created_at)}
+                </span>
+              </div>
+            )}
+            {card.assignee && (
+              <div className={`card-assignee ${card.is_completed ? 'card-assignee-completed' : ''}`}>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="14" 
+                  height="14" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="card-assignee-icon"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span className="card-assignee-name">{card.assignee}</span>
+              </div>
+            )}
+          </div>
           <div 
             className="card-completion-checkbox-container"
             onClick={(e) => e.stopPropagation()}
@@ -259,6 +315,65 @@ function Card({ boardId, columnId, card, showToast, columns }) {
       )}
     </>
   )
+}
+
+// Função para determinar a cor do texto com melhor contraste
+function getContrastColor(hexColor) {
+  if (!hexColor || hexColor.length !== 7) return '#FFFFFF'
+  
+  const r = parseInt(hexColor.substr(1, 2), 16)
+  const g = parseInt(hexColor.substr(3, 2), 16)
+  const b = parseInt(hexColor.substr(5, 2), 16)
+  
+  // Calcular luminância relativa
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  
+  // Retornar preto para cores claras e branco para cores escuras
+  return luminance > 0.5 ? '#000000' : '#FFFFFF'
+}
+
+// Função para formatar a data
+function formatDate(dateString) {
+  if (!dateString) return ''
+  
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now - date)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  // Se for hoje
+  if (diffDays === 0) {
+    return 'Hoje'
+  }
+  
+  // Se for ontem
+  if (diffDays === 1) {
+    return 'Ontem'
+  }
+  
+  // Se for há menos de 7 dias
+  if (diffDays < 7) {
+    return `${diffDays} dias atrás`
+  }
+  
+  // Se for há menos de 30 dias
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7)
+    return weeks === 1 ? '1 semana atrás' : `${weeks} semanas atrás`
+  }
+  
+  // Se for há menos de 365 dias
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30)
+    return months === 1 ? '1 mês atrás' : `${months} meses atrás`
+  }
+  
+  // Mais de 1 ano - mostrar data completa
+  return date.toLocaleDateString('pt-BR', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric' 
+  })
 }
 
 export default Card

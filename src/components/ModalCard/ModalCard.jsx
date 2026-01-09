@@ -14,6 +14,7 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
   const [description, setDescription] = useState(card.description || '')
   const [assignee, setAssignee] = useState(card.assignee || '')
   const [labelIds, setLabelIds] = useState(card.label_ids || [])
+  const [highlightLabelId, setHighlightLabelId] = useState(card.highlight_label_id || null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
@@ -32,7 +33,8 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
     title: card.title,
     description: card.description || '',
     assignee: card.assignee || '',
-    label_ids: card.label_ids || []
+    label_ids: card.label_ids || [],
+    highlight_label_id: card.highlight_label_id || null
   })
 
   const board = boards[boardId] || getBoard(boardId)
@@ -47,6 +49,7 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
   const isInitialMount = useRef(true)
   const cardIdRef = useRef(card.id)
   const lastSavedLabelIds = useRef(currentCard.label_ids || [])
+  const lastSavedHighlightLabelId = useRef(currentCard.highlight_label_id || null)
   
   useEffect(() => {
     // Se o card mudou (modal foi fechado e reaberto), resetar valores
@@ -54,23 +57,28 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
       cardIdRef.current = card.id
       isInitialMount.current = true
       lastSavedLabelIds.current = currentCard.label_ids || []
+      lastSavedHighlightLabelId.current = currentCard.highlight_label_id || null
     }
     
     // Se é a primeira renderização ou se o card foi atualizado no store (e não há alterações não salvas)
     if (isInitialMount.current) {
       const cardToUse = currentCard
       const initialLabelIds = Array.isArray(cardToUse.label_ids) ? cardToUse.label_ids : []
+      const initialHighlightLabelId = cardToUse.highlight_label_id || null
       setTitle(cardToUse.title)
       setDescription(cardToUse.description || '')
       setAssignee(cardToUse.assignee || '')
       setLabelIds(initialLabelIds)
+      setHighlightLabelId(initialHighlightLabelId)
       initialValues.current = {
         title: cardToUse.title,
         description: cardToUse.description || '',
         assignee: cardToUse.assignee || '',
-        label_ids: [...initialLabelIds]
+        label_ids: [...initialLabelIds],
+        highlight_label_id: initialHighlightLabelId
       }
       lastSavedLabelIds.current = [...initialLabelIds]
+      lastSavedHighlightLabelId.current = initialHighlightLabelId
       isInitialMount.current = false
     } else {
       // Se o card foi atualizado no store (por outro usuário ou sincronização)
@@ -80,7 +88,8 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
         description.trim() !== initialValues.current.description ||
         assignee.trim() !== initialValues.current.assignee ||
         JSON.stringify((Array.isArray(labelIds) ? labelIds : []).sort()) !== 
-        JSON.stringify((Array.isArray(initialValues.current.label_ids) ? initialValues.current.label_ids : []).sort())
+        JSON.stringify((Array.isArray(initialValues.current.label_ids) ? initialValues.current.label_ids : []).sort()) ||
+        highlightLabelId !== initialValues.current.highlight_label_id
       
       // Se não há alterações locais não salvas, atualizar com dados do store
       if (!hasLocalChanges) {
@@ -93,6 +102,14 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
           setLabelIds(currentLabelIds)
           initialValues.current.label_ids = [...currentLabelIds]
           lastSavedLabelIds.current = [...currentLabelIds]
+        }
+        
+        // Se a legenda de destaque mudou no store
+        const currentHighlightLabelId = currentCard.highlight_label_id || null
+        if (currentHighlightLabelId !== lastSavedHighlightLabelId.current) {
+          setHighlightLabelId(currentHighlightLabelId)
+          initialValues.current.highlight_label_id = currentHighlightLabelId
+          lastSavedHighlightLabelId.current = currentHighlightLabelId
         }
         
         // Atualizar outros campos se mudaram no store
@@ -120,10 +137,11 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
       title.trim() !== initialValues.current.title ||
       description.trim() !== initialValues.current.description ||
       assignee.trim() !== initialValues.current.assignee ||
-      JSON.stringify(currentLabelIds.sort()) !== JSON.stringify(initialLabelIds.sort())
+      JSON.stringify(currentLabelIds.sort()) !== JSON.stringify(initialLabelIds.sort()) ||
+      highlightLabelId !== initialValues.current.highlight_label_id
     
     setHasUnsavedChanges(hasChanges)
-  }, [title, description, assignee, labelIds])
+  }, [title, description, assignee, labelIds, highlightLabelId])
 
   const handleClose = useCallback(() => {
     if (hasUnsavedChanges) {
@@ -152,18 +170,22 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
         title: title.trim() || card.title,
         description: description.trim(),
         assignee: assignee.trim(),
-        label_ids: labelIds
+        label_ids: labelIds,
+        highlight_label_id: highlightLabelId
       })
       
       // Atualizar valores iniciais após salvar
       const savedLabelIds = Array.isArray(labelIds) ? labelIds : []
+      const savedHighlightLabelId = highlightLabelId || null
       initialValues.current = {
         title: title.trim() || card.title,
         description: description.trim(),
         assignee: assignee.trim(),
-        label_ids: [...savedLabelIds]
+        label_ids: [...savedLabelIds],
+        highlight_label_id: savedHighlightLabelId
       }
       lastSavedLabelIds.current = [...savedLabelIds]
+      lastSavedHighlightLabelId.current = savedHighlightLabelId
       setHasUnsavedChanges(false)
       
       if (showToast) {
@@ -324,55 +346,87 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
                         <div className="modal-labels-list">
                           {labels.map((label) => {
                             const isSelected = labelIds.includes(label.id)
+                            const isHighlight = highlightLabelId === label.id
                             return (
-                              <label key={label.id} className={`modal-label-checkbox-item ${isSelected ? 'selected' : ''}`}>
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={(e) => {
-                                    setLabelIds(prevIds => {
-                                      const currentIds = Array.isArray(prevIds) ? prevIds : []
-                                      if (e.target.checked) {
-                                        // Adicionar se não estiver já na lista
-                                        if (!currentIds.includes(label.id)) {
-                                          return [...currentIds, label.id]
+                              <div key={label.id} className={`modal-label-item-wrapper ${isSelected ? 'selected' : ''}`}>
+                                <label className="modal-label-checkbox-item">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={(e) => {
+                                      setLabelIds(prevIds => {
+                                        const currentIds = Array.isArray(prevIds) ? prevIds : []
+                                        if (e.target.checked) {
+                                          // Adicionar se não estiver já na lista
+                                          if (!currentIds.includes(label.id)) {
+                                            return [...currentIds, label.id]
+                                          }
+                                          return currentIds
+                                        } else {
+                                          // Remover da lista e também remover como destaque se for o caso
+                                          if (highlightLabelId === label.id) {
+                                            setHighlightLabelId(null)
+                                          }
+                                          return currentIds.filter(id => id !== label.id)
                                         }
-                                        return currentIds
-                                      } else {
-                                        // Remover da lista
-                                        return currentIds.filter(id => id !== label.id)
-                                      }
-                                    })
-                                  }}
-                                  className="modal-label-checkbox"
-                                />
-                                <div 
-                                  className="modal-label-checkbox-preview" 
-                                  style={{ backgroundColor: label.color }}
-                                >
-                                  {isSelected && (
+                                      })
+                                    }}
+                                    className="modal-label-checkbox"
+                                  />
+                                  <div 
+                                    className="modal-label-checkbox-preview" 
+                                    style={{ backgroundColor: label.color }}
+                                  >
+                                    {isSelected && (
+                                      <svg 
+                                        className="modal-label-check-icon" 
+                                        width="14" 
+                                        height="14" 
+                                        viewBox="0 0 24 24" 
+                                        fill="none" 
+                                        stroke={getContrastColor(label.color)} 
+                                        strokeWidth="3"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      >
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                      </svg>
+                                    )}
+                                    <span 
+                                      className="modal-label-checkbox-text" 
+                                      style={{ color: getContrastColor(label.color) }}
+                                    >
+                                      {label.name}
+                                    </span>
+                                  </div>
+                                </label>
+                                {isSelected && (
+                                  <button
+                                    type="button"
+                                    className={`modal-label-highlight-button ${isHighlight ? 'active' : ''}`}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      setHighlightLabelId(isHighlight ? null : label.id)
+                                    }}
+                                    title={isHighlight ? 'Remover destaque' : 'Marcar como destaque'}
+                                    aria-label={isHighlight ? 'Remover destaque' : 'Marcar como destaque'}
+                                  >
                                     <svg 
-                                      className="modal-label-check-icon" 
-                                      width="14" 
-                                      height="14" 
+                                      width="16" 
+                                      height="16" 
                                       viewBox="0 0 24 24" 
-                                      fill="none" 
-                                      stroke={getContrastColor(label.color)} 
-                                      strokeWidth="3"
+                                      fill={isHighlight ? 'currentColor' : 'none'} 
+                                      stroke="currentColor" 
+                                      strokeWidth="2"
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
                                     >
-                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                     </svg>
-                                  )}
-                                  <span 
-                                    className="modal-label-checkbox-text" 
-                                    style={{ color: getContrastColor(label.color) }}
-                                  >
-                                    {label.name}
-                                  </span>
-                                </div>
-                              </label>
+                                  </button>
+                                )}
+                              </div>
                             )
                           })}
                         </div>

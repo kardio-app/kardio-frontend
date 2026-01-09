@@ -124,6 +124,16 @@
   gap: 0.5rem;
 }
 
+.card-footer-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
 .card-assignee {
   display: inline-flex;
   align-items: center;
@@ -144,6 +154,71 @@
   color: var(--text-white);
   font-weight: 500;
   line-height: 1;
+}
+
+.card-labels-badges {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.card-label-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-label-badge-icon {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.card-label-badge-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-label-badge-completed {
+  opacity: 0.6;
+}
+
+.card-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--bg-gray-hover);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  width: fit-content;
+}
+
+.card-date-badge-icon {
+  color: var(--text-gray);
+  flex-shrink: 0;
+}
+
+.card-date-badge-text {
+  color: var(--text-white);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.card-date-badge-completed {
+  opacity: 0.6;
 }
 
 /* Estilos para texto riscado quando concluído */

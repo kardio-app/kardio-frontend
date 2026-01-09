@@ -324,6 +324,8 @@ export async function updateCard(encryptedId, cardId, data) {
       assignee: result.assignee,
       position: result.position,
       columnId: result.columnId || result.column_id,
+      label_ids: result.label_ids || [],
+      highlight_label_id: result.highlight_label_id || null,
       is_completed: result.is_completed || false
     }
   } catch (error) {

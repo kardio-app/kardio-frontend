@@ -71,6 +71,8 @@ const useBoardStore = create(
           description: card.description || null,
           assignee: card.assignee || null,
           label_ids: card.label_ids || [],
+          highlight_label_id: card.highlight_label_id || null,
+          created_at: card.created_at || new Date().toISOString(),
           position: board.columns.find(col => col.id === columnId)?.cards.length || 0
         }
         
@@ -192,7 +194,8 @@ const useBoardStore = create(
                   ...currentCard,
                   ...updates,
                   id: cardId,
-                  label_ids: updates.label_ids !== undefined ? updates.label_ids : currentCard.label_ids || []
+                  label_ids: updates.label_ids !== undefined ? updates.label_ids : currentCard.label_ids || [],
+                  highlight_label_id: updates.highlight_label_id !== undefined ? updates.highlight_label_id : currentCard.highlight_label_id || null
                 }
                 return {
                   ...col,
@@ -211,7 +214,8 @@ const useBoardStore = create(
                           ...updates,
                           id: cardId,
                           position: card.position, // Preservar posição
-                          label_ids: updates.label_ids !== undefined ? updates.label_ids : card.label_ids || []
+                          label_ids: updates.label_ids !== undefined ? updates.label_ids : card.label_ids || [],
+                          highlight_label_id: updates.highlight_label_id !== undefined ? updates.highlight_label_id : card.highlight_label_id || null
                         } 
                       : card
                   )

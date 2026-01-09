@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
 import { updateProjectName, getProject, linkPersonalProjectToManager } from '../../services/api'
 import LabelsManager from '../LabelsManager/LabelsManager'
+import ModalFilters from '../ModalFilters/ModalFilters'
 import './Header.css'
 
 function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = false }) {
@@ -21,6 +22,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
   const [showLinkProjectModal, setShowLinkProjectModal] = useState(false)
   const [linkProjectCode, setLinkProjectCode] = useState('')
   const [isLinking, setIsLinking] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
   
   const currentBoard = boards[boardId] || getBoard(boardId)
   // Priorizar boardName (vem do banco) sobre currentBoard.name (pode estar desatualizado)
@@ -239,26 +241,47 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
       </div>
       <div className="header-right">
         {!isManagerial && (
-          <button
-            className="header-button header-button-icon"
-            onClick={() => setShowLabelsManager(true)}
-            title="Gerenciar legendas"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
+          <>
+            <button
+              className="header-button header-button-icon"
+              onClick={() => setShowFilters(true)}
+              title="Filtrar cards"
             >
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-              <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-          </button>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
+            <button
+              className="header-button header-button-icon"
+              onClick={() => setShowLabelsManager(true)}
+              title="Gerenciar legendas"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+              </svg>
+            </button>
+          </>
         )}
         {isManagerial ? (
           <>
@@ -349,6 +372,12 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
           </button>
         )}
       </div>
+      {showFilters && (
+        <ModalFilters
+          boardId={boardId}
+          onClose={() => setShowFilters(false)}
+        />
+      )}
       {showLabelsManager && (
         <LabelsManager
           boardId={boardId}

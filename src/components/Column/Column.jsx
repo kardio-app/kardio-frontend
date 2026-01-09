@@ -122,7 +122,66 @@ function Column({ boardId, column, showToast }) {
     }
   }, [currentColumn.title, isEditing])
 
-  const cardIds = currentColumn.cards.map(card => card.id)
+  // Aplicar filtros aos cards
+  const filters = currentBoard.filters || {}
+  const filteredCards = useMemo(() => {
+    let cards = currentColumn.cards || []
+    
+    // Filtro por legendas
+    if (filters.labels && filters.labels.length > 0) {
+      cards = cards.filter(card => {
+        const cardLabelIds = card.label_ids || []
+        return filters.labels.some(labelId => cardLabelIds.includes(labelId))
+      })
+    }
+    
+    // Filtro por responsável
+    if (filters.assignees && filters.assignees.length > 0) {
+      cards = cards.filter(card => 
+        card.assignee && filters.assignees.includes(card.assignee)
+      )
+    }
+    
+    // Filtro por status de conclusão
+    if (filters.completionStatus === 'completed') {
+      cards = cards.filter(card => card.is_completed === true)
+    } else if (filters.completionStatus === 'not-completed') {
+      cards = cards.filter(card => !card.is_completed)
+    }
+    
+    // Filtro por data
+    if (filters.dateFilter && filters.dateFilter !== 'all' && cards.length > 0) {
+      const now = new Date()
+      const filterDate = new Date()
+      
+      switch (filters.dateFilter) {
+        case 'today':
+          filterDate.setHours(0, 0, 0, 0)
+          break
+        case 'week':
+          filterDate.setDate(now.getDate() - 7)
+          break
+        case 'month':
+          filterDate.setDate(now.getDate() - 30)
+          break
+        case 'year':
+          filterDate.setFullYear(now.getFullYear() - 1)
+          break
+        default:
+          break
+      }
+      
+      cards = cards.filter(card => {
+        if (!card.created_at) return false
+        const cardDate = new Date(card.created_at)
+        return cardDate >= filterDate
+      })
+    }
+    
+    return cards
+  }, [currentColumn.cards, filters])
+  
+  const cardIds = filteredCards.map(card => card.id)
 
   const handleSettingsClick = (e) => {
     e.stopPropagation()
@@ -342,7 +401,7 @@ function Column({ boardId, column, showToast }) {
                 e.preventDefault()
               }}
             >
-              {currentColumn.cards.length}
+              {filteredCards.length}
             </span>
             <button
               ref={settingsButtonRef}
@@ -387,7 +446,7 @@ function Column({ boardId, column, showToast }) {
               Solte aqui
             </div>
           )}
-            {currentColumn.cards.map((card) => (
+            {filteredCards.map((card) => (
               <Card
                 key={card.id}
                 boardId={boardId}

@@ -245,6 +245,7 @@
   color: var(--text-white);
   border: 1px solid transparent;
   font-family: inherit;
+  line-height: 1.5;
 }
 
 .modal-input:focus,

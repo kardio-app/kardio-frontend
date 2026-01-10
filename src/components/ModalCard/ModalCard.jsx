@@ -446,7 +446,7 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
                         <label className="modal-label">Data de abertura</label>
                       </div>
                       <div className="modal-date-display">
-                        {formatDate(currentCard.created_at || card.created_at)}
+                        {formatDateForModal(currentCard.created_at || card.created_at)}
                       </div>
                     </div>
                   )}
@@ -530,8 +530,8 @@ function getContrastColor(hexColor) {
   return luminance > 0.5 ? '#000000' : '#FFFFFF'
 }
 
-// Função para formatar a data
-function formatDate(dateString) {
+// Função para formatar a data no modal (relativo + data completa)
+function formatDateForModal(dateString) {
   if (!dateString) return ''
   
   const date = new Date(dateString)
@@ -545,39 +545,46 @@ function formatDate(dateString) {
   const diffTime = nowNormalized - dateNormalized
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
   
-  // Se for hoje
-  if (diffDays === 0) {
-    return 'Hoje'
-  }
-  
-  // Se for ontem
-  if (diffDays === 1) {
-    return 'Ontem'
-  }
-  
-  // Se for há menos de 7 dias
-  if (diffDays < 7) {
-    return `${diffDays} dias atrás`
-  }
-  
-  // Se for há menos de 30 dias
-  if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7)
-    return weeks === 1 ? '1 semana atrás' : `${weeks} semanas atrás`
-  }
-  
-  // Se for há menos de 365 dias
-  if (diffDays < 365) {
-    const months = Math.floor(diffDays / 30)
-    return months === 1 ? '1 mês atrás' : `${months} meses atrás`
-  }
-  
-  // Mais de 1 ano - mostrar data completa
-  return date.toLocaleDateString('pt-BR', { 
+  // Formatar data completa em pt-BR
+  const fullDate = date.toLocaleDateString('pt-BR', { 
     day: '2-digit', 
     month: '2-digit', 
     year: 'numeric' 
   })
+  
+  // Texto relativo
+  let relativeText = ''
+  
+  // Se for hoje
+  if (diffDays === 0) {
+    relativeText = 'Hoje'
+  }
+  // Se for ontem
+  else if (diffDays === 1) {
+    relativeText = 'Ontem'
+  }
+  // Se for há menos de 7 dias
+  else if (diffDays < 7) {
+    relativeText = `${diffDays} dias atrás`
+  }
+  // Se for há menos de 30 dias
+  else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7)
+    relativeText = weeks === 1 ? '1 semana atrás' : `${weeks} semanas atrás`
+  }
+  // Se for há menos de 365 dias
+  else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30)
+    relativeText = months === 1 ? '1 mês atrás' : `${months} meses atrás`
+  }
+  // Mais de 1 ano
+  else {
+    const years = Math.floor(diffDays / 365)
+    relativeText = years === 1 ? '1 ano atrás' : `${years} anos atrás`
+  }
+  
+  // Retornar relativo + data completa
+  return `${relativeText} (${fullDate})`
 }
 
 export default ModalCard

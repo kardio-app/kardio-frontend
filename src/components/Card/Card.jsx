@@ -338,8 +338,14 @@ function formatDate(dateString) {
   
   const date = new Date(dateString)
   const now = new Date()
-  const diffTime = Math.abs(now - date)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  // Normalizar para meia-noite para comparar apenas as datas (ignorar hora)
+  const dateNormalized = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const nowNormalized = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  
+  // Calcular diferença em dias
+  const diffTime = nowNormalized - dateNormalized
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
   
   // Se for hoje
   if (diffDays === 0) {

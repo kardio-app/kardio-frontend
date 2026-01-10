@@ -433,6 +433,23 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
                       )}
                     </div>
                   </div>
+
+                  {(currentCard.created_at || card.created_at) && (
+                    <div className="modal-section">
+                      <div className="modal-section-header">
+                        <svg className="modal-section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="16" y1="2" x2="16" y2="6"></line>
+                          <line x1="8" y1="2" x2="8" y2="6"></line>
+                          <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <label className="modal-label">Data de abertura</label>
+                      </div>
+                      <div className="modal-date-display">
+                        {formatDate(currentCard.created_at || card.created_at)}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -511,6 +528,56 @@ function getContrastColor(hexColor) {
   
   // Retornar preto para cores claras e branco para cores escuras
   return luminance > 0.5 ? '#000000' : '#FFFFFF'
+}
+
+// Função para formatar a data
+function formatDate(dateString) {
+  if (!dateString) return ''
+  
+  const date = new Date(dateString)
+  const now = new Date()
+  
+  // Normalizar para meia-noite para comparar apenas as datas (ignorar hora)
+  const dateNormalized = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const nowNormalized = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  
+  // Calcular diferença em dias
+  const diffTime = nowNormalized - dateNormalized
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  
+  // Se for hoje
+  if (diffDays === 0) {
+    return 'Hoje'
+  }
+  
+  // Se for ontem
+  if (diffDays === 1) {
+    return 'Ontem'
+  }
+  
+  // Se for há menos de 7 dias
+  if (diffDays < 7) {
+    return `${diffDays} dias atrás`
+  }
+  
+  // Se for há menos de 30 dias
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7)
+    return weeks === 1 ? '1 semana atrás' : `${weeks} semanas atrás`
+  }
+  
+  // Se for há menos de 365 dias
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30)
+    return months === 1 ? '1 mês atrás' : `${months} meses atrás`
+  }
+  
+  // Mais de 1 ano - mostrar data completa
+  return date.toLocaleDateString('pt-BR', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric' 
+  })
 }
 
 export default ModalCard

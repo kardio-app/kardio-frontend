@@ -237,6 +237,16 @@
   font-family: inherit;
 }
 
+.modal-date-display {
+  padding: 0.875rem 1rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+  font-size: 0.9375rem;
+  color: var(--text-white);
+  border: 1px solid transparent;
+  font-family: inherit;
+}
+
 .modal-input:focus,
 .modal-textarea:focus,
 .modal-select:focus {

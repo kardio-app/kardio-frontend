@@ -672,8 +672,9 @@ function Column({ boardId, column, showToast }) {
           onEditLabel={handleEditLabel}
           onDelete={handleDeleteColumn}
           onClose={() => setShowDropdown(false)}
-          position={dropdownPosition}
+          position={isMobile ? null : dropdownPosition}
           hasLabel={!!currentColumn.label_id}
+          isMobile={isMobile}
         />
       )}
       {showLabelModal && (

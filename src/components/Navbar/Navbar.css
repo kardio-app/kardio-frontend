@@ -534,6 +534,33 @@
   transform: none;
 }
 
+.navbar-mobile-theme .theme-toggle-trigger {
+  gap: 0.75rem;
+}
+
+.navbar-mobile-theme .theme-toggle-trigger-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  order: 1;
+}
+
+.navbar-mobile-theme .theme-toggle-title {
+  display: none;
+}
+
+.navbar-mobile-theme .theme-toggle-current {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-white);
+}
+
+.navbar-mobile-theme .theme-toggle-indicator {
+  order: 2;
+}
+
 @keyframes slideInDown {
   from {
     transform: translateY(-100%);

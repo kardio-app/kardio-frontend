@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import './ColumnDropdown.css'
 
-function ColumnDropdown({ onEditLabel, onDelete, onClose, position, hasLabel }) {
+function ColumnDropdown({ onEditLabel, onDelete, onClose, position, hasLabel, isMobile = false }) {
   const [isOpen, setIsOpen] = useState(true)
   const dropdownRef = useRef(null)
 
@@ -22,13 +22,20 @@ function ColumnDropdown({ onEditLabel, onDelete, onClose, position, hasLabel }) 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       document.addEventListener('keydown', handleEscape)
+      // Prevenir scroll do body quando modal está aberto no mobile
+      if (isMobile) {
+        document.body.style.overflow = 'hidden'
+      }
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleEscape)
+      if (isMobile) {
+        document.body.style.overflow = ''
+      }
     }
-  }, [isOpen])
+  }, [isOpen, isMobile])
 
   const handleClose = () => {
     setIsOpen(false)
@@ -47,18 +54,27 @@ function ColumnDropdown({ onEditLabel, onDelete, onClose, position, hasLabel }) 
     onDelete()
   }
 
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose()
+    }
+  }
+
   if (!isOpen) return null
 
-  const dropdownStyle = position ? {
+  const dropdownStyle = !isMobile && position ? {
     top: `${position.top}px`,
     left: `${position.left}px`
   } : {}
 
   return createPortal(
-    <div className="column-dropdown-backdrop" onClick={handleClose}>
+    <div 
+      className={`column-dropdown-backdrop ${isMobile ? 'column-dropdown-backdrop-mobile' : ''}`} 
+      onClick={handleBackdropClick}
+    >
       <div 
         ref={dropdownRef}
-        className="column-dropdown-content"
+        className={`column-dropdown-content ${isMobile ? 'column-dropdown-content-mobile' : ''}`}
         style={dropdownStyle}
         onClick={(e) => e.stopPropagation()}
       >

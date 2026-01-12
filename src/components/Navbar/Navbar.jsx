@@ -1269,7 +1269,6 @@ function Navbar() {
             <span className="navbar-logo-text">@kardiosoftware</span>
           </button>
           <div className="navbar-right-section">
-            {!isMobile && <ThemeToggle />}
             {isMobile ? (
               <button
                 className="navbar-mobile-toggle"
@@ -1340,6 +1339,7 @@ function Navbar() {
                   <path d="m12 5 7 7-7 7"></path>
                 </svg>
               </button>
+              {!isMobile && <ThemeToggle />}
             </div>
             )}
           </div>

@@ -195,13 +195,13 @@ export async function updateBoardName(encryptedId, name) {
 }
 
 // Criar coluna
-export async function createColumn(encryptedId, title) {
+export async function createColumn(encryptedId, title, labelId = null) {
   const response = await fetch(`${API_URL}/boards/${encryptedId}/columns`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ title, label_id: labelId }),
   })
 
   if (!response.ok) {

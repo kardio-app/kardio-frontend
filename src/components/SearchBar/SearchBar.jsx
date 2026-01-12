@@ -66,12 +66,25 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
                 };
               } catch (getProjectError) {
                 // Se falhar com getProject, tentar com accessProject como fallback
-                console.warn(`Erro ao buscar projeto por encryptedLink, tentando por código:`, getProjectError);
-                result = await accessProject(project.code);
+                // Silenciar erro se projeto não existe mais (404)
+                if (getProjectError.message && !getProjectError.message.includes('não encontrado')) {
+                  console.warn(`Erro ao buscar projeto por encryptedLink, tentando por código:`, getProjectError);
+                }
+                try {
+                  result = await accessProject(project.code);
+                } catch (accessError) {
+                  // Se ambos falharem, o projeto provavelmente não existe mais
+                  throw new Error('Projeto não encontrado');
+                }
               }
             } else {
               // Se não tiver encryptedLink, usar accessProject
-              result = await accessProject(project.code);
+              try {
+                result = await accessProject(project.code);
+              } catch (accessError) {
+                // Se falhar, o projeto provavelmente não existe mais
+                throw new Error('Projeto não encontrado');
+              }
             }
             
             // Atualizar no localStorage se o nome mudou
@@ -102,7 +115,10 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
             return project;
           } catch (error) {
             // Se falhar, manter o projeto como está
-            console.warn(`Erro ao atualizar projeto ${project.code}:`, error);
+            // Silenciar erros de projetos que não existem mais (comum)
+            if (error.message && !error.message.includes('não encontrado') && !error.message.includes('inválido')) {
+              console.warn(`Erro ao atualizar projeto ${project.code}:`, error);
+            }
             return project;
           }
         })

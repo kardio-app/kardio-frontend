@@ -3,12 +3,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar/Navbar'
 import BoardPreview from '../components/BoardPreview/BoardPreview'
 import Loading from '../components/Loading/Loading'
-import GitHubCommits from '../components/GitHubCommits/GitHubCommits'
 import ScrollVelocity from '../components/ScrollVelocity/ScrollVelocity'
 import ToastContainer from '../components/Toast/ToastContainer'
 import ModalCreateProject from '../components/ModalCreateProject/ModalCreateProject'
+import ModalAccess from '../components/ModalAccess/ModalAccess'
+import AlternatingText from '../components/AlternatingText/AlternatingText'
+import Testimonials from '../components/Testimonials/Testimonials'
 import { useToast } from '../hooks/useToast'
-import { createProject } from '../services/api'
+import { createProject, createColumn, createCard, createLabel } from '../services/api'
+import API_URL from '../config/api.js'
 import { saveProject } from '../utils/savedProjects'
 import { fixEncoding } from '../utils/fixEncoding'
 import './Home.css'
@@ -20,6 +23,9 @@ function Home() {
   const [isCreating, setIsCreating] = useState(false)
   const [projectResult, setProjectResult] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showAccessModal, setShowAccessModal] = useState(false)
+  const [projectDescription, setProjectDescription] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
   const notificationsShownRef = useRef(false)
 
   const scrollToBoardPreview = useCallback(() => {
@@ -122,6 +128,10 @@ function Home() {
     setShowCreateModal(true)
   }
 
+  const handleAccessProject = () => {
+    setShowAccessModal(true)
+  }
+
   const handleCreateProjectConfirm = async (projectData) => {
     setShowCreateModal(false)
     setIsCreating(true)
@@ -167,6 +177,145 @@ function Home() {
     setShowCreateModal(false)
   }
 
+  const generateProjectWithAI = async (description) => {
+    try {
+      setIsGenerating(true)
+      
+      // Chamar API do Gemini via backend
+      const response = await fetch(`${API_URL}/ai/generate-project`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ description }),
+      })
+
+      if (!response.ok) {
+        let errorMessage = 'Erro ao gerar projeto com IA'
+        let errorData = {}
+        
+        try {
+          errorData = await response.json()
+          errorMessage = errorData.message || errorData.error || errorMessage
+          console.error('Erro do backend:', errorData)
+        } catch (e) {
+          const errorText = await response.text()
+          console.error('Erro do backend (texto):', errorText)
+          errorMessage = errorText || errorMessage
+        }
+        
+        // Tratamento especial para rate limit (429)
+        if (response.status === 429) {
+          const waitTime = errorData.retryAfter 
+            ? `${errorData.retryAfter} segundos` 
+            : 'alguns minutos'
+          errorMessage = `Quota da API excedida. Aguarde ${waitTime} antes de tentar novamente.`
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      const aiResponse = await response.json()
+      
+      // Criar projeto
+      const projectName = aiResponse.projectName || `Projeto: ${description.substring(0, 30)}`
+      const result = await createProject(projectName, 'personal', [])
+      
+      // Salvar projeto
+      saveProject({
+        name: projectName,
+        code: result.accessCode,
+        encryptedLink: result.encryptedLink
+      })
+
+      // Criar labels primeiro (se houver)
+      const labelsMap = {} // Mapear nome da label para ID
+      const labels = aiResponse.labels || []
+      
+      for (const labelData of labels) {
+        try {
+          const label = await createLabel(result.encryptedLink, {
+            name: labelData.name,
+            color: labelData.color
+          })
+          labelsMap[labelData.name] = label.id
+        } catch (error) {
+          console.error('Erro ao criar label:', error)
+          // Continuar mesmo se uma label falhar
+        }
+      }
+
+      // Criar colunas e cards (limitado)
+      const maxColumns = 5
+      const maxCardsPerColumn = 4
+      
+      const columns = aiResponse.columns || []
+      const limitedColumns = columns.slice(0, maxColumns)
+
+      for (let i = 0; i < limitedColumns.length; i++) {
+        const columnData = limitedColumns[i]
+        
+        // Mapear nomes de labels da coluna para IDs
+        let columnLabelId = null
+        if (Array.isArray(columnData.labelNames) && columnData.labelNames.length > 0) {
+          // Usar a primeira label da coluna
+          const firstLabelName = columnData.labelNames[0]
+          if (labelsMap[firstLabelName]) {
+            columnLabelId = labelsMap[firstLabelName]
+          }
+        }
+        
+        const column = await createColumn(
+          result.encryptedLink, 
+          columnData.name || `Coluna ${i + 1}`,
+          columnLabelId
+        )
+        
+        const cards = columnData.cards || []
+        const limitedCards = cards.slice(0, maxCardsPerColumn)
+        
+        for (const cardData of limitedCards) {
+          // Mapear nomes de labels para IDs
+          const labelIds = []
+          if (Array.isArray(cardData.labelNames)) {
+            for (const labelName of cardData.labelNames) {
+              if (labelsMap[labelName]) {
+                labelIds.push(labelsMap[labelName])
+              }
+            }
+          }
+          
+          // Usar primeira label como highlight se houver
+          const highlightLabelId = labelIds.length > 0 ? labelIds[0] : null
+          
+          await createCard(result.encryptedLink, column.id, {
+            title: cardData.title || 'Card',
+            description: cardData.description || '',
+            assignee: cardData.assignee || null,
+            label_ids: labelIds,
+            highlight_label_id: highlightLabelId
+          })
+        }
+      }
+
+      setProjectResult(result)
+      setIsCreating(true)
+      setProjectDescription('')
+      showToast('Projeto gerado com sucesso!', 'success', 3000)
+    } catch (error) {
+      console.error('Erro ao gerar projeto:', error)
+      showToast('Erro ao gerar projeto. Tente novamente.', 'error', 5000)
+      setIsGenerating(false)
+    }
+  }
+
+  const handleGenerateProject = async (e) => {
+    e.preventDefault()
+    if (!projectDescription.trim() || isGenerating) return
+    
+    await generateProjectWithAI(projectDescription.trim())
+  }
+
   return (
     <>
       {isCreating && <Loading />}
@@ -174,69 +323,99 @@ function Home() {
       <div className="home">
         <section className="home-hero">
           <div className="home-hero-container">
-            <div className="home-hero-commits">
-              <GitHubCommits />
-            </div>
-            <div className="home-content">
-              <p className="home-created-by">
-                Siga o{' '}
-                <a 
-                  href="https://www.instagram.com/kardiosoftware/" 
-                  className="home-created-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  kardiosoftware
-                </a>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="home-external-icon"
-                >
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
-              </p>
+            <div className="home-hero-content">
+              <AlternatingText />
               <h1 className="home-title">
-                Organize e faça<br />
-                progresso <span className="home-title-highlight">gratuitamente</span>
+                Organize seus projetos<br />
+                <span className="home-title-highlight">gratuitamente</span>
               </h1>
               <p className="home-subtitle">
-                Ferramentas simples para organizar seus projetos e alcançar seus objetivos.
+                Ferramenta simples e intuitiva para gerenciar tarefas e alcançar seus objetivos.
               </p>
-              <button 
-                className="home-button" 
-                onClick={handleCreateBoard}
-                disabled={isCreating}
-              >
-                {isCreating ? 'Criando...' : 'Começar Agora'}
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="18" 
-                  height="18" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="home-button-icon"
+              <div className="home-buttons-wrapper">
+                <button 
+                  className="home-button" 
+                  onClick={handleAccessProject}
+                  disabled={isCreating || isGenerating}
                 >
-                  <path d="M5 12h14"></path>
-                  <path d="m12 5 7 7-7 7"></path>
-                </svg>
-              </button>
+                  Entrar em um projeto
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="18" 
+                    height="18" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="home-button-icon"
+                  >
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                  </svg>
+                </button>
+                <button 
+                  className="home-button-secondary" 
+                  onClick={() => navigate('/docs')}
+                >
+                  Documentação
+                </button>
+              </div>
+              
+              <form onSubmit={handleGenerateProject} className="home-hero-input-wrapper">
+                <input
+                  type="text"
+                  className="home-hero-input"
+                  placeholder="Descreva seu projeto e a IA criará um Kanban pré-configurado..."
+                  value={projectDescription}
+                  onChange={(e) => setProjectDescription(e.target.value)}
+                  disabled={isCreating || isGenerating}
+                />
+                <button
+                  type="submit"
+                  className="home-hero-input-button"
+                  disabled={!projectDescription.trim() || isCreating || isGenerating}
+                  title={isGenerating ? 'Gerando projeto...' : 'Criar projeto com IA'}
+                >
+                  {isGenerating ? (
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      style={{ animation: 'spin 1s linear infinite' }}
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                    </svg>
+                  ) : (
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 12h14"></path>
+                      <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                  )}
+                </button>
+              </form>
             </div>
           </div>
         </section>
+
+        <Testimonials />
 
         <section className="home-board-preview">
           <div className="board-preview-wrapper">
@@ -248,66 +427,41 @@ function Home() {
           texts={['usekardio', 'usekardio', 'usekardio']}
           velocity={100}
           className="custom-scroll-text"
-          numCopies={20}
+          numCopies={40}
         />
 
-        <section className="home-opensource">
-          <div className="opensource-wrapper">
-            <div className="opensource-container">
-              <div className="opensource-content">
-                <div className="opensource-icon-wrapper">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="24" 
-                    height="24" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="opensource-icon"
-                  >
-                    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
-                    <path d="M9 18c-4.51 2-5-2-7-2"></path>
-                  </svg>
-                </div>
-                <h3 className="opensource-title">Projeto Open Source</h3>
-                <p className="opensource-description">
-                  kardio é um projeto open source. Contribua com o desenvolvimento e ajude a melhorar a ferramenta.
+        <section className="home-creator-message">
+          <div className="creator-message-container">
+            <div className="creator-message-content">
+              <div className="creator-message-image-wrapper">
+                <img 
+                  src="https://i.ibb.co/XfXNTmnw/Screenshot-1.png" 
+                  alt="@initpedro" 
+                  className="creator-message-image"
+                />
+              </div>
+              <div className="creator-message-text-wrapper">
+                <p className="creator-message-text">
+                  O Kardio nasceu de uma necessidade real: criar uma ferramenta de gerenciamento de projetos que fosse simples, eficiente e verdadeiramente gratuita. Este é um projeto pessoal desenvolvido para solucionar problemas reais do dia a dia, e estou feliz em compartilhá-lo com vocês como projeto open source.
                 </p>
-                <a 
-                  href="https://github.com/initpedro" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="opensource-button"
-                >
-                  <span>Contribuir no GitHub</span>
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="18" 
-                    height="18" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="opensource-button-icon"
-                  >
-                    <path d="M5 12h14"></path>
-                    <path d="m12 5 7 7-7 7"></path>
-                  </svg>
-                </a>
+                <p className="creator-message-text">
+                  Minha intenção é que o Kardio ajude pessoas e equipes a organizarem seus projetos sem complicações desnecessárias. Se este projeto te ajudou de alguma forma, isso já é uma grande vitória para mim.
+                </p>
+                <p className="creator-message-signature">
+                  — @initpedro
+                </p>
               </div>
             </div>
           </div>
         </section>
 
         <footer className="home-footer">
-          <div className="footer-content">
-            <div className="footer-column">
-              <h3 className="footer-column-title">@kardiosoftware</h3>
+          <div className="footer-header">
+            <div className="footer-header-content">
+              <div className="footer-header-left">
+                <h3 className="footer-header-title">@kardiosoftware</h3>
+                <p className="footer-copyright">© 2025 @kardiosoftware</p>
+              </div>
               <div className="footer-social-links">
                 <a 
                   href="https://www.linkedin.com/in/initpedro/" 
@@ -360,12 +514,30 @@ function Home() {
                   </svg>
                 </a>
               </div>
-              <p className="footer-copyright">© 2025 @kardiosoftware</p>
             </div>
+          </div>
+          <div className="footer-content">
             <div className="footer-column">
               <h4 className="footer-column-subtitle">Links Úteis</h4>
               <ul className="footer-links">
                 <li><a href="/home" className="footer-link">Início</a></li>
+                <li><a href="https://github.com/kardio-app/kardio-frontend" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a></li>
+                <li><a href="https://github.com/kardio-app/kardio-frontend/issues" target="_blank" rel="noopener noreferrer" className="footer-link">Reportar Bug</a></li>
+                <li><a href="https://github.com/kardio-app/kardio-frontend/discussions" target="_blank" rel="noopener noreferrer" className="footer-link">Discussões</a></li>
+                <li><a href="https://github.com/kardio-app/kardio-frontend/blob/main/README.md" target="_blank" rel="noopener noreferrer" className="footer-link">README</a></li>
+                <li><a href="https://github.com/kardio-app/kardio-frontend/pulls" target="_blank" rel="noopener noreferrer" className="footer-link">Contribuir</a></li>
+                <li><a href="https://github.com/kardio-app/kardio-frontend/releases" target="_blank" rel="noopener noreferrer" className="footer-link">Changelog</a></li>
+              </ul>
+            </div>
+            <div className="footer-column">
+              <h4 className="footer-column-subtitle">Documentação</h4>
+              <ul className="footer-links">
+                <li><a href="/docs" className="footer-link">Documentação</a></li>
+                <li><a href="/docs#recursos" className="footer-link">Recursos</a></li>
+                <li><a href="/docs#funcionalidades" className="footer-link">Funcionalidades</a></li>
+                <li><a href="/docs#comecar" className="footer-link">Como Começar</a></li>
+                <li><a href="/docs#kanban" className="footer-link">Sobre Kanban</a></li>
+                <li><a href="/docs#guia-rapido" className="footer-link">Guia Rápido</a></li>
               </ul>
             </div>
             <div className="footer-column">
@@ -409,6 +581,9 @@ function Home() {
           onConfirm={handleCreateProjectConfirm}
           onCancel={handleCreateProjectCancel}
         />
+      )}
+      {showAccessModal && (
+        <ModalAccess onClose={() => setShowAccessModal(false)} />
       )}
     </>
   )

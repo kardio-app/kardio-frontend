@@ -76,6 +76,30 @@
 .saved-projects-theme .theme-toggle-trigger {
   width: 100%;
   justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.saved-projects-theme .theme-toggle-trigger-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  order: 1;
+}
+
+.saved-projects-theme .theme-toggle-title {
+  display: none;
+}
+
+.saved-projects-theme .theme-toggle-current {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-white);
+}
+
+.saved-projects-theme .theme-toggle-indicator {
+  order: 2;
 }
 
 .saved-projects-copy-button {

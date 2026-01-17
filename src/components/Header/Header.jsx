@@ -4,6 +4,7 @@ import useBoardStore from '../../store/useBoardStore'
 import { updateProjectName, getProject, linkPersonalProjectToManager } from '../../services/api'
 import LabelsManager from '../LabelsManager/LabelsManager'
 import ModalFilters from '../ModalFilters/ModalFilters'
+import { safeError } from '../../utils/logger'
 import './Header.css'
 
 function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = false }) {
@@ -64,7 +65,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
           }
         })
         .catch((error) => {
-          console.error('Erro ao atualizar nome do projeto:', error)
+          safeError('Erro ao atualizar nome do projeto', error)
           // ROLLBACK: Reverter para o nome anterior em caso de erro
           updateBoard(boardId, { name: previousName })
           setName(previousName)
@@ -95,7 +96,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
       const projectData = await getProject(boardId)
       setAccessCode(projectData.accessCode)
     } catch (error) {
-      console.error('Erro ao buscar cรณdigo de acesso:', error)
+      safeError('Erro ao buscar código de acesso', error)
       if (showToast) {
         showToast('Erro ao buscar cรณdigo de acesso', 'error')
       }
@@ -130,7 +131,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         const projectData = await getProject(boardId)
         setAccessCode(projectData.accessCode)
       } catch (error) {
-        console.error('Erro ao buscar cรณdigo de acesso:', error)
+        safeError('Erro ao buscar código de acesso', error)
         if (showToast) {
           showToast('Erro ao buscar cรณdigo de acesso', 'error')
         }
@@ -150,7 +151,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         }
         setTimeout(() => setCopied(false), 2000)
       } catch (error) {
-        console.error('Erro ao copiar cรณdigo:', error)
+        safeError('Erro ao copiar código', error)
         if (showToast) {
           showToast('Erro ao copiar cรณdigo', 'error')
         }
@@ -168,7 +169,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         }
         setTimeout(() => setCopied(false), 2000)
       } catch (error) {
-        console.error('Erro ao copiar cรณdigo:', error)
+        safeError('Erro ao copiar código', error)
         if (showToast) {
           showToast('Erro ao copiar cรณdigo', 'error')
         }

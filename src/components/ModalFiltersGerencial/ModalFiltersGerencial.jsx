@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { safeError } from '../../utils/logger'
 import { getLinkedProjects, getBoard } from '../../services/api'
 import useBoardStore from '../../store/useBoardStore'
 import './ModalFiltersGerencial.css'
@@ -41,7 +42,7 @@ function ModalFiltersGerencial({ boardId, onClose }) {
           }
         }
       } catch (error) {
-        console.error('Erro ao carregar projetos vinculados:', error)
+        safeError('Erro ao carregar projetos vinculados', error)
       } finally {
         setLoading(false)
       }
@@ -91,7 +92,7 @@ function ModalFiltersGerencial({ boardId, onClose }) {
     try {
       localStorage.setItem(`board-gerencial-filters-${boardId}`, JSON.stringify(filters))
     } catch (error) {
-      console.error('Erro ao salvar filtros:', error)
+      safeError('Erro ao salvar filtros', error)
     }
     
     // Disparar evento para que o BoardGerencial aplique os filtros
@@ -109,7 +110,7 @@ function ModalFiltersGerencial({ boardId, onClose }) {
       try {
         localStorage.removeItem(`board-gerencial-filters-${boardId}`)
       } catch (error) {
-        console.error('Erro ao limpar filtros:', error)
+        safeError('Erro ao limpar filtros', error)
       }
       
       window.dispatchEvent(new CustomEvent('gerencial-filters-applied', { 

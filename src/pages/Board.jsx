@@ -6,6 +6,7 @@ import BoardComponent from '../components/Board/Board'
 import { getBoard, getProject } from '../services/api'
 import { useToast } from '../hooks/useToast'
 import ToastContainer from '../components/Toast/ToastContainer'
+import { safeError } from '../utils/logger'
 import './Board.css'
 
 function Board() {
@@ -70,7 +71,7 @@ function Board() {
           setProjectTypeValidated(true)
         }
       } catch (err) {
-        console.error('Erro ao validar tipo do projeto:', err)
+        safeError('Erro ao validar tipo do projeto', err)
         // Em caso de erro, continuar mesmo assim (pode ser um projeto antigo sem tipo)
         if (isMounted) {
           setProjectTypeValidated(true)
@@ -213,7 +214,7 @@ function Board() {
                                err.message.includes('502')
         
         if (!isNetworkError) {
-          console.error('Erro ao carregar board:', err)
+          safeError('Erro ao carregar board', err)
         }
         
         // Não mostrar erro se for polling silencioso ou erro de rede

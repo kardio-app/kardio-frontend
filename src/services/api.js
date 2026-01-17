@@ -1,4 +1,5 @@
 import API_URL from '../config/api.js'
+import { safeError } from '../utils/logger'
 
 // Helper para tratar erros de response
 async function handleResponseError(response) {
@@ -85,9 +86,9 @@ export async function createProject(name, type = 'personal', linkedProjects = []
     const result = await response.json()
     return { ...result, type }
   } catch (error) {
-    console.error('Erro na API createProject:', error)
+    safeError('Erro na API createProject', error)
     if (error.message.includes('Failed to fetch') || error.message.includes('404')) {
-      throw new Error('Servidor não encontrado. Verifique se o backend está rodando em ' + API_URL)
+      throw new Error('Servidor não encontrado. Verifique se o backend está rodando.')
     }
     throw error
   }
@@ -128,7 +129,7 @@ export async function getProject(encryptedId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API getProject:', error)
+    safeError('Erro na API getProject', error)
     throw error
   }
 }
@@ -161,7 +162,7 @@ export async function getBoard(encryptedId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API getBoard:', error)
+    safeError('Erro na API getBoard', error)
     throw error
   }
 }
@@ -184,7 +185,7 @@ export async function updateProjectName(encryptedId, name) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API updateProjectName:', error)
+    safeError('Erro na API updateProjectName', error)
     throw error
   }
 }
@@ -294,7 +295,7 @@ export async function createCard(encryptedId, columnId, data) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API createCard:', error)
+    safeError('Erro na API createCard', error)
     throw error
   }
 }
@@ -329,7 +330,7 @@ export async function updateCard(encryptedId, cardId, data) {
       is_completed: result.is_completed || false
     }
   } catch (error) {
-    console.error('Erro na API updateCard:', error)
+    safeError('Erro na API updateCard', error)
     throw error
   }
 }
@@ -394,7 +395,7 @@ export async function getLabels(encryptedId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API getLabels:', error)
+    safeError('Erro na API getLabels', error)
     throw error
   }
 }
@@ -440,7 +441,7 @@ export async function updateLabel(encryptedId, labelId, data) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API updateLabel:', error)
+    safeError('Erro na API updateLabel', error)
     throw error
   }
 }
@@ -482,7 +483,7 @@ export async function getComments(encryptedId, cardId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API getComments:', error)
+    safeError('Erro na API getComments', error)
     throw error
   }
 }
@@ -528,7 +529,7 @@ export async function updateComment(encryptedId, commentId, data) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API updateComment:', error)
+    safeError('Erro na API updateComment', error)
     throw error
   }
 }
@@ -576,7 +577,7 @@ export async function linkProjectToManager(personalEncryptedId, managerialCode) 
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API linkProjectToManager:', error)
+    safeError('Erro na API linkProjectToManager', error)
     throw error
   }
 }
@@ -616,7 +617,7 @@ export async function getLinkedProjects(managerialEncryptedId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API getLinkedProjects:', error)
+    safeError('Erro na API getLinkedProjects', error)
     throw error
   }
 }
@@ -652,7 +653,7 @@ export async function unlinkManagerFromPersonalProject(personalEncryptedId, mana
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API unlinkManagerFromPersonalProject:', error)
+    safeError('Erro na API unlinkManagerFromPersonalProject', error)
     throw error
   }
 }

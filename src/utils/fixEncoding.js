@@ -1,3 +1,5 @@
+import { safeError } from './logger'
+
 /**
  * Corrige problemas de encoding: texto UTF-8 interpretado como ISO-8859-1
  * Padrão: "vÃ­deo" deveria ser "vídeo", "pÃ¡gina" deveria ser "página"
@@ -47,7 +49,7 @@ export const fixEncoding = (text) => {
     
     return fixed
   } catch (e) {
-    console.error('Erro ao corrigir encoding:', e)
+    safeError('Erro ao corrigir encoding', e)
     return text
   }
 }

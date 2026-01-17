@@ -17,6 +17,7 @@ import ModalFiltersGerencial from '../ModalFiltersGerencial/ModalFiltersGerencia
 import LabelsManager from '../LabelsManager/LabelsManager'
 import useBoardStore from '../../store/useBoardStore'
 import { saveProject, getSavedProjects, deleteSavedProject, updateSavedProjectName } from '../../utils/savedProjects'
+import { safeError, safeWarn } from '../../utils/logger'
 import './Navbar.css'
 import '../SavedProjectsSidebar/SavedProjectsSidebar.css'
 import '../Header/Header.css'
@@ -106,7 +107,7 @@ function Navbar() {
       const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY)
       return stored === 'true'
     } catch (error) {
-      console.warn('Não foi possível ler o estado da sidebar.', error)
+      safeWarn('Não foi possível ler o estado da sidebar', error)
       return false
     }
   }
@@ -390,7 +391,7 @@ function Navbar() {
           setProjectCode(projectData.accessCode)
           setProjectName(projectData.name)
         } catch (error) {
-          console.error('Erro ao buscar informações do projeto:', error)
+          safeError('Erro ao buscar informações do projeto', error)
         }
       }
       fetchProjectInfo()
@@ -421,7 +422,7 @@ function Navbar() {
       const projectData = await getProject(boardId)
       setShareCode(projectData.shareCode)
     } catch (error) {
-      console.error('Erro ao buscar código de compartilhamento:', error)
+      safeError('Erro ao buscar código de compartilhamento', error)
     } finally {
       setLoadingCodes(false)
     }
@@ -434,7 +435,7 @@ function Navbar() {
         setCopiedCode(true)
         setTimeout(() => setCopiedCode(false), 2000)
       } catch (error) {
-        console.error('Erro ao copiar código:', error)
+        safeError('Erro ao copiar código', error)
       }
     }
   }
@@ -446,7 +447,7 @@ function Navbar() {
         setCopiedCode(true)
         setTimeout(() => setCopiedCode(false), 2000)
       } catch (error) {
-        console.error('Erro ao copiar código:', error)
+        safeError('Erro ao copiar código', error)
       }
     }
   }
@@ -492,7 +493,7 @@ function Navbar() {
               })
             }
           } catch (error) {
-            console.warn(`Erro ao atualizar projeto ${project.code}:`, error)
+            safeWarn('Erro ao atualizar projeto', error)
           }
         })
       )
@@ -523,7 +524,7 @@ function Navbar() {
       setSaveProjectCode('')
       loadSavedProjects()
     } catch (error) {
-      console.error('Erro ao salvar projeto:', error)
+      safeError('Erro ao salvar projeto', error)
       setSaveProjectError(error.message || 'Código inválido')
     } finally {
       setIsSavingProject(false)
@@ -547,7 +548,7 @@ function Navbar() {
         navigate(`/board/${result.encryptedLink}`)
       }
     } catch (error) {
-      console.error('Erro ao carregar projeto:', error)
+      safeError('Erro ao carregar projeto', error)
       alert('Erro ao carregar projeto: ' + error.message)
     }
   }
@@ -587,7 +588,7 @@ function Navbar() {
       deleteSavedProject(projectId)
       loadSavedProjects()
     } catch (error) {
-      console.error('Erro ao deletar projeto:', error)
+      safeError('Erro ao deletar projeto', error)
     }
   }
 
@@ -637,7 +638,7 @@ function Navbar() {
             name: data.name || 'Novo Projeto'
           })
         } catch (error) {
-          console.error('Erro ao carregar projeto board:', error)
+          safeError('Erro ao carregar projeto board', error)
         }
       }
       loadBoardProject()
@@ -703,7 +704,7 @@ function Navbar() {
       setLinkProjectCode('')
       window.dispatchEvent(new CustomEvent('manager-link-changed'))
     } catch (error) {
-      console.error('Erro ao vincular projeto:', error)
+      safeError('Erro ao vincular projeto', error)
     } finally {
       setIsLinking(false)
     }
@@ -756,7 +757,7 @@ function Navbar() {
         setBoardCopied(true)
         setTimeout(() => setBoardCopied(false), 2000)
       } catch (error) {
-        console.error('Erro ao copiar código:', error)
+        safeError('Erro ao copiar código', error)
       }
     }
   }
@@ -802,7 +803,7 @@ function Navbar() {
           document.body.classList.remove('sidebar-open')
         }
       } catch (error) {
-        console.warn('Não foi possível salvar o estado da sidebar.', error)
+        safeWarn('Não foi possível salvar o estado da sidebar', error)
       }
     }
   }, [showSavedProjects, isBoard])

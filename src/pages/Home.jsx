@@ -15,6 +15,7 @@ import { createProject, createColumn, createCard, createLabel } from '../service
 import API_URL from '../config/api.js'
 import { saveProject } from '../utils/savedProjects'
 import { fixEncoding } from '../utils/fixEncoding'
+import { safeError } from '../utils/logger'
 import './Home.css'
 
 function Home() {
@@ -97,7 +98,7 @@ function Home() {
           }
         }
       } catch (error) {
-        console.error('Erro ao buscar último commit:', error)
+        safeError('Erro ao buscar último commit', error)
       }
 
       // Notificação sobre vídeo explicativo
@@ -164,10 +165,10 @@ function Home() {
           })
         }
       } catch (saveError) {
-        console.error('Erro ao salvar projeto automaticamente:', saveError)
+        safeError('Erro ao salvar projeto automaticamente', saveError)
       }
     } catch (error) {
-      console.error('Erro ao criar projeto:', error)
+      safeError('Erro ao criar projeto', error)
       alert('Erro ao criar projeto. Tente novamente.')
       setIsCreating(false)
       setProjectResult(null)
@@ -198,10 +199,10 @@ function Home() {
         try {
           errorData = await response.json()
           errorMessage = errorData.message || errorData.error || errorMessage
-          console.error('Erro do backend:', errorData)
+          safeError('Erro do backend ao gerar projeto')
         } catch (e) {
           const errorText = await response.text()
-          console.error('Erro do backend (texto):', errorText)
+          safeError('Erro do backend ao gerar projeto (texto)')
           errorMessage = errorText || errorMessage
         }
         
@@ -305,7 +306,7 @@ function Home() {
       setProjectDescription('')
       showToast('Projeto gerado com sucesso!', 'success', 3000)
     } catch (error) {
-      console.error('Erro ao gerar projeto:', error)
+      safeError('Erro ao gerar projeto', error)
       showToast('Erro ao gerar projeto. Tente novamente.', 'error', 5000)
       setIsGenerating(false)
     }

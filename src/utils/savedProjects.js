@@ -1,3 +1,5 @@
+import { safeError } from './logger'
+
 const STORAGE_KEY = 'kardio-saved-projects';
 
 export function getSavedProjects() {
@@ -5,7 +7,7 @@ export function getSavedProjects() {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
   } catch (error) {
-    console.error('Erro ao ler projetos salvos:', error);
+    safeError('Erro ao ler projetos salvos', error);
     return [];
   }
 }
@@ -49,7 +51,7 @@ export function deleteSavedProject(projectId) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     return true;
   } catch (error) {
-    console.error('Erro ao deletar projeto:', error);
+    safeError('Erro ao deletar projeto', error);
     return false;
   }
 }
@@ -68,7 +70,7 @@ export function updateSavedProjectName(projectId, newName) {
     
     return false;
   } catch (error) {
-    console.error('Erro ao atualizar nome do projeto:', error);
+    safeError('Erro ao atualizar nome do projeto', error);
     return false;
   }
 }

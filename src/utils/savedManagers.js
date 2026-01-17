@@ -1,3 +1,5 @@
+import { safeError } from './logger'
+
 const STORAGE_KEY = 'kardio-saved-managers'
 
 // Estrutura de um gestor salvo:
@@ -18,7 +20,7 @@ export function getSavedManagers() {
     // Ordenar por data de criação (mais recentes primeiro)
     return managers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
   } catch (error) {
-    console.error('Erro ao carregar gestores salvos:', error)
+    safeError('Erro ao carregar gestores salvos', error)
     return []
   }
 }
@@ -68,7 +70,7 @@ export function deleteSavedManager(managerId) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
     return true
   } catch (error) {
-    console.error('Erro ao deletar gestor:', error)
+    safeError('Erro ao deletar gestor', error)
     return false
   }
 }
@@ -82,7 +84,7 @@ export function updateSavedManagerName(managerId, newName) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
     return true
   } catch (error) {
-    console.error('Erro ao atualizar nome do gestor:', error)
+    safeError('Erro ao atualizar nome do gestor', error)
     return false
   }
 }

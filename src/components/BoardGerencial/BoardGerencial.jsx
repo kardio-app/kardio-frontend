@@ -5,6 +5,7 @@ import { getProject, getLinkedProjects, getBoard, unlinkManagerFromPersonalProje
 import BoardComponent from '../Board/Board'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
+import { safeError } from '../../utils/logger'
 import '../Header/Header.css'
 import './BoardGerencial.css'
 
@@ -39,7 +40,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
       setLinkedProjects(projects || [])
       return projects || []
     } catch (error) {
-      console.error('Erro ao carregar projetos vinculados:', error)
+      safeError('Erro ao carregar projetos vinculados', error)
       return []
     } finally {
       setLoading(false)
@@ -185,7 +186,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
         setCopiedProjectId(null)
       }, 2000)
     } catch (error) {
-      console.error('Erro ao copiar código:', error)
+      safeError('Erro ao copiar código', error)
       if (showToast) {
         showToast('Erro ao copiar código', 'error')
       }
@@ -259,7 +260,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
         showToast('Projeto vinculado com sucesso', 'success')
       }
     } catch (error) {
-      console.error('Erro ao vincular projeto:', error)
+      safeError('Erro ao vincular projeto', error)
       if (showToast) {
         showToast(error.message || 'Erro ao vincular projeto', 'error')
       }
@@ -334,7 +335,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
         }
       }, 100)
     } catch (error) {
-      console.error('Erro ao carregar projeto:', error)
+      safeError('Erro ao carregar projeto', error)
       alert('Erro ao carregar projeto: ' + error.message)
       setBoardLoading(false)
     }

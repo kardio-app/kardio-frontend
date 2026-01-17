@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
+import FilterInsights from '../FilterInsights/FilterInsights'
 import './ModalFilters.css'
 
 function ModalFilters({ boardId, onClose }) {
@@ -8,14 +9,17 @@ function ModalFilters({ boardId, onClose }) {
   const getBoard = useBoardStore((state) => state.getBoard)
   const updateBoard = useBoardStore((state) => state.updateBoard)
   
-  const board = boards[boardId] || getBoard(boardId)
-  const labels = board.labels || []
-  const columns = board.columns || []
+  // Se não houver boardId, ainda renderizar o modal mas sem funcionalidade de filtros
+  const board = boardId ? (boards[boardId] || getBoard(boardId)) : null
+  
+  // Se o board não existir ainda, usar valores vazios (mas ainda renderizar o modal)
+  const labels = board?.labels || []
+  const columns = board?.columns || []
   
   // Coletar todos os responsáveis únicos dos cards
   const allAssignees = Array.from(
     new Set(
-      columns
+      (columns || [])
         .flatMap(col => col.cards || [])
         .map(card => card.assignee)
         .filter(Boolean)
@@ -30,12 +34,13 @@ function ModalFilters({ boardId, onClose }) {
   
   // Carregar filtros salvos do board
   useEffect(() => {
+    if (!board) return
     const savedFilters = board.filters || {}
     setSelectedLabels(savedFilters.labels || [])
     setSelectedAssignees(savedFilters.assignees || [])
     setCompletionStatus(savedFilters.completionStatus || 'all')
     setDateFilter(savedFilters.dateFilter || 'all')
-  }, [board.filters])
+  }, [board?.filters])
   
   const handleLabelToggle = (labelId) => {
     setSelectedLabels(prev => 
@@ -54,6 +59,10 @@ function ModalFilters({ boardId, onClose }) {
   }
   
   const handleApplyFilters = () => {
+    if (!boardId) {
+      onClose()
+      return
+    }
     const filters = {
       labels: selectedLabels,
       assignees: selectedAssignees,
@@ -70,7 +79,9 @@ function ModalFilters({ boardId, onClose }) {
     setSelectedAssignees([])
     setCompletionStatus('all')
     setDateFilter('all')
-    updateBoard(boardId, { filters: null })
+    if (boardId) {
+      updateBoard(boardId, { filters: null })
+    }
   }
   
   const hasActiveFilters = selectedLabels.length > 0 || 
@@ -282,6 +293,21 @@ function ModalFilters({ boardId, onClose }) {
             </div>
           </div>
         </div>
+        
+        {/* Prévia dos insights */}
+        {hasActiveFilters && boardId && (
+          <div className="modal-filters-insights-preview">
+            <FilterInsights 
+              boardId={boardId} 
+              filters={{
+                labels: selectedLabels,
+                assignees: selectedAssignees,
+                completionStatus,
+                dateFilter
+              }}
+            />
+          </div>
+        )}
         
         <div className="modal-filters-footer">
           <button

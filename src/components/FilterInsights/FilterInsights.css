@@ -1,0 +1,230 @@
+.filter-insights {
+  background-color: var(--bg-gray);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-insights-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.filter-insights-header svg {
+  color: var(--button-bg);
+  flex-shrink: 0;
+}
+
+.filter-insights-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.filter-insights-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.filter-insights-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-insights-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.filter-insights-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.filter-insights-stat-label {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+.filter-insights-stat-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-white);
+}
+
+.filter-insights-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-insights-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-insights-filter-label {
+  font-size: 0.8125rem;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.filter-insights-filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filter-insights-filter-tag {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  background-color: var(--bg-gray-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.8125rem;
+  color: var(--text-white);
+  font-weight: 500;
+}
+
+.filter-insights-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-insights-column-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.filter-insights-column-name {
+  font-size: 0.875rem;
+  color: var(--text-white);
+  font-weight: 500;
+}
+
+.filter-insights-column-stats {
+  font-size: 0.8125rem;
+  color: var(--text-gray);
+}
+
+.filter-insights-column-hidden {
+  color: var(--text-gray);
+  opacity: 0.7;
+}
+
+.filter-insights-completion {
+  display: flex;
+  gap: 1rem;
+}
+
+.filter-insights-completion-item {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.filter-insights-completion-label {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+.filter-insights-completion-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-white);
+}
+
+.filter-insights-assignees {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-insights-assignee-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625rem;
+  background-color: var(--bg-gray-light);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.filter-insights-assignee-name {
+  font-size: 0.875rem;
+  color: var(--text-white);
+  font-weight: 500;
+}
+
+.filter-insights-assignee-count {
+  font-size: 0.8125rem;
+  color: var(--text-gray);
+}
+
+/* Tema Light */
+[data-theme="light"] .filter-insights {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+[data-theme="light"] .filter-insights-header h3 {
+  color: #212529;
+}
+
+[data-theme="light"] .filter-insights-stat-value {
+  color: #212529;
+}
+
+[data-theme="light"] .filter-insights-filter-tag {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  color: #212529;
+}
+
+[data-theme="light"] .filter-insights-column-item,
+[data-theme="light"] .filter-insights-completion-item,
+[data-theme="light"] .filter-insights-assignee-item {
+  background-color: #ffffff;
+  border-color: #dee2e6;
+}
+
+[data-theme="light"] .filter-insights-column-name,
+[data-theme="light"] .filter-insights-assignee-name {
+  color: #212529;
+}
+
+[data-theme="light"] .filter-insights-completion-value {
+  color: #212529;
+}
+
+/* Tema Clorofila */
+[data-theme="clorofila"] .filter-insights-header svg {
+  color: #10b981;
+}

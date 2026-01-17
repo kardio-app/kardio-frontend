@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { motion } from 'motion/react'
 import Navbar from '../components/Navbar/Navbar'
 import BoardPreview from '../components/BoardPreview/BoardPreview'
 import Loading from '../components/Loading/Loading'
@@ -293,7 +294,8 @@ function Home() {
             description: cardData.description || '',
             assignee: cardData.assignee || null,
             label_ids: labelIds,
-            highlight_label_id: highlightLabelId
+            highlight_label_id: highlightLabelId,
+            is_completed: cardData.is_completed === true // Preservar estado de conclusão do template
           })
         }
       }
@@ -330,7 +332,7 @@ function Home() {
                 <span className="home-title-highlight">gratuitamente</span>
               </h1>
               <p className="home-subtitle">
-                Ferramenta simples e intuitiva para gerenciar tarefas e alcançar seus objetivos.
+                Suas ideias 🚀 são <strong><em>impulsionadas</em></strong> com uma ferramenta simples e intuitiva para gerenciar tarefas e alcançar seus objetivos.
               </p>
               <div className="home-buttons-wrapper">
                 <button 
@@ -412,16 +414,33 @@ function Home() {
                 </button>
               </form>
             </div>
+            <motion.div 
+              className="home-hero-preview"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            >
+              <img 
+                src="https://i.ibb.co/xt64Kswk/Captura-de-tela-2026-01-17-194307.png" 
+                alt="Preview do Kardio" 
+                className="home-hero-preview-image"
+              />
+            </motion.div>
           </div>
         </section>
 
         <Testimonials />
 
-        <section className="home-board-preview">
+        <motion.section 
+          className="home-board-preview"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           <div className="board-preview-wrapper">
             <BoardPreview />
           </div>
-        </section>
+        </motion.section>
 
         <ScrollVelocity
           texts={['usekardio', 'usekardio', 'usekardio']}
@@ -430,7 +449,12 @@ function Home() {
           numCopies={40}
         />
 
-        <section className="home-creator-message">
+        <motion.section 
+          className="home-creator-message"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           <div className="creator-message-container">
             <div className="creator-message-content">
               <div className="creator-message-image-wrapper">
@@ -453,9 +477,14 @@ function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <footer className="home-footer">
+        <motion.footer 
+          className="home-footer"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           <div className="footer-header">
             <div className="footer-header-content">
               <div className="footer-header-left">
@@ -573,7 +602,7 @@ function Home() {
               </p>
             </div>
           </div>
-        </footer>
+        </motion.footer>
       </div>
       <ToastContainer toasts={toasts} onClose={hideToast} />
       {showCreateModal && (

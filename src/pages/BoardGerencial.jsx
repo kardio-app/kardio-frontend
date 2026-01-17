@@ -119,13 +119,6 @@ function BoardGerencial() {
     <>
       <Navbar />
       <div className="board-gerencial-page">
-        <Header 
-          boardId={boardId}
-          boardName={projectData?.name || 'Projeto Gerencial'}
-          isManagerial={true}
-          onNameUpdate={handleNameUpdate}
-          showToast={showToast}
-        />
         <BoardGerencialComponent 
           encryptedId={boardId}
           projectData={projectData}

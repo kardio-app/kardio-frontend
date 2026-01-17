@@ -1,3 +1,5 @@
+import { motion } from 'motion/react'
+import { useEffect } from 'react'
 import Navbar from '../components/Navbar/Navbar'
 import DocsCommits from '../components/DocsCommits/DocsCommits'
 import DocsSidebar from '../components/DocsSidebar/DocsSidebar'
@@ -9,12 +11,27 @@ import './Docs.css'
 function Docs() {
   const { selectedTopic, setSelectedTopic, expandedItems, setExpandedItems, showOverview, setShowOverview } = useDocsContext()
 
+  useEffect(() => {
+    // Verificar se deve mostrar o overview baseado no localStorage
+    const shouldShowOverview = localStorage.getItem('kardio-docs-show-overview')
+    if (shouldShowOverview === 'true') {
+      setShowOverview(true)
+      setSelectedTopic(null)
+      localStorage.removeItem('kardio-docs-show-overview')
+    }
+  }, [setShowOverview, setSelectedTopic])
+
   return (
     <>
       <Navbar />
       <div className="docs-page">
         <div className="docs-container">
-          <aside className="docs-sidebar">
+          <motion.aside 
+            className="docs-sidebar"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
             <DocsSidebar
               selectedTopic={selectedTopic}
               setSelectedTopic={setSelectedTopic}
@@ -23,20 +40,40 @@ function Docs() {
               expandedItems={expandedItems}
               setExpandedItems={setExpandedItems}
             />
-          </aside>
-          <main className="docs-content">
+          </motion.aside>
+          <motion.main 
+            className="docs-content"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
             <div className="docs-content-wrapper">
               {showOverview ? (
-                <div className="docs-overview">
+                <motion.div 
+                  className="docs-overview"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                >
                   <DocsCommits />
-                </div>
+                </motion.div>
               ) : selectedTopic ? (
-                <div className="docs-article">
+                <motion.div 
+                  className="docs-article"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                >
                   <h1>{getDocTitleById(selectedTopic)}</h1>
                   <DocsContent topicId={selectedTopic} />
-                </div>
+                </motion.div>
               ) : (
-                <div className="docs-welcome">
+                <motion.div 
+                  className="docs-welcome"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                >
                   <div className="docs-welcome-content">
                     <h1>Bem-vindo à Documentação do Kardio</h1>
                     <div className="docs-welcome-description">
@@ -76,10 +113,10 @@ function Docs() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
-          </main>
+          </motion.main>
         </div>
       </div>
     </>

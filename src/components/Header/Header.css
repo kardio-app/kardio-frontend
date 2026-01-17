@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem 0 2rem;
+  padding: 0.75rem 2rem 0 2rem;
   background-color: var(--bg-black);
   border-bottom: 1px solid transparent;
   position: relative;
@@ -16,7 +16,7 @@
 }
 
 .header-title {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 500;
   cursor: pointer;
   padding: 0.5rem;
@@ -30,7 +30,7 @@
 }
 
 .header-title-input {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 500;
   padding: 0.5rem;
   background-color: var(--bg-gray);

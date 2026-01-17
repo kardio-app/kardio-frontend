@@ -58,7 +58,7 @@ function AlternatingText() {
             {char}
           </span>
         ))}
-        {isTyping && <span className="alternating-text-cursor">|</span>}
+        <span className="alternating-text-cursor">|</span>
       </div>
     </div>
   )

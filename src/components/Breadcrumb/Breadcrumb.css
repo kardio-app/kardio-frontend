@@ -86,6 +86,35 @@
   opacity: 0.8;
 }
 
+.breadcrumb-editable {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.breadcrumb-editable:hover {
+  background-color: var(--bg-gray);
+  opacity: 1;
+}
+
+.breadcrumb-input {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-white);
+  background-color: var(--bg-gray);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.25rem 0.5rem;
+  min-width: 150px;
+  max-width: 300px;
+  outline: none;
+}
+
+.breadcrumb-input:focus {
+  border-color: var(--text-gray);
+  background-color: var(--bg-gray-light);
+}
+
 @media (max-width: 768px) {
   .breadcrumb-link,
   .breadcrumb-current {

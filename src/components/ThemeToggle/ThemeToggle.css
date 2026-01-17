@@ -10,14 +10,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
+  padding: 0.75rem 1rem;
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border-radius: 9999px;
   box-shadow: 0 1px 2px var(--shadow-color);
   color: inherit;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.3s ease;
   min-width: auto;
 }
 
@@ -28,6 +28,26 @@
 
 .theme-toggle-trigger:active {
   transform: translateY(0);
+}
+
+[data-theme="light"] .theme-toggle-trigger {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+[data-theme="light"] .theme-toggle-trigger:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+[data-theme="clorofila"] .theme-toggle-trigger {
+  background-color: rgba(16, 48, 34, 0.8);
+  border-color: rgba(152, 224, 192, 0.3);
+}
+
+[data-theme="clorofila"] .theme-toggle-trigger:hover {
+  background-color: rgba(22, 64, 45, 0.9);
+  border-color: rgba(152, 224, 192, 0.5);
 }
 
 .theme-toggle-trigger:focus-visible {
@@ -196,8 +216,8 @@
 @media (max-width: 540px) {
   .theme-toggle-trigger {
     min-width: 0;
-    padding: 0.55rem 0.75rem;
-    gap: 0.6rem;
+    padding: 0.625rem 0.875rem;
+    gap: 0.5rem;
   }
 
   .theme-toggle-title {

@@ -2,7 +2,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import useBoardStore from '../store/useBoardStore'
 import Navbar from '../components/Navbar/Navbar'
-import Header from '../components/Header/Header'
 import BoardComponent from '../components/Board/Board'
 import { getBoard, getProject } from '../services/api'
 import { useToast } from '../hooks/useToast'
@@ -333,21 +332,10 @@ function Board() {
     )
   }
 
-  const handleProjectNameUpdate = (newName) => {
-    setBoardData(prev => prev ? { ...prev, name: newName } : null)
-    document.title = `${newName} - @kardiosoftware`
-  }
-
   return (
     <>
       <Navbar />
       <div className="board-page">
-        <Header 
-          boardId={boardId} 
-          boardName={boardData?.name || 'Novo Projeto'} 
-          showToast={showToast}
-          onNameUpdate={handleProjectNameUpdate}
-        />
         <BoardComponent boardId={boardId} showToast={showToast} />
       </div>
       <ToastContainer toasts={toasts} onClose={hideToast} />

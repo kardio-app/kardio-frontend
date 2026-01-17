@@ -7,8 +7,12 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
-  width: 100%;
+  overflow-y: auto;
+  width: 100vw;
   max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 :root {
@@ -139,9 +143,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  width: 100%;
+  overflow-y: auto;
+  width: 100vw;
   max-width: 100vw;
+  min-height: 100vh;
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  position: relative;
 }
 
 #root {
@@ -149,7 +158,54 @@ body {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  flex-wrap: nowrap;
+}
+
+/* Páginas que precisam de scroll interno (Board, BoardGerencial) */
+/* Usando :has() para suporte moderno */
+#root:has(.board-container),
+#root:has(.board-gerencial-wrapper) {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: hidden;
+}
+
+body:has(.board-container),
+body:has(.board-gerencial-wrapper) {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: hidden;
+}
+
+html:has(.board-container),
+html:has(.board-gerencial-wrapper) {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: hidden;
+}
+
+/* Fallback para navegadores sem suporte a :has() - usando classes */
+body.no-scroll,
+html.no-scroll {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: hidden;
+}
+
+#root.no-scroll {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: hidden;
 }
 
 button {

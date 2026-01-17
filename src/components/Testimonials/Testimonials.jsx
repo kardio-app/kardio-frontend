@@ -1,3 +1,13 @@
+import React, { useRef, useLayoutEffect, useState } from 'react'
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  useMotionValue,
+  useVelocity,
+  useAnimationFrame
+} from 'motion/react'
 import './Testimonials.css'
 
 const testimonialsData = [
@@ -111,6 +121,23 @@ const testimonialsData = [
   }
 ]
 
+function useElementWidth(ref) {
+  const [width, setWidth] = useState(0)
+
+  useLayoutEffect(() => {
+    function updateWidth() {
+      if (ref.current) {
+        setWidth(ref.current.offsetWidth)
+      }
+    }
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [ref])
+
+  return width
+}
+
 function TestimonialCard({ card }) {
   return (
     <div className="testimonial-card">
@@ -150,34 +177,84 @@ function TestimonialCard({ card }) {
   )
 }
 
+function TestimonialsMarquee({ cards, baseVelocity = 50, reverse = false }) {
+  const baseX = useMotionValue(0)
+  const { scrollY } = useScroll()
+  const scrollVelocity = useVelocity(scrollY)
+  const smoothVelocity = useSpring(scrollVelocity, {
+    damping: 50,
+    stiffness: 400
+  })
+  const velocityFactor = useTransform(
+    smoothVelocity,
+    [0, 1000],
+    [0, 5],
+    { clamp: false }
+  )
+
+  const innerRef = useRef(null)
+  const innerWidth = useElementWidth(innerRef)
+
+  function wrap(min, max, v) {
+    const range = max - min
+    const mod = (((v - min) % range) + range) % range
+    return mod + min
+  }
+
+  const x = useTransform(baseX, v => {
+    if (innerWidth === 0) return '0px'
+    // Como temos dados triplicados, fazemos wrap na metade para criar loop infinito
+    const actualWidth = innerWidth / 2
+    return `${wrap(-actualWidth, 0, v)}px`
+  })
+
+  const directionFactor = useRef(reverse ? -1 : 1)
+  useAnimationFrame((t, delta) => {
+    let moveBy = directionFactor.current * baseVelocity * (delta / 1000)
+
+    if (velocityFactor.get() < 0) {
+      directionFactor.current = reverse ? 1 : -1
+    } else if (velocityFactor.get() > 0) {
+      directionFactor.current = reverse ? -1 : 1
+    }
+
+    moveBy += directionFactor.current * moveBy * velocityFactor.get()
+    baseX.set(baseX.get() + moveBy)
+  })
+
+  return (
+    <div className="testimonials-marquee">
+      <div className="testimonials-gradient-left"></div>
+      <motion.div 
+        ref={innerRef}
+        className={`testimonials-inner ${reverse ? 'testimonials-reverse' : ''}`}
+        style={{ x }}
+      >
+        {cards.map((card, index) => (
+          <TestimonialCard key={index} card={card} />
+        ))}
+      </motion.div>
+      <div className="testimonials-gradient-right"></div>
+    </div>
+  )
+}
+
 function Testimonials() {
   // Triplicar os dados para garantir que ocupe 100% da largura
   const tripledData = [...testimonialsData, ...testimonialsData, ...testimonialsData]
   
   return (
-    <section className="home-testimonials">
+    <motion.section 
+      className="home-testimonials"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
       <div className="testimonials-container">
-        <div className="testimonials-marquee">
-          <div className="testimonials-gradient-left"></div>
-          <div className="testimonials-inner">
-            {tripledData.map((card, index) => (
-              <TestimonialCard key={index} card={card} />
-            ))}
-          </div>
-          <div className="testimonials-gradient-right"></div>
-        </div>
-        
-        <div className="testimonials-marquee">
-          <div className="testimonials-gradient-left"></div>
-          <div className="testimonials-inner testimonials-reverse">
-            {tripledData.map((card, index) => (
-              <TestimonialCard key={index} card={card} />
-            ))}
-          </div>
-          <div className="testimonials-gradient-right"></div>
-        </div>
+        <TestimonialsMarquee cards={tripledData} baseVelocity={50} reverse={false} />
+        <TestimonialsMarquee cards={tripledData} baseVelocity={50} reverse={true} />
       </div>
-    </section>
+    </motion.section>
   )
 }
 

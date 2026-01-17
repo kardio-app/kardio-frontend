@@ -1,15 +1,20 @@
 .board-gerencial-page {
-  min-height: 100vh;
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
   padding-top: 70px;
+  margin: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
   background-color: var(--bg-black);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   width: 100%;
   max-width: 100vw;
   box-sizing: border-box;
-  -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 .board-gerencial-loading,
@@ -24,18 +29,10 @@
 
 @media (max-width: 768px) {
   .board-gerencial-page {
-    padding-top: 60px; /* Altura da navbar */
+    padding-top: 60px;
     height: auto;
-    min-height: 100vh;
-    position: relative;
-  }
-
-  /* Garantir que o container fique abaixo do header fixo */
-  /* Navbar (60px) + Header (~50px) = ~110px total */
-  .board-gerencial-page .board-gerencial-container {
-    margin-top: 110px; /* Altura da navbar + header fixo */
-    padding-top: 1rem;
-    min-height: calc(100vh - 110px);
+    min-height: calc(100vh - 60px);
+    overflow-y: auto;
   }
 }
 

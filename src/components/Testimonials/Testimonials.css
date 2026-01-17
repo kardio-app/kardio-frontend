@@ -20,7 +20,7 @@
   width: 100%;
   overflow: hidden;
   position: relative;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.125rem;
 }
 
 .testimonials-gradient-left {
@@ -55,22 +55,13 @@
   display: flex;
   min-width: 200%;
   padding-top: 2.5rem;
-  padding-bottom: 1.25rem;
-  animation: marqueeScroll 25s linear infinite;
-  transform: translateZ(0);
+  padding-bottom: 0.5rem;
+  will-change: transform;
+  width: max-content;
 }
 
 .testimonials-reverse {
-  animation-direction: reverse;
-}
-
-@keyframes marqueeScroll {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  padding-top: 0.5rem;
 }
 
 .testimonial-card {

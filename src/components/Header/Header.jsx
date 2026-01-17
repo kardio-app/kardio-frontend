@@ -51,7 +51,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
       
       // OPTIMISTIC UPDATE: Atualizar visualmente imediatamente
       updateBoard(boardId, { name: newName })
-      setName(newName) // Atualizar estado local também
+      setName(newName) // Atualizar estado local tambรฉm
       if (onNameUpdate) {
         onNameUpdate(newName)
       }
@@ -95,9 +95,9 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
       const projectData = await getProject(boardId)
       setAccessCode(projectData.accessCode)
     } catch (error) {
-      console.error('Erro ao buscar código de acesso:', error)
+      console.error('Erro ao buscar cรณdigo de acesso:', error)
       if (showToast) {
-        showToast('Erro ao buscar código de acesso', 'error')
+        showToast('Erro ao buscar cรณdigo de acesso', 'error')
       }
     } finally {
       setLoadingCodes(false)
@@ -106,7 +106,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
 
   const handleShowShare = async () => {
     if (isManagerial) {
-      // Para projetos gerenciais, mostrar código de compartilhamento
+      // Para projetos gerenciais, mostrar cรณdigo de compartilhamento
       setShowShareModal(true)
       setLoadingCodes(true)
       
@@ -114,15 +114,15 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         const projectData = await getProject(boardId)
         setShareCode(projectData.shareCode)
       } catch (error) {
-        console.error('Erro ao buscar código de compartilhamento:', error)
+        console.error('Erro ao buscar cรณdigo de compartilhamento:', error)
         if (showToast) {
-          showToast('Erro ao buscar código de compartilhamento', 'error')
+          showToast('Erro ao buscar cรณdigo de compartilhamento', 'error')
         }
       } finally {
         setLoadingCodes(false)
       }
     } else {
-      // Para projetos pessoais, mostrar código de acesso (comportamento antigo)
+      // Para projetos pessoais, mostrar cรณdigo de acesso (comportamento antigo)
       setShowShareModal(true)
       setLoadingCodes(true)
       
@@ -130,9 +130,9 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         const projectData = await getProject(boardId)
         setAccessCode(projectData.accessCode)
       } catch (error) {
-        console.error('Erro ao buscar código de acesso:', error)
+        console.error('Erro ao buscar cรณdigo de acesso:', error)
         if (showToast) {
-          showToast('Erro ao buscar código de acesso', 'error')
+          showToast('Erro ao buscar cรณdigo de acesso', 'error')
         }
       } finally {
         setLoadingCodes(false)
@@ -146,13 +146,13 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         await navigator.clipboard.writeText(accessCode)
         setCopied(true)
         if (showToast) {
-          showToast('Código de acesso copiado!', 'success')
+          showToast('Cรณdigo de acesso copiado!', 'success')
         }
         setTimeout(() => setCopied(false), 2000)
       } catch (error) {
-        console.error('Erro ao copiar código:', error)
+        console.error('Erro ao copiar cรณdigo:', error)
         if (showToast) {
-          showToast('Erro ao copiar código', 'error')
+          showToast('Erro ao copiar cรณdigo', 'error')
         }
       }
     }
@@ -164,13 +164,13 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         await navigator.clipboard.writeText(shareCode)
         setCopied(true)
         if (showToast) {
-          showToast('Código de compartilhamento copiado!', 'success')
+          showToast('Cรณdigo de compartilhamento copiado!', 'success')
         }
         setTimeout(() => setCopied(false), 2000)
       } catch (error) {
-        console.error('Erro ao copiar código:', error)
+        console.error('Erro ao copiar cรณdigo:', error)
         if (showToast) {
-          showToast('Erro ao copiar código', 'error')
+          showToast('Erro ao copiar cรณdigo', 'error')
         }
       }
     }
@@ -287,6 +287,25 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
           <>
             <button
               className="header-button header-button-icon"
+              onClick={() => setShowFilters(true)}
+              title="Filtrar cards"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
+            <button
+              className="header-button header-button-icon"
               onClick={() => setShowLinkProjectModal(true)}
               title="Adicionar projeto vinculado"
             >
@@ -308,7 +327,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
             <button
               className="header-button header-button-icon"
               onClick={handleShowAccess}
-              title="Código de acesso"
+              title="Cรณdigo de acesso"
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -328,7 +347,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
             <button
               className="header-button header-button-icon"
               onClick={handleShowShare}
-              title="Código de compartilhamento"
+              title="Cรณdigo de compartilhamento"
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -385,18 +404,18 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
           onClose={() => setShowLabelsManager(false)}
         />
       )}
-      {/* Modal de Código de Acesso (apenas para projetos gerenciais) */}
+      {/* Modal de Cรณdigo de Acesso (apenas para projetos gerenciais) */}
       {isManagerial && showAccessModal && createPortal(
         <div className="share-modal-overlay" onClick={handleCloseAccessModal}>
           <div className="share-modal" onClick={(e) => e.stopPropagation()}>
             <div className="share-modal-header">
-              <h2>Código de Acesso</h2>
+              <h2>Cรณdigo de Acesso</h2>
               <button className="share-modal-close" onClick={handleCloseAccessModal}>
-                ×
+                ร�
               </button>
             </div>
             <div className="share-modal-content">
-              <p className="share-modal-label">Código de Acesso:</p>
+              <p className="share-modal-label">Cรณdigo de Acesso:</p>
               {loadingCodes ? (
                 <div className="share-modal-loading">Carregando...</div>
               ) : accessCode ? (
@@ -408,7 +427,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                     <button
                       className="share-modal-eye-button"
                       onClick={() => setShowAccessCode(!showAccessCode)}
-                      title={showAccessCode ? 'Ocultar código' : 'Mostrar código'}
+                      title={showAccessCode ? 'Ocultar cรณdigo' : 'Mostrar cรณdigo'}
                     >
                       {showAccessCode ? (
                         <svg 
@@ -446,7 +465,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                   <button
                     className="share-modal-copy-button"
                     onClick={handleCopyAccessCode}
-                    title="Copiar código"
+                    title="Copiar cรณdigo"
                   >
                     {copied ? (
                       <svg 
@@ -481,10 +500,10 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                   </button>
                 </div>
               ) : (
-                <div className="share-modal-error">Erro ao carregar código</div>
+                <div className="share-modal-error">Erro ao carregar cรณdigo</div>
               )}
               <p className="share-modal-hint">
-                Use este código para acessar o projeto gerencial
+                Use este cรณdigo para acessar o projeto gerencial
               </p>
             </div>
           </div>
@@ -492,18 +511,18 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         document.body
       )}
 
-      {/* Modal de Código de Compartilhamento (apenas para projetos gerenciais) */}
+      {/* Modal de Cรณdigo de Compartilhamento (apenas para projetos gerenciais) */}
       {isManagerial && showShareModal && createPortal(
         <div className="share-modal-overlay" onClick={handleCloseShareModal}>
           <div className="share-modal" onClick={(e) => e.stopPropagation()}>
             <div className="share-modal-header">
-              <h2>Código de Compartilhamento</h2>
+              <h2>Cรณdigo de Compartilhamento</h2>
               <button className="share-modal-close" onClick={handleCloseShareModal}>
-                ×
+                ร�
               </button>
             </div>
             <div className="share-modal-content">
-              <p className="share-modal-label">Código de Compartilhamento:</p>
+              <p className="share-modal-label">Cรณdigo de Compartilhamento:</p>
               {loadingCodes ? (
                 <div className="share-modal-loading">Carregando...</div>
               ) : shareCode ? (
@@ -518,7 +537,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                   <button
                     className="share-modal-copy-button"
                     onClick={handleCopyShareCode}
-                    title="Copiar código"
+                    title="Copiar cรณdigo"
                   >
                     {copied ? (
                       <svg 
@@ -553,10 +572,10 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                   </button>
                 </div>
               ) : (
-                <div className="share-modal-error">Erro ao carregar código</div>
+                <div className="share-modal-error">Erro ao carregar cรณdigo</div>
               )}
               <p className="share-modal-hint">
-                Compartilhe este código para que projetos pessoais possam vincular este gestor
+                Compartilhe este cรณdigo para que projetos pessoais possam vincular este gestor
               </p>
             </div>
           </div>
@@ -571,23 +590,23 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
             <div className="share-modal-header">
               <h2>Adicionar Projeto Vinculado</h2>
               <button className="share-modal-close" onClick={handleCloseLinkProjectModal}>
-                ×
+                ร�
               </button>
             </div>
             <form className="share-modal-content" onSubmit={handleLinkProject}>
-              <p className="share-modal-label">Código de Acesso do Projeto Pessoal:</p>
+              <p className="share-modal-label">Cรณdigo de Acesso do Projeto Pessoal:</p>
               <input
                 type="text"
                 className="share-modal-input"
                 value={linkProjectCode}
                 onChange={(e) => setLinkProjectCode(e.target.value.toUpperCase())}
-                placeholder="Digite o código de acesso"
+                placeholder="Digite o cรณdigo de acesso"
                 maxLength={20}
                 required
                 autoFocus
               />
               <p className="share-modal-hint">
-                Insira o código de acesso do projeto pessoal que deseja vincular a este projeto gerencial.
+                Insira o cรณdigo de acesso do projeto pessoal que deseja vincular a este projeto gerencial.
               </p>
               <div className="share-modal-actions">
                 <button
@@ -619,23 +638,23 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
             <div className="share-modal-header">
               <h2>Adicionar Projeto Vinculado</h2>
               <button className="share-modal-close" onClick={handleCloseLinkProjectModal}>
-                ×
+                ร�
               </button>
             </div>
             <form className="share-modal-content" onSubmit={handleLinkProject}>
-              <p className="share-modal-label">Código de Acesso do Projeto Pessoal:</p>
+              <p className="share-modal-label">Cรณdigo de Acesso do Projeto Pessoal:</p>
               <input
                 type="text"
                 className="share-modal-input"
                 value={linkProjectCode}
                 onChange={(e) => setLinkProjectCode(e.target.value.toUpperCase())}
-                placeholder="Digite o código de acesso"
+                placeholder="Digite o cรณdigo de acesso"
                 maxLength={20}
                 required
                 autoFocus
               />
               <p className="share-modal-hint">
-                Insira o código de acesso do projeto pessoal que deseja vincular a este projeto gerencial.
+                Insira o cรณdigo de acesso do projeto pessoal que deseja vincular a este projeto gerencial.
               </p>
               <div className="share-modal-actions">
                 <button
@@ -667,11 +686,11 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
             <div className="share-modal-header">
               <h2>Compartilhar Projeto</h2>
               <button className="share-modal-close" onClick={handleCloseShareModal}>
-                ×
+                ร�
               </button>
             </div>
             <div className="share-modal-content">
-              <p className="share-modal-label">Código de Acesso:</p>
+              <p className="share-modal-label">Cรณdigo de Acesso:</p>
               {loadingCodes ? (
                 <div className="share-modal-loading">Carregando...</div>
               ) : accessCode ? (
@@ -686,7 +705,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                   <button
                     className="share-modal-copy-button"
                     onClick={handleCopyAccessCode}
-                    title="Copiar código"
+                    title="Copiar cรณdigo"
                   >
                     {copied ? (
                       <svg 
@@ -721,10 +740,10 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
                   </button>
                 </div>
               ) : (
-                <div className="share-modal-error">Erro ao carregar código</div>
+                <div className="share-modal-error">Erro ao carregar cรณdigo</div>
               )}
               <p className="share-modal-hint">
-                Compartilhe este código para que outras pessoas possam acessar o projeto
+                Compartilhe este cรณdigo para que outras pessoas possam acessar o projeto
               </p>
             </div>
           </div>

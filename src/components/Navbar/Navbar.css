@@ -128,6 +128,49 @@
   font-weight: 500;
 }
 
+/* Logo + breadcrumb para páginas Legais (Privacidade, Termos, Cookies) */
+.navbar-logo-breadcrumb-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.navbar-logo.navbar-logo-icon-only {
+  flex-shrink: 0;
+  padding: 0.5rem 0;
+}
+
+.navbar-legal-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0;
+  font-size: 0.9375rem;
+  color: var(--text-gray);
+}
+
+.navbar-breadcrumb-link {
+  color: var(--text-gray);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.navbar-breadcrumb-link:hover {
+  color: var(--text-white);
+}
+
+.navbar-breadcrumb-sep {
+  margin: 0 0.2rem;
+  opacity: 0.7;
+  user-select: none;
+}
+
+.navbar-breadcrumb-current {
+  color: var(--text-white);
+  font-weight: 500;
+}
+
 .navbar-breadcrumb-wrapper {
   display: flex;
   align-items: center;

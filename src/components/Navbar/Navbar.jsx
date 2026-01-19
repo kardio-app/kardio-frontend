@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import ModalAccess from '../ModalAccess/ModalAccess'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
@@ -18,6 +18,7 @@ import LabelsManager from '../LabelsManager/LabelsManager'
 import useBoardStore from '../../store/useBoardStore'
 import { saveProject, getSavedProjects, deleteSavedProject, updateSavedProjectName } from '../../utils/savedProjects'
 import { safeError, safeWarn } from '../../utils/logger'
+import { getDocTitleById } from '../../utils/docsNavItems'
 import './Navbar.css'
 import '../SavedProjectsSidebar/SavedProjectsSidebar.css'
 import '../Header/Header.css'
@@ -96,6 +97,13 @@ function Navbar() {
 
   const isHome = location.pathname === '/home'
   const isDocs = location.pathname === '/docs'
+  const isPrivacidade = location.pathname === '/privacidade'
+  const isTermos = location.pathname === '/termos'
+  const isCookies = location.pathname === '/cookies'
+  const isLegal = isPrivacidade || isTermos || isCookies
+  const isHomeOrLegalOrDocs = isHome || isLegal || isDocs
+  const LEGAL_FOLDER_NAME = 'Legal'
+  const docsPageName = docsContext?.showOverview ? 'Overview' : docsContext?.selectedTopic ? getDocTitleById(docsContext.selectedTopic) : 'Bem-vindo'
   const isBoard = location.pathname.startsWith('/board/') && !location.pathname.startsWith('/board-gerencial/')
   const isBoardGerencial = location.pathname.startsWith('/board-gerencial/')
   const boardId = isBoard ? location.pathname.split('/board/')[1] : isBoardGerencial ? location.pathname.split('/board-gerencial/')[1] : null
@@ -127,7 +135,7 @@ function Navbar() {
 
   // Focar o input quando a barra expandir
   useEffect(() => {
-    if (isSearchExpanded && isHome && !isMobile) {
+    if (isSearchExpanded && isHomeOrLegalOrDocs && !isMobile) {
       // Pequeno delay para garantir que o input esteja renderizado
       const timeout = setTimeout(() => {
         const input = document.querySelector('.navbar-search-wrapper .search-bar-input')
@@ -137,11 +145,11 @@ function Navbar() {
       }, 100)
       return () => clearTimeout(timeout)
     }
-  }, [isSearchExpanded, isHome, isMobile])
+  }, [isSearchExpanded, isHomeOrLegalOrDocs, isMobile])
 
   // Fechar a barra de pesquisa ao clicar fora quando não houver dropdown
   useEffect(() => {
-    if (isSearchExpanded && isHome && !isMobile) {
+    if (isSearchExpanded && isHomeOrLegalOrDocs && !isMobile) {
       const handleClickOutside = (event) => {
         const searchWrapper = document.querySelector('.navbar-search-wrapper')
         const dropdown = document.querySelector('.navbar-search-wrapper .search-bar-dropdown')
@@ -164,7 +172,7 @@ function Navbar() {
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [isSearchExpanded, isHome, isMobile])
+  }, [isSearchExpanded, isHomeOrLegalOrDocs, isMobile])
 
   useEffect(() => {
     const handleResize = () => {
@@ -240,28 +248,24 @@ function Navbar() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
-      // Se estiver no topo, sempre mostrar
+      // No topo: sempre mostrar
       if (currentScrollY < 10) {
         setIsNavbarVisible(true)
         lastScrollY.current = currentScrollY
         return
       }
 
-      // Calcular diferença de scroll
       const scrollDifference = currentScrollY - lastScrollY.current
-      
-      // Se a diferença for muito pequena, não fazer nada (evitar flickering)
-      if (Math.abs(scrollDifference) < 5) {
+
+      // Scroll para cima: mostrar navbar na parte de cima (qualquer movimento para cima)
+      if (scrollDifference < 0) {
+        setIsNavbarVisible(true)
         lastScrollY.current = currentScrollY
         return
       }
 
-      // Se estiver scrollando para cima (scrollDifference < 0), sempre mostrar
-      if (scrollDifference < 0) {
-        setIsNavbarVisible(true)
-      } 
-      // Se estiver scrollando para baixo (scrollDifference > 0), esconder (após 100px)
-      else if (scrollDifference > 0 && currentScrollY > 100) {
+      // Scroll para baixo: esconder só se movimento > 5px (evitar flicker) e após 100px
+      if (scrollDifference > 5 && currentScrollY > 100) {
         setIsNavbarVisible(false)
       }
 
@@ -809,8 +813,8 @@ function Navbar() {
   }, [showSavedProjects, isBoard])
 
 
-  // Navbar simplificada para /board, /board-gerencial e /docs
-  if (isBoard || isBoardGerencial || isDocs) {
+  // Navbar simplificada para /board e /board-gerencial (/docs usa a navbar completa como /home)
+  if (isBoard || isBoardGerencial) {
     // Preparar items do breadcrumb
     const breadcrumbItems = [
       { label: 'Home', href: '/home' },
@@ -1906,15 +1910,58 @@ function Navbar() {
   return (
     <>
       {isCreating && <Loading />}
-      <nav className={`navbar ${!isNavbarVisible ? 'navbar-hidden' : ''}`}>
+      {showAccessModal && (
+        <ModalAccess onClose={() => setShowAccessModal(false)} />
+      )}
+      <nav className={`navbar ${(isDocs || isHome) ? 'navbar-fixed' : ''} ${!isNavbarVisible ? 'navbar-hidden' : ''}`}>
         <div className="navbar-container">
-          <button
-            className="navbar-logo"
-            onClick={() => navigate('/home')}
-          >
-            <span className="navbar-logo-letter">K</span>
-            <span className="navbar-logo-text">@kardiosoftware</span>
-          </button>
+          {isDocs ? (
+            <div className="navbar-logo-breadcrumb-wrap">
+              <button
+                className="navbar-logo navbar-logo-icon-only"
+                onClick={() => navigate('/home')}
+                aria-label="Início"
+              >
+                <span className="navbar-logo-letter">K</span>
+              </button>
+              <nav className="navbar-legal-breadcrumb" aria-label="Navegação">
+                <Link to="/home" className="navbar-breadcrumb-link">Home</Link>
+                <span className="navbar-breadcrumb-sep">&gt;</span>
+                <Link to="/docs" className="navbar-breadcrumb-link">Documentação</Link>
+                <span className="navbar-breadcrumb-sep">&gt;</span>
+                <span className="navbar-breadcrumb-current">{docsPageName}</span>
+              </nav>
+            </div>
+          ) : isLegal ? (
+            <div className="navbar-logo-breadcrumb-wrap">
+              <button
+                className="navbar-logo navbar-logo-icon-only"
+                onClick={() => navigate('/home')}
+                aria-label="Início"
+              >
+                <span className="navbar-logo-letter">K</span>
+              </button>
+              <nav className="navbar-legal-breadcrumb" aria-label="Navegação">
+                <Link to="/home" className="navbar-breadcrumb-link">Home</Link>
+                <span className="navbar-breadcrumb-sep">&gt;</span>
+                <Link to="/termos" className="navbar-breadcrumb-link">{LEGAL_FOLDER_NAME}</Link>
+                <span className="navbar-breadcrumb-sep">&gt;</span>
+                <span className="navbar-breadcrumb-current">
+                  {isPrivacidade && 'Privacidade'}
+                  {isTermos && 'Termos'}
+                  {isCookies && 'Cookies'}
+                </span>
+              </nav>
+            </div>
+          ) : (
+            <button
+              className="navbar-logo"
+              onClick={() => navigate('/home')}
+            >
+              <span className="navbar-logo-letter">K</span>
+              <span className="navbar-logo-text">@kardiosoftware</span>
+            </button>
+          )}
           <div className="navbar-right-section">
             {isMobile ? (
               <button
@@ -1938,7 +1985,7 @@ function Navbar() {
                   <line x1="3" x2="21" y1="18" y2="18"></line>
                 </svg>
               </button>
-            ) : isHome ? (
+            ) : isHomeOrLegalOrDocs ? (
               <>
                 <div 
                   className={`navbar-search-wrapper ${isSearchExpanded ? 'navbar-search-expanded' : ''} ${isSearchClosing ? 'navbar-search-closing' : ''}`}
@@ -2087,7 +2134,7 @@ function Navbar() {
           </div>
         </div>
       </nav>
-      {isMobileMenuOpen && !isBoard && !isDocs && (
+      {isMobileMenuOpen && !isBoard && (
         <div className="navbar-mobile-menu">
           <div className="navbar-mobile-header">
             <span className="navbar-logo">
@@ -2179,7 +2226,7 @@ function Navbar() {
           </div>
         </div>
       )}
-      {showHomeSidebar && isHome && !isMobile && (
+      {showHomeSidebar && isHomeOrLegalOrDocs && !isMobile && (
         <>
           <div 
             className="share-modal-overlay" 

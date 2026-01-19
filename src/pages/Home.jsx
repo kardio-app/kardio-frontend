@@ -38,7 +38,7 @@ function Home() {
   }, [])
 
   useEffect(() => {
-    document.title = '@kardiosoftware'
+    document.title = 'Kardio - Seu Kanban Profissional'
     // Scroll para o topo ao carregar a página
     window.scrollTo(0, 0)
     
@@ -315,13 +315,17 @@ function Home() {
   const handleGenerateProject = async (e) => {
     e.preventDefault()
     if (!projectDescription.trim() || isGenerating) return
-    
+
+    // Ativar imediatamente a tela de carregamento com mensagens intercaladas
+    setIsCreating(true)
+    setIsGenerating(true)
+
     await generateProjectWithAI(projectDescription.trim())
   }
 
   return (
     <>
-      {isCreating && <Loading />}
+      {isCreating && <Loading showFunFacts={isGenerating} />}
       <Navbar />
       <div className="home">
         <section className="home-hero">
@@ -329,7 +333,7 @@ function Home() {
             <div className="home-hero-content">
               <AlternatingText />
               <h1 className="home-title">
-                Organize seus projetos<br />
+                Organize suas tarefas<br />
                 <span className="home-title-highlight">gratuitamente</span>
               </h1>
               <p className="home-subtitle">
@@ -480,17 +484,12 @@ function Home() {
           </div>
         </motion.section>
 
-        <motion.footer 
-          className="home-footer"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
+        <footer className="home-footer">
           <div className="footer-header">
             <div className="footer-header-content">
               <div className="footer-header-left">
                 <h3 className="footer-header-title">@kardiosoftware</h3>
-                <p className="footer-copyright">© 2025 @kardiosoftware</p>
+                <p className="footer-copyright">© 2026 @kardiosoftware</p>
               </div>
               <div className="footer-social-links">
                 <a 
@@ -603,7 +602,7 @@ function Home() {
               </p>
             </div>
           </div>
-        </motion.footer>
+        </footer>
       </div>
       <ToastContainer toasts={toasts} onClose={hideToast} />
       {showCreateModal && (

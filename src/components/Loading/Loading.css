@@ -140,6 +140,18 @@
   font-weight: 500;
   text-align: center;
   animation: pulse 2s ease-in-out infinite;
+  margin-bottom: 0.5rem;
+}
+
+.loading-fun-fact {
+  font-size: 0.875rem;
+  color: var(--text-light-gray);
+  font-weight: 400;
+  text-align: center;
+  max-width: 400px;
+  line-height: 1.4;
+  animation: fadeInOut 0.5s ease-in-out;
+  margin-top: 0;
 }
 
 @keyframes pulse {
@@ -148,6 +160,21 @@
   }
   50% {
     opacity: 1;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  10%, 90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 }
 
@@ -191,6 +218,17 @@
 
   .loading-message {
     font-size: 0.9375rem;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+  }
+
+  .loading-fun-fact {
+    font-size: 0.8125rem;
     width: 100%;
     max-width: 100%;
     padding: 0 1rem;

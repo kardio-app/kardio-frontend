@@ -1,6 +1,7 @@
 .docs-page {
   height: 100vh;
   padding-top: 70px;
+  box-sizing: border-box;
   background-color: var(--bg-black);
   display: flex;
   flex-direction: column;
@@ -10,20 +11,19 @@
 .docs-container {
   display: flex;
   flex: 1;
+  min-height: 0;
   max-width: 100%;
   overflow: hidden;
-  height: calc(100vh - 70px);
 }
 
 .docs-sidebar {
   width: 280px;
   min-width: 280px;
-  height: 100%;
+  min-height: 0;
   background-color: var(--bg-gray);
   border-right: 1px solid var(--border-color);
   padding: 2rem 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -199,7 +199,7 @@
 
 .docs-content {
   flex: 1;
-  height: 100%;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 2rem 1.5rem;
@@ -360,13 +360,12 @@
 
 @media (max-width: 768px) {
   .docs-page {
-    padding-top: 60px;
     height: 100vh;
+    padding-top: 70px;
   }
 
   .docs-container {
     flex-direction: row;
-    height: calc(100vh - 60px);
   }
 
   .docs-sidebar {
@@ -380,7 +379,6 @@
   }
 
   .docs-content {
-    height: calc(100vh - 60px);
     min-height: 0;
     width: 100%;
     flex: 1;

@@ -152,9 +152,29 @@ function ModalCreateProject({ onConfirm, onCancel }) {
     >
       <div className="modal-create-project-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-create-project-header">
-          <h3 className="modal-create-project-title">
-            {step === 1 ? 'Criar Novo Projeto' : step === 2 ? 'Nome do Projeto' : 'Configurações'}
-          </h3>
+          <div className="modal-create-project-header-content">
+            <h3 className="modal-create-project-title">
+              {step === 1 ? 'Criar Novo Projeto' : step === 2 ? 'Nome do Projeto' : 'Configurações'}
+            </h3>
+            {step === 1 && (
+              <p className="modal-create-project-description">
+                Escolha o tipo de projeto que melhor se adequa às suas necessidades. Você pode criar projetos pessoais para uso individual ou projetos gerenciais para gerenciar múltiplos projetos vinculados.
+              </p>
+            )}
+            {step === 2 && (
+              <p className="modal-create-project-description">
+                {projectType === 'personal' 
+                  ? 'Defina um nome descritivo para o seu projeto pessoal. Este nome será usado para identificá-lo na lista de projetos salvos.'
+                  : 'Defina um nome para o projeto gerencial. Este será o nome principal que identifica o conjunto de projetos vinculados.'
+                }
+              </p>
+            )}
+            {step === 3 && (
+              <p className="modal-create-project-description">
+                Configure como deseja criar o projeto gerencial. Você pode criar do zero ou já vincular projetos pessoais existentes.
+              </p>
+            )}
+          </div>
           <button
             className="modal-create-project-close"
             onClick={onCancel}
@@ -171,7 +191,7 @@ function ModalCreateProject({ onConfirm, onCancel }) {
           {step === 1 ? (
             <div className="modal-create-project-step">
               <p className="modal-create-project-question">
-                O projeto será pessoal ou gerencial?
+                Qual tipo de projeto você deseja criar?
               </p>
               <div className="modal-create-project-options">
                 <button
@@ -184,7 +204,7 @@ function ModalCreateProject({ onConfirm, onCancel }) {
                   </svg>
                   <div className="modal-create-project-option-content">
                     <h4>Pessoal</h4>
-                    <p>Para uso individual e projetos próprios</p>
+                    <p>Ideal para uso individual, projetos próprios e tarefas pessoais. Crie e gerencie seus próprios quadros de forma independente.</p>
                   </div>
                 </button>
                 <button
@@ -199,7 +219,7 @@ function ModalCreateProject({ onConfirm, onCancel }) {
                   </svg>
                   <div className="modal-create-project-option-content">
                     <h4>Gerencial</h4>
-                    <p>Para gerenciar múltiplos projetos vinculados</p>
+                    <p>Perfeito para gerenciar múltiplos projetos vinculados. Organize e acompanhe vários projetos pessoais em um único painel de controle.</p>
                   </div>
                 </button>
               </div>

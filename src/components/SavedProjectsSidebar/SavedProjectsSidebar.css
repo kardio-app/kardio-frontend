@@ -1,25 +1,21 @@
 .saved-projects-sidebar {
-  position: fixed;
-  top: 70px;
-  right: 0;
-  width: 400px;
-  height: calc(100vh - 70px);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
   background-color: var(--navbar-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   z-index: 99;
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out, visibility 0.3s ease-in-out;
   overflow: hidden;
-  visibility: hidden;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .saved-projects-sidebar-open {
-  transform: translateX(0);
-  visibility: visible;
+  /* Mantido para compatibilidade, mas o StaggeredMenu cuida da animação */
 }
 
 
@@ -27,12 +23,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2.125rem 1.5rem 1.5rem 1.5rem;
+  padding: 1rem 1rem 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color);
 }
 
 .saved-projects-title {
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-white);
   margin: 0;
@@ -42,8 +38,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: none;
   border: none;
   color: var(--text-gray);
@@ -58,11 +54,11 @@
 }
 
 .saved-projects-actions {
-  padding: 1.5rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.125rem;
 }
 
 .saved-projects-theme {
@@ -77,6 +73,13 @@
   width: 100%;
   justify-content: space-between;
   gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border-radius: var(--border-radius);
+}
+
+.saved-projects-theme .theme-toggle-trigger:hover {
+  background-color: var(--bg-gray-light);
 }
 
 .saved-projects-theme .theme-toggle-trigger-label {
@@ -93,7 +96,7 @@
 
 .saved-projects-theme .theme-toggle-current {
   display: block;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-white);
 }
@@ -105,21 +108,23 @@
 .saved-projects-copy-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  background: none;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
   border: none;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 400;
   color: var(--text-gray);
   transition: var(--transition);
   cursor: pointer;
-  position: relative;
   width: 100%;
   justify-content: flex-start;
+  text-align: left;
+  border-radius: var(--border-radius);
 }
 
 .saved-projects-copy-button:hover:not(:disabled) {
+  background-color: var(--bg-gray-light);
   color: var(--text-white);
 }
 
@@ -128,66 +133,38 @@
   cursor: not-allowed;
 }
 
-.saved-projects-copy-button::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--text-white);
-  transition: var(--transition);
-}
-
-.saved-projects-copy-button:hover:not(:disabled)::after {
-  width: 100%;
-}
-
 .saved-projects-copy-button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
 .saved-projects-link-manager-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  background: none;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
   border: none;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 400;
   color: var(--text-gray);
   transition: var(--transition);
   cursor: pointer;
-  position: relative;
   width: 100%;
   justify-content: space-between;
+  text-align: left;
+  border-radius: var(--border-radius);
 }
 
 .saved-projects-link-manager-button:hover:not(:disabled) {
+  background-color: var(--bg-gray-light);
   color: var(--text-white);
 }
 
-.saved-projects-link-manager-button::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--text-white);
-  transition: var(--transition);
-}
-
-.saved-projects-link-manager-button:hover:not(:disabled)::after {
-  width: 100%;
-}
-
 .saved-projects-link-manager-button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
@@ -279,47 +256,40 @@
 .saved-projects-back-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  background: none;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
   border: none;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 400;
   color: var(--text-gray);
   transition: var(--transition);
   cursor: pointer;
-  position: relative;
   width: 100%;
   justify-content: flex-start;
+  text-align: left;
+  border-radius: var(--border-radius);
 }
 
 .saved-projects-back-button:hover {
+  background-color: var(--bg-gray-light);
   color: var(--text-white);
 }
 
-.saved-projects-back-button::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--text-white);
-  transition: var(--transition);
-}
-
-.saved-projects-back-button:hover::after {
-  width: 100%;
+.saved-projects-back-button svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .saved-projects-list {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.125rem;
 }
 
 /* Estilos para DocsSidebar dentro do saved-projects-sidebar */
@@ -335,7 +305,17 @@
 }
 
 .saved-projects-sidebar .docs-sidebar-search {
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.75rem 0;
+}
+
+.saved-projects-sidebar .docs-sidebar-search-input {
+  padding: 0.5rem 0.625rem 0.5rem 2.25rem;
+  font-size: 0.8125rem;
+}
+
+.saved-projects-sidebar .docs-sidebar-item {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
 }
 
 .saved-projects-sidebar .docs-sidebar-nav {
@@ -353,11 +333,11 @@
 }
 
 .saved-projects-save-input {
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 0.875rem;
   background-color: var(--card-bg);
   border: 1px dashed var(--border-color);
   border-radius: var(--border-radius);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-white);
   transition: var(--transition);
@@ -382,11 +362,11 @@
 }
 
 .saved-projects-save-button {
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 0.875rem;
   background-color: var(--card-bg);
   border: 1px dashed var(--border-color);
   border-radius: var(--border-radius);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   text-align: center;
   transition: var(--transition);
@@ -478,11 +458,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.75rem;
   background-color: var(--bg-gray);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -505,8 +485,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background-color: var(--button-bg);
   border-radius: var(--border-radius);
   color: var(--text-white);
@@ -519,7 +499,7 @@
 }
 
 .saved-project-name {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-white);
   margin: 0 0 0.25rem 0;
@@ -529,7 +509,7 @@
 }
 
 .saved-project-code {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--text-gray);
   margin: 0;
 }

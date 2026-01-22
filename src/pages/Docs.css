@@ -1,6 +1,6 @@
 .docs-page {
   height: 100vh;
-  padding-top: 70px;
+  padding-top: 48px;
   box-sizing: border-box;
   background-color: var(--bg-black);
   display: flex;
@@ -17,8 +17,8 @@
 }
 
 .docs-sidebar {
-  width: 280px;
-  min-width: 280px;
+  width: 260px;
+  min-width: 260px;
   min-height: 0;
   background-color: var(--bg-gray);
   border-right: 1px solid var(--border-color);
@@ -361,7 +361,7 @@
 @media (max-width: 768px) {
   .docs-page {
     height: 100vh;
-    padding-top: 70px;
+    padding-top: 48px;
   }
 
   .docs-container {

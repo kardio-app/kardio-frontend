@@ -17,24 +17,33 @@
   background-color: var(--bg-gray);
   border-radius: var(--border-radius);
   width: 100%;
-  max-width: 400px;
-  padding: 2rem;
+  max-width: 450px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
   animation: slideUp 0.2s ease;
-  position: relative;
+  overflow: hidden;
+}
+
+.modal-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.75rem;
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+.modal-confirm-header-content {
+  flex: 1;
 }
 
 .modal-confirm-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   background: none;
   border: none;
   color: var(--text-gray);
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,6 +51,12 @@
   transition: var(--transition);
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
+}
+
+.modal-confirm-close svg {
+  width: 20px;
+  height: 20px;
 }
 
 .modal-confirm-close:hover {
@@ -50,10 +65,15 @@
 }
 
 .modal-confirm-title {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: var(--text-white);
   margin: 0;
+  line-height: 1.3;
+}
+
+.modal-confirm-body {
+  padding: 1.75rem;
 }
 
 .modal-confirm-message {
@@ -67,6 +87,8 @@
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+  padding: 1.75rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .modal-confirm-button {
@@ -90,12 +112,12 @@
 }
 
 .modal-confirm-button-confirm {
-  background-color: var(--bg-gray-light);
+  background-color: var(--button-bg);
   color: var(--text-white);
 }
 
 .modal-confirm-button-confirm:hover {
-  background-color: var(--bg-gray-hover);
+  background-color: var(--button-bg-hover);
 }
 
 [data-theme="light"] .modal-confirm-button-confirm {

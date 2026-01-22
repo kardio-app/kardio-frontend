@@ -6,6 +6,7 @@ import { accessProject, getBoard, getProject, linkProjectToManager, getManagersF
 import Loading from '../Loading/Loading';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import ModalConfirm from '../ModalConfirm/ModalConfirm';
+import StaggeredMenu from '../StaggeredMenu/StaggeredMenu';
 import '../Header/Header.css';
 import './SavedProjectsSidebar.css';
 
@@ -569,9 +570,17 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         <Loading message="Carregando projeto..." />,
         document.body
       )}
-      <div className={`saved-projects-sidebar ${isOpen ? 'saved-projects-sidebar-open' : ''}`}>
+      {isOpen && (
+        <StaggeredMenu
+          isOpen={isOpen}
+          onClose={onClose}
+          position="right"
+          colors={['var(--bg-gray)', 'var(--card-bg)']}
+          closeOnClickAway={true}
+        >
+          <div className={`saved-projects-sidebar ${isOpen ? 'saved-projects-sidebar-open' : ''}`}>
           <div className="saved-projects-header">
-            <h3 className="saved-projects-title">Configurações</h3>
+            <h3 className="saved-projects-title" data-stagger-label>Configurações</h3>
             <button
               className="saved-projects-close"
               onClick={onClose}
@@ -600,11 +609,12 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
             </div>
             {boardId && location.pathname.startsWith('/board-gerencial/') && (
               <>
-                <button
-                  className="saved-projects-copy-button"
-                  onClick={handleShowAccess}
-                  title="Código de acesso"
-                >
+            <button
+              className="saved-projects-copy-button"
+              onClick={handleShowAccess}
+              title="Código de acesso"
+              data-stagger-item
+            >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
                     width="20" 
@@ -803,6 +813,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
             <button
               className="saved-projects-back-button"
               onClick={handleBackToHome}
+              data-stagger-item
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -855,6 +866,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
                     key={project.id}
                     className="saved-project-item"
                     onClick={() => handleLoadProject(project)}
+                    data-stagger-item
                   >
                   {editingId === project.id ? (
                     <div className="saved-project-edit" onClick={(e) => e.stopPropagation()}>
@@ -934,7 +946,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
                           </svg>
                         </div>
                         <div className="saved-project-info">
-                          <p className="saved-project-name">{project.name}</p>
+                          <p className="saved-project-name" data-stagger-label>{project.name}</p>
                           <p className="saved-project-code">Código: {maskCode(project.code)}</p>
                         </div>
                       </div>
@@ -991,11 +1003,13 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
               </div>
             )}
           </div>
-      </div>
+        </div>
+        </StaggeredMenu>
+      )}
       {showDeleteModal && createPortal(
         <ModalConfirm
-          title="Remover Projeto do Histórico Local?"
-          message={`Tem certeza que deseja remover o projeto "${projectToDelete?.name}" do seu histórico local? Esta ação apenas remove o projeto da lista de projetos salvos localmente e não afeta o projeto no servidor. Você poderá acessá-lo novamente usando o código do projeto.`}
+          title="Remover Projeto do Histórico Local"
+          message={`Você está prestes a remover o projeto "${projectToDelete?.name}" do seu histórico local. Esta ação apenas remove o projeto da sua lista de projetos salvos e não afeta o projeto no servidor. Você poderá acessá-lo novamente a qualquer momento usando o código de acesso do projeto.`}
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
           confirmText="Remover Localmente"
@@ -1357,8 +1371,8 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       )}
       {showDeleteManagerModal && createPortal(
         <ModalConfirm
-          title="Remover Vínculo com Gestor?"
-          message={`Tem certeza que deseja remover o vínculo com o gestor "${managerToDelete?.name}"? Esta ação irá desvincular este projeto pessoal do projeto gerencial.`}
+          title="Remover Vínculo com Gestor"
+          message={`Você está prestes a remover o vínculo entre este projeto pessoal e o projeto gerencial "${managerToDelete?.name}". Esta ação irá desvincular completamente este projeto pessoal do projeto gerencial, e você não poderá mais gerenciá-lo através do painel gerencial. O projeto pessoal continuará funcionando normalmente de forma independente.`}
           onConfirm={handleConfirmDeleteManager}
           onCancel={handleCancelDeleteManager}
           confirmText="Remover Vínculo"

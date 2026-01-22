@@ -9,13 +9,13 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .breadcrumb-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .breadcrumb-separator {
@@ -34,8 +34,8 @@
 .breadcrumb-link {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  font-size: 0.9375rem;
+  gap: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-white);
   background: none;
@@ -52,15 +52,15 @@
 }
 
 .breadcrumb-logo-letter {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: var(--bg-gray);
   border-radius: var(--border-radius);
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   color: var(--text-white);
   flex-shrink: 0;
   /* margin-right: 0.5rem; */
@@ -75,12 +75,12 @@
 
 .breadcrumb-home-icon {
   fill: currentColor;
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
 }
 
 .breadcrumb-current {
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-gray);
   opacity: 0.8;
@@ -98,7 +98,7 @@
 }
 
 .breadcrumb-input {
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-white);
   background-color: var(--bg-gray);

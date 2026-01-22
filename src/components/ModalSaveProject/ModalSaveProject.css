@@ -14,27 +14,46 @@
 }
 
 .modal-save-project-content {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
+  background-color: var(--bg-gray);
   border-radius: var(--border-radius);
   width: 100%;
-  max-width: 500px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  max-width: 450px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
 }
 
 .modal-save-project-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1.75rem;
   border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+.modal-save-project-header-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .modal-save-project-title {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: var(--text-white);
   margin: 0;
+  line-height: 1.3;
+}
+
+.modal-save-project-description {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  margin: 0;
+  line-height: 1.5;
 }
 
 .modal-save-project-close {
@@ -46,10 +65,16 @@
   background: none;
   border: none;
   color: var(--text-gray);
-  font-size: 1.5rem;
   cursor: pointer;
   border-radius: var(--border-radius);
   transition: var(--transition);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.modal-save-project-close svg {
+  width: 20px;
+  height: 20px;
 }
 
 .modal-save-project-close:hover {
@@ -58,11 +83,16 @@
 }
 
 .modal-save-project-form {
-  padding: 1.5rem;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .modal-save-project-field {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .modal-save-project-label {
@@ -70,7 +100,14 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-white);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.modal-save-project-hint {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  margin: 0;
+  margin-top: 0.25rem;
 }
 
 .modal-save-project-input {
@@ -104,25 +141,46 @@
 
 .modal-save-project-info {
   padding: 1rem;
-  background-color: var(--bg-gray);
+  background-color: var(--bg-gray-light);
   border-radius: var(--border-radius);
-  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.modal-save-project-code {
-  font-size: 0.875rem;
+.modal-save-project-info-label {
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   margin: 0;
 }
 
-.modal-save-project-code strong {
+.modal-save-project-code {
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--text-white);
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.1em;
+}
+
+.modal-save-project-info-hint {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  margin: 0;
+  margin-top: 0.25rem;
 }
 
 .modal-save-project-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  margin-top: 0.5rem;
 }
 
 .modal-save-project-button {
@@ -136,12 +194,12 @@
 }
 
 .modal-save-project-button-cancel {
-  background-color: var(--bg-gray);
+  background-color: transparent;
   color: var(--text-gray);
 }
 
 .modal-save-project-button-cancel:hover {
-  background-color: var(--bg-gray-hover);
+  background-color: var(--bg-gray-light);
   color: var(--text-white);
 }
 

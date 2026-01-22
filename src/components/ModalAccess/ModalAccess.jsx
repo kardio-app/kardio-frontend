@@ -103,13 +103,21 @@ function ModalAccess({ onClose }) {
         <div className="modal-access-backdrop" onClick={handleBackdropClick}>
           <div className="modal-access-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-access-header">
-          <h3 className="modal-access-title">Entrar no Projeto</h3>
+          <div className="modal-access-header-content">
+            <h3 className="modal-access-title">Acessar Projeto</h3>
+            <p className="modal-access-description">
+              Insira o código de 6 caracteres do projeto para acessá-lo. O código foi gerado quando o projeto foi criado.
+            </p>
+          </div>
           <button
             className="modal-access-close"
             onClick={onClose}
             aria-label="Fechar"
           >
-            ×
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
         
@@ -125,13 +133,16 @@ function ModalAccess({ onClose }) {
                 setCode(value);
                 setError('');
               }}
-              placeholder="Digite o código do projeto"
+              placeholder="Ex: ABC123"
               maxLength={6}
               autoFocus
             />
             {error && (
               <p className="modal-access-error">{error}</p>
             )}
+            <p className="modal-access-hint">
+              O código possui 6 caracteres alfanuméricos
+            </p>
           </div>
 
           <div className="modal-access-actions">

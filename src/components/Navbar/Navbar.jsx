@@ -9,6 +9,7 @@ import Breadcrumb from '../Breadcrumb/Breadcrumb'
 import SearchBar from '../SearchBar/SearchBar'
 import SavedProjectsSidebar from '../SavedProjectsSidebar/SavedProjectsSidebar'
 import DocsSidebar from '../DocsSidebar/DocsSidebar'
+import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import { useDocsContext } from '../../contexts/DocsContext'
 import ModalSaveProject from '../ModalSaveProject/ModalSaveProject'
 import { createProject, getProject, accessProject, updateProjectName } from '../../services/api'
@@ -130,7 +131,7 @@ function Navbar() {
     setTimeout(() => {
       setIsSearchExpanded(false)
       setIsSearchClosing(false)
-    }, 300) // Tempo da animação
+    }, 300) // Tempo da animação (deve corresponder ao tempo do CSS)
   }
 
   // Focar o input quando a barra expandir
@@ -1752,19 +1753,19 @@ function Navbar() {
         {showExitModal && createPortal(
           isProjectSaved() ? (
             <ModalConfirm
-              title="Sair do Projeto?"
-              message="Tem certeza que deseja sair do projeto?"
+              title="Sair do Projeto"
+              message="Você está prestes a sair deste projeto. Se o projeto estiver salvo localmente, você poderá acessá-lo novamente pela lista de projetos salvos. Caso contrário, será necessário usar o código do projeto para acessá-lo novamente."
               onConfirm={handleExitConfirm}
               onCancel={() => setShowExitModal(false)}
               onClose={() => setShowExitModal(false)}
-              confirmText="Sair"
+              confirmText="Confirmar Saída"
               cancelText="Cancelar"
               showCloseButton={true}
             />
           ) : (
             <ModalConfirm
               title="Projeto não salvo localmente"
-              message="Este projeto não está salvo localmente. Se você sair agora, precisará do código do projeto para acessá-lo novamente. Você pode salvar o projeto pelo menu lateral (ícone de Menu) antes de sair, ou salvar agora."
+              message="Este projeto não está salvo no seu histórico local. Se você sair agora sem salvar, precisará do código de acesso do projeto para acessá-lo novamente. Recomendamos salvar o projeto antes de sair para facilitar o acesso futuro. Você pode salvar pelo menu lateral ou fazer isso agora."
               onConfirm={handleSaveAndExit}
               onCancel={handleExitConfirm}
               onClose={() => setShowExitModal(false)}
@@ -1989,30 +1990,33 @@ function Navbar() {
               <>
                 <div 
                   className={`navbar-search-wrapper ${isSearchExpanded ? 'navbar-search-expanded' : ''} ${isSearchClosing ? 'navbar-search-closing' : ''}`}
-                  style={{ minWidth: isSearchExpanded ? '300px' : 'auto', maxWidth: isSearchExpanded ? '400px' : 'none' }}
+                  style={{ minWidth: isSearchExpanded ? '350px' : 'auto', maxWidth: isSearchExpanded ? '500px' : 'none' }}
                 >
-                  {!isSearchExpanded && !isSearchClosing ? (
-                    <button
-                      className="navbar-search-icon-button"
-                      onClick={() => setIsSearchExpanded(true)}
-                      aria-label="Expandir pesquisa"
+                  <button
+                    className="navbar-search-icon-button"
+                    onClick={() => {
+                      if (!isSearchExpanded) {
+                        setIsSearchExpanded(true)
+                      }
+                    }}
+                    aria-label="Expandir pesquisa"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                      </svg>
-                    </button>
-                  ) : (
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                  </button>
+                  {isSearchExpanded && (
                     <div className={`navbar-search-expanded-wrapper ${isSearchClosing ? 'navbar-search-closing' : ''}`}>
                       <SearchBar 
                         onSearch={handleSearch} 
@@ -2039,31 +2043,6 @@ function Navbar() {
                         </svg>
                       </button>
                     </div>
-                  )}
-                  {isSearchClosing && (
-                    <button
-                      className="navbar-search-icon-button navbar-search-icon-button-emerging"
-                      onClick={() => {
-                        setIsSearchExpanded(false)
-                        setIsSearchClosing(false)
-                      }}
-                      aria-label="Expandir pesquisa"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                      </svg>
-                    </button>
                   )}
                 </div>
                 <button
@@ -2227,22 +2206,16 @@ function Navbar() {
         </div>
       )}
       {showHomeSidebar && isHomeOrLegalOrDocs && !isMobile && (
-        <>
-          <div 
-            className="share-modal-overlay" 
-            style={{ zIndex: 199 }}
-            onClick={() => setShowHomeSidebar(false)}
-          />
-          <div 
-            className="saved-projects-sidebar saved-projects-sidebar-open" 
-            style={{ 
-              zIndex: 200,
-              top: 0,
-              height: '100vh'
-            }}
-          >
+        <StaggeredMenu
+          isOpen={showHomeSidebar}
+          onClose={() => setShowHomeSidebar(false)}
+          position="right"
+          colors={['var(--bg-gray)', 'var(--card-bg)']}
+          closeOnClickAway={true}
+        >
+          <div className="saved-projects-sidebar saved-projects-sidebar-open">
             <div className="saved-projects-header">
-              <h3 className="saved-projects-title">Menu</h3>
+              <h3 className="saved-projects-title" data-stagger-label>Menu</h3>
               <button
                 className="saved-projects-close"
                 onClick={() => setShowHomeSidebar(false)}
@@ -2265,7 +2238,7 @@ function Navbar() {
               </button>
             </div>
             <div className="saved-projects-actions" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
                 <div className="saved-projects-theme">
                   <ThemeToggle />
                 </div>
@@ -2275,6 +2248,7 @@ function Navbar() {
                     setShowHomeSidebar(false)
                     setShowAccessModal(true)
                   }}
+                  data-stagger-item
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -2290,6 +2264,7 @@ function Navbar() {
                     await handleStartProject()
                   }}
                   disabled={isCreating}
+                  data-stagger-item
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14"></path>
@@ -2298,7 +2273,7 @@ function Navbar() {
                   {isCreating ? 'Criando...' : 'Criar Projeto'}
                 </button>
               </div>
-              <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
                 <button
                   className="saved-projects-copy-button"
                   onClick={() => {
@@ -2306,6 +2281,7 @@ function Navbar() {
                     localStorage.setItem('kardio-docs-show-overview', 'true')
                     navigate('/docs')
                   }}
+                  data-stagger-item
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -2322,6 +2298,7 @@ function Navbar() {
                     setShowHomeSidebar(false)
                     navigate('/docs')
                   }}
+                  data-stagger-item
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
@@ -2331,7 +2308,7 @@ function Navbar() {
               </div>
             </div>
           </div>
-        </>
+        </StaggeredMenu>
       )}
       
     </>

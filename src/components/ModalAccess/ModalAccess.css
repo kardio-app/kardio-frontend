@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 10001;
   padding: 2rem;
   animation: fadeIn 0.2s ease;
   overflow-y: auto;
@@ -28,17 +28,33 @@
 
 .modal-access-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid transparent;
+  padding: 1.75rem;
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+.modal-access-header-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .modal-access-title {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: var(--text-white);
   margin: 0;
+  line-height: 1.3;
+}
+
+.modal-access-description {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  margin: 0;
+  line-height: 1.5;
 }
 
 .modal-access-close {
@@ -47,14 +63,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  line-height: 1;
   border-radius: var(--border-radius);
   transition: var(--transition);
   background: transparent;
   border: none;
-  color: var(--text-white);
+  color: var(--text-gray);
   cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.modal-access-close svg {
+  width: 20px;
+  height: 20px;
 }
 
 .modal-access-close:hover {
@@ -62,7 +83,7 @@
 }
 
 .modal-access-form {
-  padding: 1.5rem;
+  padding: 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -77,9 +98,8 @@
 .modal-access-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-gray);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--text-white);
+  margin-bottom: 0.25rem;
 }
 
 .modal-access-input {
@@ -103,6 +123,14 @@
   font-size: 0.8125rem;
   color: #ff4444;
   margin: 0;
+  margin-top: 0.25rem;
+}
+
+.modal-access-hint {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  margin: 0;
+  margin-top: 0.25rem;
 }
 
 .modal-access-actions {
@@ -133,12 +161,17 @@
 }
 
 .modal-access-button-submit {
-  background-color: var(--bg-gray-light);
+  background-color: var(--button-bg);
   color: var(--text-white);
 }
 
 .modal-access-button-submit:hover {
-  background-color: var(--bg-gray-hover);
+  background-color: var(--button-bg-hover);
+}
+
+.modal-access-button-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @keyframes fadeIn {

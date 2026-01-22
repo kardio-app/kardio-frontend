@@ -194,7 +194,7 @@
 @media (max-width: 768px) {
   .board-container {
     padding: 0;
-    padding-top: 70px; /* Espaço para a navbar fixa */
+    padding-top: 48px; /* Espaço para a navbar fixa */
     padding-bottom: 0;
     overflow: hidden;
     min-height: 0;

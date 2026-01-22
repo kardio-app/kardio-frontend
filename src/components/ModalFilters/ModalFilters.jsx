@@ -89,6 +89,18 @@ function ModalFilters({ boardId, onClose }) {
                            completionStatus !== 'all' || 
                            dateFilter !== 'all'
   
+  // Função para determinar a cor do texto com melhor contraste
+  const getContrastColor = (hexColor) => {
+    if (!hexColor || hexColor.length !== 7) return '#FFFFFF'
+    
+    const r = parseInt(hexColor.substr(1, 2), 16)
+    const g = parseInt(hexColor.substr(3, 2), 16)
+    const b = parseInt(hexColor.substr(5, 2), 16)
+    
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.5 ? '#000000' : '#FFFFFF'
+  }
+  
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose()
@@ -97,22 +109,23 @@ function ModalFilters({ boardId, onClose }) {
   
   return createPortal(
     <div className="modal-filters-backdrop" onClick={handleBackdropClick}>
-      <div className="modal-filters-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-filters-header">
-          <h2>Filtrar Cards</h2>
-          <button 
-            className="modal-filters-close"
-            onClick={onClose}
-            aria-label="Fechar"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        
-        <div className="modal-filters-body">
+      <div className={`modal-filters-container ${hasActiveFilters && boardId ? 'with-insights' : ''}`}>
+        <div className="modal-filters-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-filters-header">
+            <h2>Filtrar Cards</h2>
+            <button 
+              className="modal-filters-close"
+              onClick={onClose}
+              aria-label="Fechar"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <div className="modal-filters-body">
           {/* Filtro por Legendas */}
           <div className="modal-filters-section">
             <label className="modal-filters-section-label">
@@ -292,54 +305,48 @@ function ModalFilters({ boardId, onClose }) {
               </label>
             </div>
           </div>
+          </div>
+          
+          <div className="modal-filters-footer">
+            <button
+              className="modal-filters-button modal-filters-button-clear"
+              onClick={handleClearFilters}
+              disabled={!hasActiveFilters}
+            >
+              Limpar Filtros
+            </button>
+            <button
+              className="modal-filters-button modal-filters-button-apply"
+              onClick={handleApplyFilters}
+            >
+              Aplicar Filtros
+            </button>
+          </div>
         </div>
         
-        {/* Prévia dos insights */}
+        {/* Painel de insights lateral */}
         {hasActiveFilters && boardId && (
-          <div className="modal-filters-insights-preview">
-            <FilterInsights 
-              boardId={boardId} 
-              filters={{
-                labels: selectedLabels,
-                assignees: selectedAssignees,
-                completionStatus,
-                dateFilter
-              }}
-            />
+          <div className="modal-filters-insights-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-filters-insights-panel-header">
+              <h3>Insights dos Filtros</h3>
+            </div>
+            <div className="modal-filters-insights-panel-content">
+              <FilterInsights 
+                boardId={boardId} 
+                filters={{
+                  labels: selectedLabels,
+                  assignees: selectedAssignees,
+                  completionStatus,
+                  dateFilter
+                }}
+              />
+            </div>
           </div>
         )}
-        
-        <div className="modal-filters-footer">
-          <button
-            className="modal-filters-button modal-filters-button-clear"
-            onClick={handleClearFilters}
-            disabled={!hasActiveFilters}
-          >
-            Limpar Filtros
-          </button>
-          <button
-            className="modal-filters-button modal-filters-button-apply"
-            onClick={handleApplyFilters}
-          >
-            Aplicar Filtros
-          </button>
-        </div>
       </div>
     </div>,
     document.body
   )
-}
-
-// Função para determinar a cor do texto com melhor contraste
-function getContrastColor(hexColor) {
-  if (!hexColor || hexColor.length !== 7) return '#FFFFFF'
-  
-  const r = parseInt(hexColor.substr(1, 2), 16)
-  const g = parseInt(hexColor.substr(3, 2), 16)
-  const b = parseInt(hexColor.substr(5, 2), 16)
-  
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.5 ? '#000000' : '#FFFFFF'
 }
 
 export default ModalFilters

@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { getSavedProjects, saveProject } from '../../utils/savedProjects';
 import { accessProject, getBoard, getProject } from '../../services/api';
 import Loading from '../Loading/Loading';
+import ModalSearch from '../ModalSearch/ModalSearch';
 import './SearchBar.css';
 
 const maskCode = (code) => {
@@ -16,13 +17,17 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
   const location = useLocation();
   const [searchValue, setSearchValue] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [projectResult, setProjectResult] = useState(null);
   const [boardData, setBoardData] = useState(null);
+  const [isAccessingByCode, setIsAccessingByCode] = useState(false);
   const searchBarRef = useRef(null);
+  const accessTimeoutRef = useRef(null);
+  
+  const isBoard = location.pathname.startsWith('/board/') || location.pathname.startsWith('/board-gerencial/');
 
-  const isBoard = location.pathname.startsWith('/board/');
   const loadingMessage = isBoard ? 'Carregando projeto...' : 'Entrando no projeto...';
 
   useEffect(() => {
@@ -133,18 +138,106 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
   };
 
   const handleFocus = () => {
-    setShowDropdown(true);
-    loadProjects();
+    if (isBoard) {
+      setShowModal(true);
+    } else {
+      setShowDropdown(true);
+      loadProjects();
+    }
+  };
+
+  const handleClick = () => {
+    if (isBoard) {
+      setShowModal(true);
+    }
   };
 
   const handleChange = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toUpperCase().slice(0, 6);
     setSearchValue(value);
     setShowDropdown(true);
+    setIsAccessingByCode(false);
+    
+    // Limpar timeout anterior se existir
+    if (accessTimeoutRef.current) {
+      clearTimeout(accessTimeoutRef.current);
+    }
+    
     if (onSearch) {
       onSearch(value);
     }
   };
+
+  const handleSubmitCode = async () => {
+    if (!searchValue || searchValue.length !== 6 || !/^[A-Z0-9]{6}$/.test(searchValue)) {
+      return;
+    }
+
+    const code = searchValue;
+    
+    // Verificar se já existe nos projetos salvos
+    const existingProject = projects.find(p => p.code === code);
+    if (existingProject) {
+      handleLoadProject(existingProject);
+      return;
+    }
+
+    // Tentar acessar o projeto pelo código
+    setIsLoading(true);
+    setShowDropdown(false);
+    setIsAccessingByCode(true);
+    
+    try {
+      const result = await accessProject(code);
+      setProjectResult(result);
+      
+      // Salvar automaticamente no localStorage
+      try {
+        saveProject({
+          name: result.name || 'Projeto sem nome',
+          code: code,
+          encryptedLink: result.encryptedLink
+        });
+      } catch (saveError) {
+        console.error('Erro ao salvar projeto automaticamente:', saveError);
+      }
+      
+      // Pré-carregar dados do board durante o loading
+      if (result.type !== 'managerial') {
+        try {
+          const boardData = await getBoard(result.encryptedLink);
+          setBoardData(boardData);
+        } catch (boardError) {
+          console.error('Erro ao pré-carregar board:', boardError);
+        }
+      } else {
+        setBoardData({});
+      }
+    } catch (error) {
+      console.error('Erro ao acessar projeto:', error);
+      setIsLoading(false);
+      setProjectResult(null);
+      setBoardData(null);
+      setShowDropdown(true);
+      setIsAccessingByCode(false);
+      alert('Código inválido. Verifique o código do projeto.');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmitCode();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (accessTimeoutRef.current) {
+        clearTimeout(accessTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleClear = () => {
     setSearchValue('');
@@ -214,12 +307,21 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
       )
     : projects;
 
+  // Verificar se o código é válido para ativar o botão
+  const isValidCode = searchValue.length === 6 && /^[A-Z0-9]{6}$/.test(searchValue);
+  const hasMatchingProject = filteredProjects.length > 0 && filteredProjects.some(p => p.code === searchValue);
+
   return (
     <>
       {isLoading && createPortal(
         <Loading message={loadingMessage} />,
         document.body
       )}
+      <ModalSearch
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSearch={onSearch}
+      />
       <div className="search-bar" ref={searchBarRef}>
       <div className="search-bar-input-wrapper">
         <svg
@@ -237,14 +339,17 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.35-4.35"></path>
         </svg>
-        <input
-          type="text"
-          className="search-bar-input"
-          placeholder={placeholder}
-          value={searchValue}
-          onChange={handleChange}
-          onFocus={handleFocus}
-        />
+                <input
+                  type="text"
+                  className="search-bar-input"
+                  placeholder={placeholder}
+                  value={searchValue}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onClick={handleClick}
+                  onKeyPress={handleKeyPress}
+                  readOnly={isBoard}
+                />
         {searchValue && (
           <button
             className="search-bar-clear"
@@ -268,7 +373,7 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
           </button>
         )}
       </div>
-      {showDropdown && filteredProjects.length > 0 && (
+      {showDropdown && (filteredProjects.length > 0 || isValidCode) && (
         <div className="search-bar-dropdown">
           {filteredProjects.map((project) => (
             <div
@@ -314,9 +419,74 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
               </svg>
             </div>
           ))}
+          {filteredProjects.length === 0 && isValidCode && (
+            <div className="search-bar-dropdown-submit">
+              <div className="search-bar-dropdown-submit-info">
+                <p className="search-bar-dropdown-submit-text">Acessar projeto</p>
+                <p className="search-bar-dropdown-submit-code">Código: {searchValue}</p>
+              </div>
+              <button
+                type="button"
+                className="search-bar-submit-button"
+                onClick={handleSubmitCode}
+                disabled={!isValidCode || isAccessingByCode}
+                title="Acessar projeto"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+          )}
+          {filteredProjects.length > 0 && hasMatchingProject && (
+            <div className="search-bar-dropdown-submit">
+              <div className="search-bar-dropdown-submit-info">
+                <p className="search-bar-dropdown-submit-text">Acessar projeto</p>
+                <p className="search-bar-dropdown-submit-code">Código: {searchValue}</p>
+              </div>
+              <button
+                type="button"
+                className="search-bar-submit-button"
+                onClick={handleSubmitCode}
+                disabled={!isValidCode || isAccessingByCode}
+                title="Acessar projeto"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+          )}
+          {filteredProjects.length === 0 && !isValidCode && searchValue.length > 0 && (
+            <div className="search-bar-dropdown-empty">
+              Digite um código válido (6 caracteres)
+            </div>
+          )}
         </div>
       )}
-      {showDropdown && filteredProjects.length === 0 && projects.length > 0 && (
+      {showDropdown && filteredProjects.length === 0 && projects.length > 0 && !isValidCode && searchValue.length === 0 && (
         <div className="search-bar-dropdown">
           <div className="search-bar-dropdown-empty">
             Nenhum projeto encontrado

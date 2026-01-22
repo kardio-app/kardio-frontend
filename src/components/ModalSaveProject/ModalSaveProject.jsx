@@ -54,13 +54,21 @@ function ModalSaveProject({ isOpen, onClose, projectCode, projectName, encrypted
     <div className="modal-save-project-backdrop" onClick={handleBackdropClick}>
       <div className="modal-save-project-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-save-project-header">
-          <h3 className="modal-save-project-title">Salvar Projeto</h3>
+          <div className="modal-save-project-header-content">
+            <h3 className="modal-save-project-title">Salvar Projeto</h3>
+            <p className="modal-save-project-description">
+              Salve este projeto no seu histórico local para acessá-lo facilmente no futuro. Você poderá encontrá-lo na lista de projetos salvos sem precisar do código.
+            </p>
+          </div>
           <button
             className="modal-save-project-close"
             onClick={onClose}
             aria-label="Fechar"
           >
-            ×
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
         
@@ -75,17 +83,24 @@ function ModalSaveProject({ isOpen, onClose, projectCode, projectName, encrypted
                 setName(e.target.value);
                 setError('');
               }}
-              placeholder="Digite um nome para o projeto"
+              placeholder="Ex: Meu Projeto Principal"
               autoFocus
             />
             {error && (
               <p className="modal-save-project-error">{error}</p>
             )}
+            <p className="modal-save-project-hint">
+              Escolha um nome descritivo para identificar este projeto facilmente
+            </p>
           </div>
 
           <div className="modal-save-project-info">
+            <p className="modal-save-project-info-label">Código do Projeto</p>
             <p className="modal-save-project-code">
-              <strong>Código:</strong> {projectCode}
+              {projectCode}
+            </p>
+            <p className="modal-save-project-info-hint">
+              Guarde este código caso precise acessar o projeto em outro dispositivo
             </p>
           </div>
 

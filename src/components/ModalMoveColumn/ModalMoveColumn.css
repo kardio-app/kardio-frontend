@@ -187,12 +187,12 @@
 }
 
 [data-theme="light"] .modal-move-column-button-confirm {
-  background-color: #333333;
+  background-color: #2563eb;
   color: #FFFFFF;
 }
 
 [data-theme="light"] .modal-move-column-button-confirm:hover:not(:disabled) {
-  background-color: #000000;
+  background-color: #1d4ed8;
 }
 
 @keyframes fadeIn {

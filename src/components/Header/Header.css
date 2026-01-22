@@ -78,13 +78,13 @@
 }
 
 [data-theme="light"] .header-button-icon {
-  background-color: #333333;
+  background-color: #2563eb;
   color: #FFFFFF;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 [data-theme="light"] .header-button-icon:hover {
-  background-color: #000000;
+  background-color: #1d4ed8;
   color: #FFFFFF;
 }
 
@@ -255,16 +255,16 @@
 }
 
 [data-theme="light"] .share-modal-copy-button {
-  background-color: #333333;
+  background-color: #2563eb;
   color: #FFFFFF;
-  border-color: #333333;
+  border-color: #2563eb;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 [data-theme="light"] .share-modal-copy-button:hover {
-  background-color: #000000;
+  background-color: #1d4ed8;
   color: #FFFFFF;
-  border-color: #000000;
+  border-color: #1d4ed8;
 }
 
 .share-modal-loading,

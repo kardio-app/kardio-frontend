@@ -85,14 +85,14 @@
 
 [data-theme="light"] .navbar-board-button,
 [data-theme="light"] .navbar-gerencial-button {
-  background-color: #333333;
+  background-color: #2563eb;
   color: #FFFFFF;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 [data-theme="light"] .navbar-board-button:hover,
 [data-theme="light"] .navbar-gerencial-button:hover {
-  background-color: #000000;
+  background-color: #1d4ed8;
   color: #FFFFFF;
 }
 

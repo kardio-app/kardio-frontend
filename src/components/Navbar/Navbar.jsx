@@ -125,6 +125,15 @@ function Navbar() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [isSearchClosing, setIsSearchClosing] = useState(false)
   const searchInputRef = useRef(null)
+  
+  // Estados para projetos salvos no menu da home
+  const [homeSavedProjects, setHomeSavedProjects] = useState([])
+  const [homeSaveCode, setHomeSaveCode] = useState('')
+  const [homeIsSaving, setHomeIsSaving] = useState(false)
+  const [homeSaveError, setHomeSaveError] = useState('')
+  const [homeProjectToDelete, setHomeProjectToDelete] = useState(null)
+  const [homeShowDeleteModal, setHomeShowDeleteModal] = useState(false)
+  const [homeIsLoadingProject, setHomeIsLoadingProject] = useState(false)
 
   const handleCloseSearch = () => {
     setIsSearchClosing(true)
@@ -455,6 +464,164 @@ function Navbar() {
         safeError('Erro ao copiar código', error)
       }
     }
+  }
+
+  // Carregar projetos salvos quando o menu da home abrir
+  useEffect(() => {
+    if (showHomeSidebar && isHome) {
+      loadHomeSavedProjects()
+    }
+  }, [showHomeSidebar, isHome])
+
+  // Funções para gerenciar projetos salvos no menu da home
+  const loadHomeSavedProjects = async () => {
+    const saved = getSavedProjects()
+    setHomeSavedProjects(saved)
+    
+    // Atualizar nomes dos projetos do servidor em background
+    if (saved.length > 0) {
+      await Promise.allSettled(
+        saved.map(async (project) => {
+          try {
+            let result
+            if (project.encryptedLink) {
+              try {
+                const projectData = await getProject(project.encryptedLink)
+                result = {
+                  name: projectData.name,
+                  encryptedLink: project.encryptedLink,
+                  accessCode: projectData.accessCode || project.code
+                }
+              } catch (getProjectError) {
+                result = await accessProject(project.code)
+              }
+            } else {
+              result = await accessProject(project.code)
+            }
+            
+            if (result.name && result.name !== project.name) {
+              saveProject({
+                name: result.name,
+                code: result.accessCode || project.code,
+                encryptedLink: result.encryptedLink || project.encryptedLink
+              })
+              return {
+                ...project,
+                name: result.name,
+                encryptedLink: result.encryptedLink || project.encryptedLink
+              }
+            }
+            if (result.encryptedLink && result.encryptedLink !== project.encryptedLink) {
+              saveProject({
+                name: project.name,
+                code: result.accessCode || project.code,
+                encryptedLink: result.encryptedLink
+              })
+              return {
+                ...project,
+                encryptedLink: result.encryptedLink
+              }
+            }
+            return project
+          } catch (error) {
+            console.warn(`Erro ao atualizar projeto ${project.code}:`, error)
+            return project
+          }
+        })
+      )
+      const updated = getSavedProjects()
+      setHomeSavedProjects(updated)
+    }
+  }
+
+  const handleHomeSaveProject = async (e) => {
+    e.preventDefault()
+    
+    if (!homeSaveCode.trim()) {
+      setHomeSaveError('Por favor, insira um código')
+      return
+    }
+
+    setHomeIsSaving(true)
+    setHomeSaveError('')
+
+    try {
+      const result = await accessProject(homeSaveCode.trim().toUpperCase())
+      
+      saveProject({
+        name: result.name || 'Projeto sem nome',
+        code: homeSaveCode.trim().toUpperCase(),
+        encryptedLink: result.encryptedLink
+      })
+
+      setHomeSaveCode('')
+      loadHomeSavedProjects()
+    } catch (error) {
+      console.error('Erro ao salvar projeto:', error)
+      setHomeSaveError(error.message || 'Código inválido')
+    } finally {
+      setHomeIsSaving(false)
+    }
+  }
+
+  const handleHomeLoadProject = async (project) => {
+    setHomeIsLoadingProject(true)
+    try {
+      const result = await accessProject(project.code)
+      
+      try {
+        saveProject({
+          name: result.name || project.name,
+          code: project.code,
+          encryptedLink: result.encryptedLink
+        })
+      } catch (saveError) {
+        console.error('Erro ao atualizar projeto salvo:', saveError)
+      }
+      
+      if (result.type !== 'managerial') {
+        try {
+          const boardStore = useBoardStore.getState()
+          const boardData = await boardStore.getBoard(result.encryptedLink)
+          sessionStorage.setItem(`board_preload_${result.encryptedLink}`, JSON.stringify(boardData))
+        } catch (boardError) {
+          console.error('Erro ao pré-carregar board:', boardError)
+        }
+      }
+      
+      const projectType = result.type || 'personal'
+      const route = projectType === 'managerial' 
+        ? `/board-gerencial/${result.encryptedLink}`
+        : `/board/${result.encryptedLink}`
+      
+      navigate(route)
+      setShowHomeSidebar(false)
+    } catch (error) {
+      console.error('Erro ao carregar projeto:', error)
+      alert('Erro ao carregar projeto. Verifique se o código ainda é válido.')
+    } finally {
+      setHomeIsLoadingProject(false)
+    }
+  }
+
+  const handleHomeDeleteClick = (e, project) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setHomeProjectToDelete(project)
+    setHomeShowDeleteModal(true)
+  }
+
+  const handleHomeConfirmDelete = () => {
+    if (homeProjectToDelete && deleteSavedProject(homeProjectToDelete.id)) {
+      loadHomeSavedProjects()
+    }
+    setHomeShowDeleteModal(false)
+    setHomeProjectToDelete(null)
+  }
+
+  const handleHomeCancelDelete = () => {
+    setHomeShowDeleteModal(false)
+    setHomeProjectToDelete(null)
   }
 
   // Handlers para projetos salvos (menu mobile board-gerencial)
@@ -2237,7 +2404,7 @@ function Navbar() {
                 </svg>
               </button>
             </div>
-            <div className="saved-projects-actions" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div className="saved-projects-actions" style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
                 <div className="saved-projects-theme">
                   <ThemeToggle />
@@ -2249,6 +2416,7 @@ function Navbar() {
                     setShowAccessModal(true)
                   }}
                   data-stagger-item
+                  style={{ marginTop: '0.75rem' }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -2273,42 +2441,167 @@ function Navbar() {
                   {isCreating ? 'Criando...' : 'Criar Projeto'}
                 </button>
               </div>
-              <div style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
-                <button
-                  className="saved-projects-copy-button"
-                  onClick={() => {
-                    setShowHomeSidebar(false)
-                    localStorage.setItem('kardio-docs-show-overview', 'true')
-                    navigate('/docs')
+            </div>
+
+            <div className="saved-projects-list">
+              <form className="saved-projects-save-form" onSubmit={handleHomeSaveProject}>
+                <input
+                  type="text"
+                  className="saved-projects-save-input"
+                  placeholder="Insira o código aqui para salvar localmente"
+                  value={homeSaveCode}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().slice(0, 6)
+                    setHomeSaveCode(value)
+                    setHomeSaveError('')
                   }}
-                  data-stagger-item
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" x2="8" y1="13" y2="13"></line>
-                    <line x1="16" x2="8" y1="17" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                  </svg>
-                  Últimos Commits
-                </button>
+                  maxLength={6}
+                  disabled={homeIsSaving}
+                />
                 <button
-                  className="saved-projects-copy-button"
-                  onClick={() => {
-                    setShowHomeSidebar(false)
-                    navigate('/docs')
-                  }}
-                  data-stagger-item
+                  type="submit"
+                  className="saved-projects-save-button"
+                  disabled={homeIsSaving || !homeSaveCode.trim()}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-                  </svg>
-                  Docs
+                  {homeIsSaving ? 'Salvando...' : 'Salvar'}
                 </button>
-              </div>
+                {homeSaveError && (
+                  <p className="saved-projects-save-error">{homeSaveError}</p>
+                )}
+              </form>
+              {homeSavedProjects.length > 0 && (
+                <div className="saved-projects-items">
+                  {homeSavedProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="saved-project-item"
+                      onClick={() => handleHomeLoadProject(project)}
+                      data-stagger-item
+                    >
+                      <div className="saved-project-content">
+                        <div className="saved-project-icon">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                            <path d="M9 3v18"></path>
+                            <path d="M9 12h6"></path>
+                          </svg>
+                        </div>
+                        <div className="saved-project-info">
+                          <p className="saved-project-name" data-stagger-label>{project.name}</p>
+                          <p className="saved-project-code">Código: {maskCode(project.code)}</p>
+                        </div>
+                      </div>
+                      <div className="saved-project-actions">
+                        <svg
+                          className="saved-project-enter-icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M5 12h14"></path>
+                          <path d="m12 5 7 7-7 7"></path>
+                        </svg>
+                        <button
+                          className="saved-project-delete-btn"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleHomeDeleteClick(e, project)
+                          }}
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                          }}
+                          aria-label="Remover"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.125rem', padding: '0.75rem 1rem' }}>
+              <button
+                className="saved-projects-copy-button"
+                onClick={() => {
+                  setShowHomeSidebar(false)
+                  localStorage.setItem('kardio-docs-show-overview', 'true')
+                  navigate('/docs')
+                }}
+                data-stagger-item
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" x2="8" y1="13" y2="13"></line>
+                  <line x1="16" x2="8" y1="17" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Últimos Commits
+              </button>
+              <button
+                className="saved-projects-copy-button"
+                onClick={() => {
+                  setShowHomeSidebar(false)
+                  navigate('/docs')
+                }}
+                data-stagger-item
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                </svg>
+                Documentação
+              </button>
             </div>
           </div>
         </StaggeredMenu>
+      )}
+      {homeIsLoadingProject && createPortal(
+        <Loading message="Carregando projeto..." />,
+        document.body
+      )}
+      {homeShowDeleteModal && createPortal(
+        <ModalConfirm
+          title="Remover Projeto do Histórico Local"
+          message={`Você está prestes a remover o projeto "${homeProjectToDelete?.name}" do seu histórico local. Esta ação apenas remove o projeto da sua lista de projetos salvos e não afeta o projeto no servidor. Você poderá acessá-lo novamente a qualquer momento usando o código de acesso do projeto.`}
+          onConfirm={handleHomeConfirmDelete}
+          onCancel={handleHomeCancelDelete}
+          confirmText="Remover Localmente"
+          cancelText="Cancelar"
+        />,
+        document.body
       )}
       
     </>

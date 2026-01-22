@@ -527,23 +527,10 @@ function Column({ boardId, column, showToast }) {
                 onClick={() => {
                   setShowAddCardModal(true)
                 }}
-                title="Adicionar Tarefa"
-                aria-label="Adicionar Tarefa"
+                title="Adicionar novo card"
+                aria-label="Adicionar novo card"
               >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 5v14"></path>
-                  <path d="M5 12h14"></path>
-                </svg>
+                + Adicionar novo card
               </button>
             )
           )}
@@ -619,23 +606,10 @@ function Column({ boardId, column, showToast }) {
             onClick={() => {
               setShowAddCard(true)
             }}
-            title="Adicionar Tarefa"
-            aria-label="Adicionar Tarefa"
+            title="Adicionar novo card"
+            aria-label="Adicionar novo card"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M12 5v14"></path>
-              <path d="M5 12h14"></path>
-            </svg>
+            + Adicionar novo card
           </button>
         )
       )}

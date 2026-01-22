@@ -213,12 +213,12 @@
 }
 
 [data-theme="light"] .modal-save-project-button-submit {
-  background-color: #333333;
+  background-color: #2563eb;
   color: #FFFFFF;
 }
 
 [data-theme="light"] .modal-save-project-button-submit:hover {
-  background-color: #000000;
+  background-color: #1d4ed8;
   color: #FFFFFF;
 }
 

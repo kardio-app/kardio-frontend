@@ -121,13 +121,13 @@
 }
 
 [data-theme="light"] .modal-confirm-button-confirm {
-  background-color: #333333;
+  background-color: #2563eb;
   color: #FFFFFF;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 [data-theme="light"] .modal-confirm-button-confirm:hover {
-  background-color: #000000;
+  background-color: #1d4ed8;
   color: #FFFFFF;
 }
 

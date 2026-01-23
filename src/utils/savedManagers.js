@@ -58,7 +58,7 @@ export function saveManager(manager) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(managers))
     return true
   } catch (error) {
-    console.error('Erro ao salvar gestor:', error)
+    safeError('Erro ao salvar gestor:', error)
     return false
   }
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
+import { safeError } from '../../utils/logger'
 import './ModalMoveColumn.css'
 
 function ModalMoveColumn({ boardId, columnId, currentPosition, totalColumns, onClose, showToast }) {
@@ -29,7 +30,7 @@ function ModalMoveColumn({ boardId, columnId, currentPosition, totalColumns, onC
       }
       onClose()
     } catch (error) {
-      console.error('Erro ao mover coluna:', error)
+      safeError('Erro ao mover coluna:', error)
       if (showToast) {
         showToast('Erro ao mover coluna', 'error')
       }

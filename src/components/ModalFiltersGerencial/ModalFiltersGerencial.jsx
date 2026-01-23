@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { safeError } from '../../utils/logger'
 import { getLinkedProjects, getBoard } from '../../services/api'
 import useBoardStore from '../../store/useBoardStore'
+import FilterInsights from '../FilterInsights/FilterInsights'
 import './ModalFiltersGerencial.css'
 
 function ModalFiltersGerencial({ boardId, onClose }) {
@@ -12,9 +13,20 @@ function ModalFiltersGerencial({ boardId, onClose }) {
   const [statusFilter, setStatusFilter] = useState('all') // 'all', 'active', 'inactive', 'with-pending'
   const [dateFilter, setDateFilter] = useState('all') // 'all', 'today', 'week', 'month'
   
+  // Filtros do board do projeto selecionado
+  const [selectedProjectBoardId, setSelectedProjectBoardId] = useState(null)
+  const [selectedLabels, setSelectedLabels] = useState([])
+  const [selectedAssignees, setSelectedAssignees] = useState([])
+  const [completionStatus, setCompletionStatus] = useState('all')
+  const [boardDateFilter, setBoardDateFilter] = useState('all')
+  
   const boards = useBoardStore((state) => state.boards)
   const getBoardFromStore = useBoardStore((state) => state.getBoard)
   const updateBoard = useBoardStore((state) => state.updateBoard)
+  
+  // Ref para rastrear o último projeto selecionado e evitar resets desnecessários
+  const lastSelectedProjectRef = useRef(null)
+  const filtersInitializedRef = useRef(false)
   
   // Carregar projetos vinculados
   useEffect(() => {
@@ -38,7 +50,7 @@ function ModalFiltersGerencial({ boardId, onClose }) {
               labels: boardData.labels || []
             })
           } catch (error) {
-            console.error(`Erro ao carregar board do projeto ${project.encrypted_id}:`, error)
+            safeError(`Erro ao carregar board do projeto ${project.encrypted_id}:`, error)
           }
         }
       } catch (error) {
@@ -64,7 +76,7 @@ function ModalFiltersGerencial({ boardId, onClose }) {
         setDateFilter(filters.dateFilter || 'all')
       }
     } catch (error) {
-      console.error('Erro ao carregar filtros salvos:', error)
+      safeError('Erro ao carregar filtros salvos:', error)
     }
   }, [boardId])
   
@@ -73,6 +85,58 @@ function ModalFiltersGerencial({ boardId, onClose }) {
       prev.includes(projectId)
         ? prev.filter(id => id !== projectId)
         : [...prev, projectId]
+    )
+  }
+  
+  // Quando um projeto é selecionado, carregar seus filtros (apenas quando o projeto muda)
+  useEffect(() => {
+    if (selectedProjects.length === 1) {
+      const projectId = selectedProjects[0]
+      // Só atualizar se o projeto realmente mudou
+      if (lastSelectedProjectRef.current !== projectId) {
+        lastSelectedProjectRef.current = projectId
+        filtersInitializedRef.current = false
+        setSelectedProjectBoardId(projectId)
+        const board = boards[projectId] || getBoardFromStore(projectId)
+        if (board?.filters) {
+          setSelectedLabels(board.filters.labels || [])
+          setSelectedAssignees(board.filters.assignees || [])
+          setCompletionStatus(board.filters.completionStatus || 'all')
+          setBoardDateFilter(board.filters.dateFilter || 'all')
+        } else {
+          setSelectedLabels([])
+          setSelectedAssignees([])
+          setCompletionStatus('all')
+          setBoardDateFilter('all')
+        }
+        filtersInitializedRef.current = true
+      }
+      // Não resetar os filtros se o projeto não mudou, mesmo que o board seja atualizado
+    } else {
+      lastSelectedProjectRef.current = null
+      filtersInitializedRef.current = false
+      setSelectedProjectBoardId(null)
+      setSelectedLabels([])
+      setSelectedAssignees([])
+      setCompletionStatus('all')
+      setBoardDateFilter('all')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProjects])
+  
+  const handleLabelToggle = (labelId) => {
+    setSelectedLabels(prev => 
+      prev.includes(labelId) 
+        ? prev.filter(id => id !== labelId)
+        : [...prev, labelId]
+    )
+  }
+  
+  const handleAssigneeToggle = (assignee) => {
+    setSelectedAssignees(prev => 
+      prev.includes(assignee) 
+        ? prev.filter(a => a !== assignee)
+        : [...prev, assignee]
     )
   }
   
@@ -86,6 +150,17 @@ function ModalFiltersGerencial({ boardId, onClose }) {
       selectedProjects,
       statusFilter,
       dateFilter
+    }
+    
+    // Se houver um projeto selecionado, salvar também os filtros do board
+    if (selectedProjectBoardId) {
+      const boardFilters = {
+        labels: selectedLabels,
+        assignees: selectedAssignees,
+        completionStatus,
+        dateFilter: boardDateFilter
+      }
+      updateBoard(selectedProjectBoardId, { filters: boardFilters })
     }
     
     // Salvar filtros no localStorage
@@ -105,6 +180,11 @@ function ModalFiltersGerencial({ boardId, onClose }) {
     setSelectedProjects([])
     setStatusFilter('all')
     setDateFilter('all')
+    setSelectedProjectBoardId(null)
+    setSelectedLabels([])
+    setSelectedAssignees([])
+    setCompletionStatus('all')
+    setBoardDateFilter('all')
     
     if (boardId) {
       try {
@@ -118,6 +198,57 @@ function ModalFiltersGerencial({ boardId, onClose }) {
       }))
     }
   }
+  
+  // Função para determinar a cor do texto com melhor contraste
+  const getContrastColor = (hexColor) => {
+    if (!hexColor || hexColor.length !== 7) return '#FFFFFF'
+    
+    const r = parseInt(hexColor.substr(1, 2), 16)
+    const g = parseInt(hexColor.substr(3, 2), 16)
+    const b = parseInt(hexColor.substr(5, 2), 16)
+    
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.5 ? '#000000' : '#FFFFFF'
+  }
+  
+  // Obter dados do board do projeto selecionado
+  const selectedProjectBoard = selectedProjectBoardId 
+    ? (boards[selectedProjectBoardId] || getBoardFromStore(selectedProjectBoardId))
+    : null
+  const selectedProjectLabels = selectedProjectBoard?.labels || []
+  const selectedProjectColumns = selectedProjectBoard?.columns || []
+  
+  // Coletar todos os responsáveis únicos dos cards do projeto selecionado
+  const allAssignees = Array.from(
+    new Set(
+      (selectedProjectColumns || [])
+        .flatMap(col => col.cards || [])
+        .map(card => card.assignee)
+        .filter(Boolean)
+    )
+  ).sort()
+  
+  // Função para contar cards por legenda
+  const getLabelCardCount = (labelId) => {
+    if (!selectedProjectColumns) return 0
+    const allCards = selectedProjectColumns.flatMap(col => col.cards || [])
+    return allCards.filter(card => {
+      const cardLabelIds = card.label_ids || []
+      return cardLabelIds.includes(labelId)
+    }).length
+  }
+  
+  // Função para contar cards por responsável
+  const getAssigneeCardCount = (assignee) => {
+    if (!selectedProjectColumns) return 0
+    const allCards = selectedProjectColumns.flatMap(col => col.cards || [])
+    return allCards.filter(card => card.assignee === assignee).length
+  }
+  
+  const hasBoardFilters = selectedLabels.length > 0 || 
+                          selectedAssignees.length > 0 || 
+                          completionStatus !== 'all' || 
+                          boardDateFilter !== 'all'
   
   const hasActiveFilters = selectedProjects.length > 0 || 
                            statusFilter !== 'all' || 
@@ -147,7 +278,8 @@ function ModalFiltersGerencial({ boardId, onClose }) {
   
   return createPortal(
     <div className="modal-filters-gerencial-backdrop" onClick={handleBackdropClick}>
-      <div className="modal-filters-gerencial-content" onClick={(e) => e.stopPropagation()}>
+      <div className={`modal-filters-gerencial-container ${selectedProjectBoardId ? 'with-board-filters' : ''} ${hasBoardFilters ? 'with-insights' : ''}`} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-filters-gerencial-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-filters-gerencial-header">
           <h2>Filtrar Projetos Vinculados</h2>
           <button 
@@ -325,7 +457,7 @@ function ModalFiltersGerencial({ boardId, onClose }) {
           <button
             className="modal-filters-gerencial-button modal-filters-gerencial-button-clear"
             onClick={handleClearFilters}
-            disabled={!hasActiveFilters}
+            disabled={!hasActiveFilters && !hasBoardFilters}
           >
             Limpar Filtros
           </button>
@@ -336,6 +468,253 @@ function ModalFiltersGerencial({ boardId, onClose }) {
             Aplicar Filtros
           </button>
         </div>
+      </div>
+      
+      {/* Painel de filtros do board do projeto selecionado */}
+      {selectedProjectBoardId && selectedProjectBoard && (
+        <div className="modal-filters-gerencial-board-panel" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-filters-gerencial-board-panel-header">
+            <h3>Filtrar Cards - {selectedProjectBoard.name || 'Projeto Selecionado'}</h3>
+          </div>
+          <div className="modal-filters-gerencial-board-panel-body">
+            {/* Filtro por Legendas */}
+            <div className="modal-filters-gerencial-section">
+              <label className="modal-filters-gerencial-section-label">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M7 7h.01"></path>
+                  <path d="M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A1.994 1.994 0 0 1 3 12V7a4 4 0 0 1 4-4z"></path>
+                </svg>
+                Legendas
+              </label>
+              {selectedProjectLabels.length === 0 ? (
+                <p className="modal-filters-gerencial-empty">Nenhuma legenda disponível</p>
+              ) : (
+                <div className="modal-filters-gerencial-list">
+                  {selectedProjectLabels.map((label) => {
+                    const isSelected = selectedLabels.includes(label.id)
+                    return (
+                      <button
+                        key={label.id}
+                        className={`modal-filters-gerencial-item ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleLabelToggle(label.id)}
+                        style={{ 
+                          backgroundColor: isSelected ? label.color : 'transparent',
+                          borderColor: isSelected ? label.color : 'var(--border-color)',
+                          color: isSelected ? getContrastColor(label.color) : 'var(--text-white)'
+                        }}
+                      >
+                        <span>{label.name}</span>
+                        <span className="modal-filters-gerencial-item-count">
+                          ({getLabelCardCount(label.id)})
+                        </span>
+                        {isSelected && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+            
+            {/* Filtro por Responsável */}
+            {allAssignees.length > 0 && (
+              <div className="modal-filters-gerencial-section">
+                <label className="modal-filters-gerencial-section-label">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  Responsável
+                </label>
+                <div className="modal-filters-gerencial-list">
+                  {allAssignees.map((assignee) => {
+                    const isSelected = selectedAssignees.includes(assignee)
+                    return (
+                      <button
+                        key={assignee}
+                        className={`modal-filters-gerencial-item ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleAssigneeToggle(assignee)}
+                      >
+                        <span>{assignee}</span>
+                        <span className="modal-filters-gerencial-item-count">
+                          ({getAssigneeCardCount(assignee)})
+                        </span>
+                        {isSelected && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Filtro por Status */}
+            <div className="modal-filters-gerencial-section">
+              <label className="modal-filters-gerencial-section-label">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Status
+              </label>
+              <div className="modal-filters-gerencial-radio-group">
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardCompletionStatus"
+                    value="all"
+                    checked={completionStatus === 'all'}
+                    onChange={(e) => setCompletionStatus(e.target.value)}
+                  />
+                  <span>Todos</span>
+                </label>
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardCompletionStatus"
+                    value="completed"
+                    checked={completionStatus === 'completed'}
+                    onChange={(e) => setCompletionStatus(e.target.value)}
+                  />
+                  <span>Concluídos</span>
+                </label>
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardCompletionStatus"
+                    value="not-completed"
+                    checked={completionStatus === 'not-completed'}
+                    onChange={(e) => setCompletionStatus(e.target.value)}
+                  />
+                  <span>Pendentes</span>
+                </label>
+              </div>
+            </div>
+            
+            {/* Filtro por Data */}
+            <div className="modal-filters-gerencial-section">
+              <label className="modal-filters-gerencial-section-label">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Data de Criação
+              </label>
+              <div className="modal-filters-gerencial-radio-group">
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardDateFilter"
+                    value="all"
+                    checked={boardDateFilter === 'all'}
+                    onChange={(e) => setBoardDateFilter(e.target.value)}
+                  />
+                  <span>Todos</span>
+                </label>
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardDateFilter"
+                    value="today"
+                    checked={boardDateFilter === 'today'}
+                    onChange={(e) => setBoardDateFilter(e.target.value)}
+                  />
+                  <span>Hoje</span>
+                </label>
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardDateFilter"
+                    value="week"
+                    checked={boardDateFilter === 'week'}
+                    onChange={(e) => setBoardDateFilter(e.target.value)}
+                  />
+                  <span>Últimos 7 dias</span>
+                </label>
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardDateFilter"
+                    value="month"
+                    checked={boardDateFilter === 'month'}
+                    onChange={(e) => setBoardDateFilter(e.target.value)}
+                  />
+                  <span>Últimos 30 dias</span>
+                </label>
+                <label className="modal-filters-gerencial-radio">
+                  <input
+                    type="radio"
+                    name="boardDateFilter"
+                    value="year"
+                    checked={boardDateFilter === 'year'}
+                    onChange={(e) => setBoardDateFilter(e.target.value)}
+                  />
+                  <span>Último ano</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          {/* Footer com botões do board */}
+          <div className="modal-filters-gerencial-board-panel-footer">
+            <button
+              className="modal-filters-gerencial-button modal-filters-gerencial-button-clear"
+              onClick={() => {
+                setSelectedLabels([])
+                setSelectedAssignees([])
+                setCompletionStatus('all')
+                setBoardDateFilter('all')
+              }}
+              disabled={!hasBoardFilters}
+            >
+              Limpar Filtros
+            </button>
+            <button
+              className="modal-filters-gerencial-button modal-filters-gerencial-button-apply"
+              onClick={() => {
+                if (selectedProjectBoardId) {
+                  const boardFilters = {
+                    labels: selectedLabels,
+                    assignees: selectedAssignees,
+                    completionStatus,
+                    dateFilter: boardDateFilter
+                  }
+                  updateBoard(selectedProjectBoardId, { filters: boardFilters })
+                }
+              }}
+            >
+              Aplicar Filtros
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Painel de insights do board */}
+      {hasBoardFilters && selectedProjectBoardId && (
+        <div className="modal-filters-gerencial-insights-panel" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-filters-gerencial-insights-panel-header">
+            <h3>Insights dos Filtros</h3>
+          </div>
+          <div className="modal-filters-gerencial-insights-panel-body">
+            <FilterInsights 
+              boardId={selectedProjectBoardId} 
+              filters={{
+                labels: selectedLabels,
+                assignees: selectedAssignees,
+                completionStatus,
+                dateFilter: boardDateFilter
+              }}
+            />
+          </div>
+        </div>
+      )}
       </div>
     </div>,
     document.body

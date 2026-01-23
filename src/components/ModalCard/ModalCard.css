@@ -4,9 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: var(--overlay-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,7 +32,6 @@
   flex-direction: column;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   border: none;
 }
 
@@ -476,8 +473,6 @@
     align-items: flex-start;
     justify-content: center;
     z-index: 10000;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     position: fixed;
     top: 0;
     left: 0;

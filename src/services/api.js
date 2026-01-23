@@ -112,7 +112,7 @@ export async function accessProject(code) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API accessProject:', error)
+    safeError('Erro na API accessProject:', error)
     throw error
   }
 }
@@ -146,7 +146,7 @@ export async function getBoard(encryptedId) {
         const errorData = await clonedResponse.json()
         errorMessage = errorData.error || errorMessage
         if (errorData.details) {
-          console.error('Detalhes do erro:', errorData.details)
+          safeError('Detalhes do erro:', errorData.details)
         }
       } catch (e) {
         try {
@@ -278,8 +278,8 @@ export async function createCard(encryptedId, columnId, data) {
         const errorData = await clonedResponse.json()
         errorMessage = errorData.error || errorMessage
         if (errorData.details) {
-          console.error('Detalhes do erro:', errorData.details)
-          console.error('Código do erro:', errorData.code)
+          safeError('Detalhes do erro:', errorData.details)
+          safeError('Código do erro:', errorData.code)
         }
       } catch (e) {
         try {
@@ -353,7 +353,7 @@ export async function reorderCards(encryptedId, columnId, cards) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API reorderCards:', error)
+    safeError('Erro na API reorderCards:', error)
     throw error
   }
 }
@@ -418,7 +418,7 @@ export async function createLabel(encryptedId, data) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API createLabel:', error)
+    safeError('Erro na API createLabel:', error)
     throw error
   }
 }
@@ -460,7 +460,7 @@ export async function deleteLabel(encryptedId, labelId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API deleteLabel:', error)
+    safeError('Erro na API deleteLabel:', error)
     throw error
   }
 }
@@ -506,7 +506,7 @@ export async function createComment(encryptedId, cardId, data) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API createComment:', error)
+    safeError('Erro na API createComment:', error)
     throw error
   }
 }
@@ -548,7 +548,7 @@ export async function deleteComment(encryptedId, commentId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API deleteComment:', error)
+    safeError('Erro na API deleteComment:', error)
     throw error
   }
 }
@@ -600,7 +600,7 @@ export async function linkPersonalProjectToManager(managerialEncryptedId, person
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API linkPersonalProjectToManager:', error)
+    safeError('Erro na API linkPersonalProjectToManager:', error)
     throw error
   }
 }
@@ -634,7 +634,7 @@ export async function getManagersForPersonalProject(personalEncryptedId) {
 
     return await response.json()
   } catch (error) {
-    console.error('Erro na API getManagersForPersonalProject:', error)
+    safeError('Erro na API getManagersForPersonalProject:', error)
     throw error
   }
 }

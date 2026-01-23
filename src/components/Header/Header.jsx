@@ -115,7 +115,7 @@ function Header({ boardId, boardName, showToast, onNameUpdate, isManagerial = fa
         const projectData = await getProject(boardId)
         setShareCode(projectData.shareCode)
       } catch (error) {
-        console.error('Erro ao buscar cรณdigo de compartilhamento:', error)
+        safeError('Erro ao buscar cรณdigo de compartilhamento:', error)
         if (showToast) {
           showToast('Erro ao buscar cรณdigo de compartilhamento', 'error')
         }

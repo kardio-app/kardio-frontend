@@ -39,7 +39,7 @@ export function saveProject(projectData) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
     return projectToSave;
   } catch (error) {
-    console.error('Erro ao salvar projeto:', error);
+    safeError('Erro ao salvar projeto:', error);
     throw error;
   }
 }

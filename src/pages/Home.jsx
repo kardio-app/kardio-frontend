@@ -160,7 +160,7 @@ function Home() {
                 encryptedLink: linkedProject.encryptedId
               })
             } catch (saveError) {
-              console.error('Erro ao salvar projeto vinculado:', saveError)
+              safeError('Erro ao salvar projeto vinculado:', saveError)
             }
           })
         }
@@ -242,7 +242,7 @@ function Home() {
           })
           labelsMap[labelData.name] = label.id
         } catch (error) {
-          console.error('Erro ao criar label:', error)
+          safeError('Erro ao criar label:', error)
           // Continuar mesmo se uma label falhar
         }
       }
@@ -325,7 +325,7 @@ function Home() {
 
   return (
     <>
-      {isCreating && <Loading showFunFacts={isGenerating} />}
+      {isCreating && <Loading />}
       <Navbar />
       <div className="home">
         <section className="home-hero">

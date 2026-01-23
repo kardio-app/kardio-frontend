@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { fixEncoding } from '../../utils/fixEncoding'
+import { safeError } from '../../utils/logger'
 import './GitHubCommits.css'
 
 function GitHubCommits() {
@@ -30,7 +31,7 @@ function GitHubCommits() {
         setCommits(data)
         setError(null)
       } catch (err) {
-        console.error('Erro ao buscar commits do GitHub:', err)
+        safeError('Erro ao buscar commits do GitHub:', err)
         setError('Não foi possível carregar os commits')
       } finally {
         setLoading(false)

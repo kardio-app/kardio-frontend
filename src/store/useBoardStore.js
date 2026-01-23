@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import * as api from '../services/api'
+import { safeError } from '../utils/logger'
 
 const getDefaultBoard = (boardId) => ({
   id: boardId,
@@ -51,7 +52,7 @@ const useBoardStore = create(
             }
           })
         } catch (error) {
-          console.error('Erro ao atualizar coluna:', error)
+          safeError('Erro ao atualizar coluna:', error)
           throw error
         }
       },
@@ -126,7 +127,7 @@ const useBoardStore = create(
             }
           })
         } catch (error) {
-          console.error('Erro ao criar card:', error)
+          safeError('Erro ao criar card:', error)
           // ROLLBACK: Reverter para o estado anterior em caso de erro
           set((state) => ({
             boards: {
@@ -299,7 +300,7 @@ const useBoardStore = create(
             }
           })
         } catch (error) {
-          console.error('Erro ao atualizar card:', error)
+          safeError('Erro ao atualizar card:', error)
           // ROLLBACK: Reverter para o estado anterior em caso de erro
           set((state) => ({
             boards: {
@@ -336,7 +337,7 @@ const useBoardStore = create(
             }
           })
         } catch (error) {
-          console.error('Erro ao deletar card:', error)
+          safeError('Erro ao deletar card:', error)
           throw error
         }
       },
@@ -424,7 +425,7 @@ const useBoardStore = create(
             ])
           }
         } catch (error) {
-          console.error('Erro ao mover card:', error)
+          safeError('Erro ao mover card:', error)
           // ROLLBACK: Reverter para o estado anterior em caso de erro
           set((state) => ({
             boards: {
@@ -484,7 +485,7 @@ const useBoardStore = create(
             }
           })
         } catch (error) {
-          console.error('Erro ao criar coluna:', error)
+          safeError('Erro ao criar coluna:', error)
           // ROLLBACK: Reverter para o estado anterior em caso de erro
           set((state) => ({
             boards: {
@@ -512,7 +513,7 @@ const useBoardStore = create(
             }
           })
         } catch (error) {
-          console.error('Erro ao deletar coluna:', error)
+          safeError('Erro ao deletar coluna:', error)
           throw error
         }
       },
@@ -556,7 +557,7 @@ const useBoardStore = create(
             await Promise.all(updatePromises)
           }
         } catch (error) {
-          console.error('Erro ao mover coluna:', error)
+          safeError('Erro ao mover coluna:', error)
           // ROLLBACK: Reverter para o estado anterior em caso de erro
           set((state) => ({
             boards: {

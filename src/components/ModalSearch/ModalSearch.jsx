@@ -6,6 +6,7 @@ import { accessProject, getBoard, getProject, createProject } from '../../servic
 import Loading from '../Loading/Loading'
 import ModalAccess from '../ModalAccess/ModalAccess'
 import ModalCreateProject from '../ModalCreateProject/ModalCreateProject'
+import { safeError } from '../../utils/logger'
 import './ModalSearch.css'
 
 const maskCode = (code) => {
@@ -168,13 +169,13 @@ function ModalSearch({ isOpen, onClose, onSearch }) {
           const boardData = await getBoard(result.encryptedLink)
           setBoardData(boardData)
         } catch (boardError) {
-          console.error('Erro ao pré-carregar board:', boardError)
+          safeError('Erro ao pré-carregar board:', boardError)
         }
       } else {
         setBoardData({})
       }
     } catch (error) {
-      console.error('Erro ao carregar projeto:', error)
+      safeError('Erro ao carregar projeto:', error)
       alert('Erro ao carregar projeto. Verifique o código.')
       setIsLoading(false)
       setProjectResult(null)
@@ -213,15 +214,15 @@ function ModalSearch({ isOpen, onClose, onSearch }) {
                 encryptedLink: linkedProject.encryptedId
               })
             } catch (saveError) {
-              console.error('Erro ao salvar projeto vinculado:', saveError)
+              safeError('Erro ao salvar projeto vinculado:', saveError)
             }
           })
         }
       } catch (saveError) {
-        console.error('Erro ao salvar projeto automaticamente', saveError)
+        safeError('Erro ao salvar projeto automaticamente', saveError)
       }
     } catch (error) {
-      console.error('Erro ao criar projeto', error)
+      safeError('Erro ao criar projeto', error)
       alert('Erro ao criar projeto. Tente novamente.')
       setIsCreating(false)
       setCreateProjectResult(null)

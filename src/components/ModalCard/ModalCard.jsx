@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
 import CommentsSection from '../CommentsSection/CommentsSection'
+import { safeError } from '../../utils/logger'
 import './ModalCard.css'
 
 function ModalCard({ boardId, columnId, card, onClose, showToast }) {
@@ -195,7 +196,7 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
       // Fechar modal após salvar com sucesso
       onClose()
     } catch (error) {
-      console.error('Erro ao salvar card:', error)
+      safeError('Erro ao salvar card:', error)
       if (showToast) {
         showToast('Erro ao salvar alterações', 'error')
       }
@@ -217,7 +218,7 @@ function ModalCard({ boardId, columnId, card, onClose, showToast }) {
       }
       onClose()
     } catch (error) {
-      console.error('Erro ao deletar card:', error)
+      safeError('Erro ao deletar card:', error)
       if (showToast) {
         showToast('Erro ao excluir tarefa', 'error')
       }

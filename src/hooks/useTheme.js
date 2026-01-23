@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { safeWarn } from '../utils/logger'
 
 const THEME_STORAGE_KEY = 'kardio-theme'
 const DEFAULT_THEME = 'galaxy'
@@ -23,7 +24,7 @@ const safeGetStoredTheme = () => {
   try {
     return localStorage.getItem(THEME_STORAGE_KEY)
   } catch (error) {
-    console.warn('Não foi possível ler o tema salvo.', error)
+    safeWarn('Não foi possível ler o tema salvo.', error)
     return null
   }
 }
@@ -57,7 +58,7 @@ const persistTheme = (theme) => {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme)
   } catch (error) {
-    console.warn('Não foi possível salvar o tema selecionado.', error)
+    safeWarn('Não foi possível salvar o tema selecionado.', error)
   }
 }
 

@@ -4,6 +4,7 @@ import useBoardStore from '../../store/useBoardStore'
 import { getLabels, createLabel, updateLabel, deleteLabel } from '../../services/api'
 import ModalLabel from '../ModalLabel/ModalLabel'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
+import { safeError } from '../../utils/logger'
 import './LabelsManager.css'
 
 function LabelsManager({ boardId, showToast, onClose }) {
@@ -33,7 +34,7 @@ function LabelsManager({ boardId, showToast, onClose }) {
         updateBoard(boardId, { labels: labelsData })
       }
     } catch (error) {
-      console.error('Erro ao carregar legendas:', error)
+      safeError('Erro ao carregar legendas:', error)
       if (showToast) {
         showToast('Erro ao carregar legendas', 'error')
       }
@@ -76,7 +77,7 @@ function LabelsManager({ boardId, showToast, onClose }) {
       setShowLabelModal(false)
       setEditingLabel(null)
     } catch (error) {
-      console.error('Erro ao salvar legenda:', error)
+      safeError('Erro ao salvar legenda:', error)
       if (showToast) {
         showToast('Erro ao salvar legenda', 'error')
       }
@@ -97,7 +98,7 @@ function LabelsManager({ boardId, showToast, onClose }) {
         showToast('Legenda excluída', 'success')
       }
     } catch (error) {
-      console.error('Erro ao deletar legenda:', error)
+      safeError('Erro ao deletar legenda:', error)
       if (showToast) {
         showToast('Erro ao excluir legenda', 'error')
       }

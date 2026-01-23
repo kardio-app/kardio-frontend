@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { safeError } from '../../utils/logger'
 import './ModalLabel.css'
 
 // Cores pré-definidas para facilitar a seleção
@@ -50,7 +51,7 @@ function ModalLabel({ label, onConfirm, onCancel, showToast }) {
       setColor('#FF6B6B')
       setCustomColor('#FF6B6B')
     } catch (error) {
-      console.error('Erro ao salvar legenda:', error)
+      safeError('Erro ao salvar legenda:', error)
       if (showToast) {
         showToast('Erro ao salvar legenda', 'error')
       }

@@ -109,7 +109,7 @@ function ModalFilters({ boardId, onClose }) {
   
   return createPortal(
     <div className="modal-filters-backdrop" onClick={handleBackdropClick}>
-      <div className={`modal-filters-container ${hasActiveFilters && boardId ? 'with-insights' : ''}`}>
+      <div className={`modal-filters-container ${hasActiveFilters && boardId ? 'with-insights' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="modal-filters-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-filters-header">
             <h2>Filtrar Cards</h2>

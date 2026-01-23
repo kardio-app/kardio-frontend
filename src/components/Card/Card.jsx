@@ -5,6 +5,7 @@ import useBoardStore from '../../store/useBoardStore'
 import { updateCard, getComments } from '../../services/api'
 import ModalCard from '../ModalCard/ModalCard'
 import ModalMoveCard from '../ModalMoveCard/ModalMoveCard'
+import { safeError } from '../../utils/logger'
 import './Card.css'
 
 function Card({ boardId, columnId, card, showToast, columns }) {
@@ -30,7 +31,7 @@ function Card({ boardId, columnId, card, showToast, columns }) {
       const comments = await getComments(boardId, card.id)
       setCommentsCount(comments?.length || 0)
     } catch (error) {
-      console.error('Erro ao carregar comentários:', error)
+      safeError('Erro ao carregar comentários:', error)
       setCommentsCount(0)
     }
   }, [boardId, card.id])
@@ -107,7 +108,7 @@ function Card({ boardId, columnId, card, showToast, columns }) {
         is_completed: newCompletedState
       })
     } catch (error) {
-      console.error('Erro ao atualizar status de conclusão:', error)
+      safeError('Erro ao atualizar status de conclusão:', error)
       // Reverter em caso de erro
       await updateCardInStore(boardId, columnId, card.id, {
         is_completed: !newCompletedState

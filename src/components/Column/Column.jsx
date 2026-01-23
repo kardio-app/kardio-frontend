@@ -8,6 +8,7 @@ import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
 import ModalMoveColumn from '../ModalMoveColumn/ModalMoveColumn'
 import ModalAddCard from '../ModalAddCard/ModalAddCard'
+import { safeError } from '../../utils/logger'
 import ModalColumnLabel from '../ModalColumnLabel/ModalColumnLabel'
 import ColumnDropdown from '../ColumnDropdown/ColumnDropdown'
 import Card from '../Card/Card'
@@ -214,7 +215,7 @@ function Column({ boardId, column, showToast }) {
         }
       }
     } catch (error) {
-      console.error('Erro ao atualizar legenda da coluna:', error)
+      safeError('Erro ao atualizar legenda da coluna:', error)
       if (showToast) {
         showToast('Erro ao atualizar legenda', 'error')
       }
@@ -233,7 +234,7 @@ function Column({ boardId, column, showToast }) {
         showToast(`Coluna "${column.title}" excluída`, 'success')
       }
     } catch (error) {
-      console.error('Erro ao deletar coluna:', error)
+      safeError('Erro ao deletar coluna:', error)
       if (showToast) {
         showToast('Erro ao excluir coluna', 'error')
       }
@@ -253,7 +254,7 @@ function Column({ boardId, column, showToast }) {
           showToast(`Coluna renomeada para "${title.trim()}"`, 'success')
         }
       } catch (error) {
-        console.error('Erro ao atualizar título da coluna:', error)
+        safeError('Erro ao atualizar título da coluna:', error)
         if (showToast) {
           showToast('Erro ao atualizar nome da coluna', 'error')
         }
@@ -286,7 +287,7 @@ function Column({ boardId, column, showToast }) {
           showToast(`Tarefa "${cardTitle}" criada`, 'success')
         }
       } catch (error) {
-        console.error('Erro ao criar card:', error)
+        safeError('Erro ao criar card:', error)
         if (showToast) {
           showToast('Erro ao criar tarefa', 'error')
         }
@@ -307,7 +308,7 @@ function Column({ boardId, column, showToast }) {
         showToast(`Tarefa "${title}" criada`, 'success')
       }
     } catch (error) {
-      console.error('Erro ao criar card:', error)
+      safeError('Erro ao criar card:', error)
       if (showToast) {
         showToast('Erro ao criar tarefa', 'error')
       }

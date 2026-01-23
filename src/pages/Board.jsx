@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import useBoardStore from '../store/useBoardStore'
 import Navbar from '../components/Navbar/Navbar'
 import BoardComponent from '../components/Board/Board'
+import Loading from '../components/Loading/Loading'
 import { getBoard, getProject } from '../services/api'
 import { useToast } from '../hooks/useToast'
 import ToastContainer from '../components/Toast/ToastContainer'
@@ -169,7 +170,7 @@ function Board() {
               // Remover do sessionStorage após usar
               sessionStorage.removeItem(preloadKey)
             } catch (e) {
-              console.error('Erro ao parsear dados pré-carregados:', e)
+              safeError('Erro ao parsear dados pré-carregados:', e)
             }
           }
           
@@ -310,11 +311,7 @@ function Board() {
     return (
       <>
         <Navbar />
-        <div className="board-page">
-          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-gray)' }}>
-            Carregando...
-          </div>
-        </div>
+        <Loading message="Carregando projeto..." />
       </>
     )
   }

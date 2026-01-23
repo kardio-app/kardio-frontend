@@ -219,11 +219,6 @@ function DocsSidebar({
 
   const filteredNavItems = filterNavItems(navItems)
 
-  // Debug
-  if (isMobile) {
-    console.log('DocsSidebar filteredNavItems:', filteredNavItems.length, filteredNavItems)
-  }
-
   return (
     <div className={`docs-sidebar-wrapper ${isMobile ? 'docs-sidebar-mobile' : ''}`} data-mobile={isMobile}>
       {!isMobile && <h2 className="docs-sidebar-title">Documentação</h2>}

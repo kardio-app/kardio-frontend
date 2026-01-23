@@ -4,8 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background-color: var(--overlay-color);
   z-index: 10000;
   display: flex;
   align-items: center;
@@ -35,7 +34,6 @@
   flex-direction: column;
   overflow: hidden;
   animation: slideUp 0.3s ease;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes slideUp {

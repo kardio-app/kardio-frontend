@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
+import { safeError } from '../../utils/logger'
 import './ModalColumnLabel.css'
 
 function ModalColumnLabel({ boardId, column, onConfirm, onCancel, showToast }) {
@@ -29,7 +30,7 @@ function ModalColumnLabel({ boardId, column, onConfirm, onCancel, showToast }) {
         label_id: selectedLabelId || null
       })
     } catch (error) {
-      console.error('Erro ao salvar legenda:', error)
+      safeError('Erro ao salvar legenda:', error)
       if (showToast) {
         showToast('Erro ao salvar legenda', 'error')
       }

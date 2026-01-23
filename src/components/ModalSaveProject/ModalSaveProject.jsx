@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { saveProject } from '../../utils/savedProjects';
+import { safeError } from '../../utils/logger';
 import './ModalSaveProject.css';
 
 function ModalSaveProject({ isOpen, onClose, projectCode, projectName, encryptedLink }) {
@@ -37,7 +38,7 @@ function ModalSaveProject({ isOpen, onClose, projectCode, projectName, encrypted
       // Mostrar mensagem de sucesso (pode usar toast se disponível)
       alert('Projeto salvo com sucesso!');
     } catch (error) {
-      console.error('Erro ao salvar projeto:', error);
+      safeError('Erro ao salvar projeto:', error);
       setError('Erro ao salvar projeto. Tente novamente.');
     }
   };

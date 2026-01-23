@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Loading from '../Loading/Loading'
 import { accessProject, getBoard, getProject } from '../../services/api'
 import { saveProject } from '../../utils/savedProjects'
+import { safeError } from '../../utils/logger'
 import './ModalAccess.css'
 
 function ModalAccess({ onClose }) {
@@ -64,7 +65,7 @@ function ModalAccess({ onClose }) {
           encryptedLink: result.encryptedLink
         })
       } catch (saveError) {
-        console.error('Erro ao salvar projeto automaticamente:', saveError)
+        safeError('Erro ao salvar projeto automaticamente:', saveError)
         // Continua mesmo se falhar o salvamento
       }
       
@@ -75,7 +76,7 @@ function ModalAccess({ onClose }) {
           const boardData = await getBoard(result.encryptedLink)
           setBoardData(boardData)
         } catch (boardError) {
-          console.error('Erro ao pré-carregar board:', boardError)
+          safeError('Erro ao pré-carregar board:', boardError)
           // Continua mesmo se falhar o pré-carregamento
         }
       } else {

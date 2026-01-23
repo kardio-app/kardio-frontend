@@ -7,6 +7,7 @@ import Loading from '../Loading/Loading';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import ModalConfirm from '../ModalConfirm/ModalConfirm';
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu';
+import { safeError, safeWarn } from '../../utils/logger';
 import '../Header/Header.css';
 import './SavedProjectsSidebar.css';
 
@@ -92,7 +93,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       
       setSavedManagers(formattedManagers);
     } catch (error) {
-      console.error('Erro ao buscar gestores do backend:', error);
+      safeError('Erro ao buscar gestores do backend:', error);
       setSavedManagers([]);
       // Não mostrar toast de erro aqui para não poluir a interface
       // O erro já será logado no console
@@ -107,7 +108,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       const projectData = await getProject(boardId);
       setProjectType(projectData.type || 'personal');
     } catch (error) {
-      console.error('Erro ao buscar tipo do projeto:', error);
+      safeError('Erro ao buscar tipo do projeto:', error);
     }
   };
 
@@ -162,7 +163,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         showToast('Gestor removido com sucesso', 'success');
       }
     } catch (error) {
-      console.error('Erro ao remover gestor:', error);
+      safeError('Erro ao remover gestor:', error);
       if (showToast) {
         showToast('Erro ao remover gestor: ' + error.message, 'error');
       }
@@ -184,7 +185,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       const projectData = await getProject(boardId);
       setAccessCode(projectData.accessCode);
     } catch (error) {
-      console.error('Erro ao buscar código de acesso:', error);
+      safeError('Erro ao buscar código de acesso:', error);
     } finally {
       setLoadingAccessCode(false);
     }
@@ -199,7 +200,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       const projectData = await getProject(boardId);
       setAccessCode(projectData.accessCode);
     } catch (error) {
-      console.error('Erro ao buscar código de acesso:', error);
+      safeError('Erro ao buscar código de acesso:', error);
       if (showToast) {
         showToast('Erro ao buscar código de acesso', 'error');
       }
@@ -216,7 +217,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       const projectData = await getProject(boardId);
       setShareCode(projectData.shareCode);
     } catch (error) {
-      console.error('Erro ao buscar código de compartilhamento:', error);
+      safeError('Erro ao buscar código de compartilhamento:', error);
       if (showToast) {
         showToast('Erro ao buscar código de compartilhamento', 'error');
       }
@@ -233,7 +234,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       const projectData = await getProject(boardId);
       setAccessCode(projectData.accessCode);
     } catch (error) {
-      console.error('Erro ao buscar código de acesso:', error);
+      safeError('Erro ao buscar código de acesso:', error);
     } finally {
       setLoadingAccessCode(false);
     }
@@ -249,7 +250,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         }
         setTimeout(() => setCopiedCode(false), 2000);
       } catch (error) {
-        console.error('Erro ao copiar código:', error);
+        safeError('Erro ao copiar código:', error);
         if (showToast) {
           showToast('Erro ao copiar código', 'error');
         }
@@ -267,7 +268,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         }
         setTimeout(() => setCopiedCode(false), 2000);
       } catch (error) {
-        console.error('Erro ao copiar código:', error);
+        safeError('Erro ao copiar código:', error);
         if (showToast) {
           showToast('Erro ao copiar código', 'error');
         }
@@ -285,7 +286,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         }
         setTimeout(() => setCopied(false), 2000);
       } catch (error) {
-        console.error('Erro ao copiar código:', error);
+        safeError('Erro ao copiar código:', error);
         if (showToast) {
           showToast('Erro ao copiar código', 'error');
         }
@@ -352,7 +353,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
       setSaveCode('');
       loadProjects();
     } catch (error) {
-      console.error('Erro ao salvar projeto:', error);
+      safeError('Erro ao salvar projeto:', error);
       setSaveError(error.message || 'Código inválido');
     } finally {
       setIsSaving(false);
@@ -380,7 +381,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
                 };
               } catch (getProjectError) {
                 // Se falhar com getProject, tentar com accessProject como fallback
-                console.warn(`Erro ao buscar projeto por encryptedLink, tentando por código:`, getProjectError);
+                safeWarn(`Erro ao buscar projeto por encryptedLink, tentando por código:`, getProjectError);
                 result = await accessProject(project.code);
               }
             } else {
@@ -416,7 +417,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
             return project;
           } catch (error) {
             // Se falhar, manter o projeto como está
-            console.warn(`Erro ao atualizar projeto ${project.code}:`, error);
+            safeWarn(`Erro ao atualizar projeto ${project.code}:`, error);
             return project;
           }
         })
@@ -444,7 +445,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
           encryptedLink: result.encryptedLink
         });
       } catch (saveError) {
-        console.error('Erro ao atualizar projeto salvo:', saveError);
+        safeError('Erro ao atualizar projeto salvo:', saveError);
         // Continua mesmo se falhar o salvamento
       }
       
@@ -454,7 +455,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
           const boardData = await getBoard(result.encryptedLink);
           sessionStorage.setItem(`board_preload_${result.encryptedLink}`, JSON.stringify(boardData));
         } catch (boardError) {
-          console.error('Erro ao pré-carregar board:', boardError);
+          safeError('Erro ao pré-carregar board:', boardError);
         }
       }
       
@@ -471,7 +472,7 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         onLoadProject(project);
       }
     } catch (error) {
-      console.error('Erro ao carregar projeto:', error);
+      safeError('Erro ao carregar projeto:', error);
       alert('Erro ao carregar projeto. Verifique se o código ainda é válido.');
     } finally {
       setIsLoading(false);

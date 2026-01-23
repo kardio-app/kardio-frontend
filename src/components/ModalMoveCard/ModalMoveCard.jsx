@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import useBoardStore from '../../store/useBoardStore'
+import { safeError } from '../../utils/logger'
 import './ModalMoveCard.css'
 
 function ModalMoveCard({ boardId, columnId, cardId, currentPosition, totalCards, columns, onClose, showToast }) {
@@ -64,7 +65,7 @@ function ModalMoveCard({ boardId, columnId, cardId, currentPosition, totalCards,
       }
       onClose()
     } catch (error) {
-      console.error('Erro ao mover card:', error)
+      safeError('Erro ao mover card:', error)
       if (showToast) {
         showToast('Erro ao mover tarefa', 'error')
       }

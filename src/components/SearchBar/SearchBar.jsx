@@ -5,6 +5,7 @@ import { getSavedProjects, saveProject } from '../../utils/savedProjects';
 import { accessProject, getBoard, getProject } from '../../services/api';
 import Loading from '../Loading/Loading';
 import ModalSearch from '../ModalSearch/ModalSearch';
+import { safeError, safeWarn } from '../../utils/logger';
 import './SearchBar.css';
 
 const maskCode = (code) => {
@@ -73,7 +74,7 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
                 // Se falhar com getProject, tentar com accessProject como fallback
                 // Silenciar erro se projeto não existe mais (404)
                 if (getProjectError.message && !getProjectError.message.includes('não encontrado')) {
-                  console.warn(`Erro ao buscar projeto por encryptedLink, tentando por código:`, getProjectError);
+                  safeWarn(`Erro ao buscar projeto por encryptedLink, tentando por código:`, getProjectError);
                 }
                 try {
                   result = await accessProject(project.code);
@@ -122,7 +123,7 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
             // Se falhar, manter o projeto como está
             // Silenciar erros de projetos que não existem mais (comum)
             if (error.message && !error.message.includes('não encontrado') && !error.message.includes('inválido')) {
-              console.warn(`Erro ao atualizar projeto ${project.code}:`, error);
+              safeWarn(`Erro ao atualizar projeto ${project.code}:`, error);
             }
             return project;
           }
@@ -199,7 +200,7 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
           encryptedLink: result.encryptedLink
         });
       } catch (saveError) {
-        console.error('Erro ao salvar projeto automaticamente:', saveError);
+        safeError('Erro ao salvar projeto automaticamente:', saveError);
       }
       
       // Pré-carregar dados do board durante o loading
@@ -208,13 +209,13 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
           const boardData = await getBoard(result.encryptedLink);
           setBoardData(boardData);
         } catch (boardError) {
-          console.error('Erro ao pré-carregar board:', boardError);
+          safeError('Erro ao pré-carregar board:', boardError);
         }
       } else {
         setBoardData({});
       }
     } catch (error) {
-      console.error('Erro ao acessar projeto:', error);
+      safeError('Erro ao acessar projeto:', error);
       setIsLoading(false);
       setProjectResult(null);
       setBoardData(null);
@@ -260,7 +261,7 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
           const boardData = await getBoard(result.encryptedLink);
           setBoardData(boardData);
         } catch (boardError) {
-          console.error('Erro ao pré-carregar board:', boardError);
+          safeError('Erro ao pré-carregar board:', boardError);
           // Continua mesmo se falhar o pré-carregamento
         }
       } else {
@@ -268,7 +269,7 @@ function SearchBar({ onSearch, placeholder = 'Pesquisar...' }) {
         setBoardData({});
       }
     } catch (error) {
-      console.error('Erro ao carregar projeto:', error);
+      safeError('Erro ao carregar projeto:', error);
       alert('Erro ao carregar projeto. Verifique o código.');
       setIsLoading(false);
       setProjectResult(null);

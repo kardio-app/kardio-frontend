@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import useBoardStore from '../../store/useBoardStore'
 import Column from '../Column/Column'
 import ColumnCarousel from '../ColumnCarousel/ColumnCarousel'
+import { safeError } from '../../utils/logger'
 import './Board.css'
 
 function Board({ boardId, showToast }) {
@@ -38,7 +39,7 @@ function Board({ boardId, showToast }) {
           showToast(`Coluna "${columnTitle}" criada`, 'success')
         }
       } catch (error) {
-        console.error('Erro ao criar coluna:', error)
+        safeError('Erro ao criar coluna:', error)
         if (showToast) {
           showToast('Erro ao criar coluna', 'error')
         }
@@ -189,7 +190,7 @@ function Board({ boardId, showToast }) {
             }
           })
           .catch((error) => {
-            console.error('Erro ao mover coluna:', error)
+            safeError('Erro ao mover coluna:', error)
             if (showToast) {
               showToast('Erro ao mover coluna', 'error')
             }
@@ -266,7 +267,7 @@ function Board({ boardId, showToast }) {
             }
           })
           .catch((error) => {
-            console.error('Erro ao mover card:', error)
+            safeError('Erro ao mover card:', error)
             if (showToast) {
               showToast('Erro ao mover tarefa', 'error')
             }

@@ -254,7 +254,6 @@
   right: 0;
   bottom: 0;
   background-color: var(--overlay-color);
-  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -392,8 +391,9 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   align-items: stretch;
+  height: 100%;
 }
 
 .board-gerencial-loaded-board-header {
@@ -403,10 +403,12 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .board-gerencial-loaded-board-insights {
   margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 .board-gerencial-loaded-board-title {
@@ -439,14 +441,20 @@
   background-color: var(--bg-black);
   border-radius: var(--border-radius);
   padding: 0;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 /* Remove padding do board-container quando dentro do board gerencial */
 .board-gerencial-loaded-board-content .board-container {
   padding: 0;
+  height: 100%;
+  min-height: 500px;
+  flex: 1;
 }
 
 .board-gerencial-loaded-board-loading {

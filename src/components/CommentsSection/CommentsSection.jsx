@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { getComments, createComment } from '../../services/api'
+import { safeError } from '../../utils/logger'
 import './CommentsSection.css'
 
 function CommentsSection({ boardId, cardId, showToast }) {
@@ -47,7 +48,7 @@ function CommentsSection({ boardId, cardId, showToast }) {
           return prev
         })
       } catch (error) {
-        console.error('Erro ao carregar comentários:', error)
+        safeError('Erro ao carregar comentários:', error)
         if (!silent && showToast) {
           showToast('Erro ao carregar comentários', 'error')
         }
@@ -99,7 +100,7 @@ function CommentsSection({ boardId, cardId, showToast }) {
         setComments(commentsData || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar comentários:', error)
+      safeError('Erro ao carregar comentários:', error)
       if (!silent && showToast) {
         showToast('Erro ao carregar comentários', 'error')
       }
@@ -149,7 +150,7 @@ function CommentsSection({ boardId, cardId, showToast }) {
         showToast('Comentário adicionado', 'success')
       }
     } catch (error) {
-      console.error('Erro ao criar comentário:', error)
+      safeError('Erro ao criar comentário:', error)
       // ROLLBACK: Remover comentário temporário em caso de erro
       setComments(prev => prev.filter(c => c.id !== tempId))
       if (showToast) {

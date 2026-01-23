@@ -70,6 +70,7 @@ function Navbar() {
   const [boardAccessCode, setBoardAccessCode] = useState(null)
   const [boardLoadingCodes, setBoardLoadingCodes] = useState(false)
   const [boardCopied, setBoardCopied] = useState(false)
+  const [showBoardAccessCode, setShowBoardAccessCode] = useState(false)
   
   const boards = useBoardStore((state) => state.boards)
   const getBoard = useBoardStore((state) => state.getBoard)
@@ -387,7 +388,7 @@ function Navbar() {
         // Após salvar, sair normalmente
         handleExitConfirm()
       } catch (error) {
-        console.error('Erro ao salvar projeto:', error)
+        safeError('Erro ao salvar projeto:', error)
         alert('Erro ao salvar projeto. Tente novamente.')
       }
     } else {
@@ -422,7 +423,7 @@ function Navbar() {
       const projectData = await getProject(boardId)
       setAccessCode(projectData.accessCode)
     } catch (error) {
-      console.error('Erro ao buscar código de acesso:', error)
+      safeError('Erro ao buscar código de acesso:', error)
     } finally {
       setLoadingCodes(false)
     }
@@ -524,7 +525,7 @@ function Navbar() {
             }
             return project
           } catch (error) {
-            console.warn(`Erro ao atualizar projeto ${project.code}:`, error)
+            safeWarn(`Erro ao atualizar projeto ${project.code}:`, error)
             return project
           }
         })
@@ -557,7 +558,7 @@ function Navbar() {
       setHomeSaveCode('')
       loadHomeSavedProjects()
     } catch (error) {
-      console.error('Erro ao salvar projeto:', error)
+      safeError('Erro ao salvar projeto:', error)
       setHomeSaveError(error.message || 'Código inválido')
     } finally {
       setHomeIsSaving(false)
@@ -576,7 +577,7 @@ function Navbar() {
           encryptedLink: result.encryptedLink
         })
       } catch (saveError) {
-        console.error('Erro ao atualizar projeto salvo:', saveError)
+        safeError('Erro ao atualizar projeto salvo:', saveError)
       }
       
       if (result.type !== 'managerial') {
@@ -585,7 +586,7 @@ function Navbar() {
           const boardData = await boardStore.getBoard(result.encryptedLink)
           sessionStorage.setItem(`board_preload_${result.encryptedLink}`, JSON.stringify(boardData))
         } catch (boardError) {
-          console.error('Erro ao pré-carregar board:', boardError)
+          safeError('Erro ao pré-carregar board:', boardError)
         }
       }
       
@@ -597,7 +598,7 @@ function Navbar() {
       navigate(route)
       setShowHomeSidebar(false)
     } catch (error) {
-      console.error('Erro ao carregar projeto:', error)
+      safeError('Erro ao carregar projeto:', error)
       alert('Erro ao carregar projeto. Verifique se o código ainda é válido.')
     } finally {
       setHomeIsLoadingProject(false)
@@ -744,7 +745,7 @@ function Navbar() {
       setEditProjectName('')
       loadSavedProjects()
     } catch (error) {
-      console.error('Erro ao salvar edição:', error)
+      safeError('Erro ao salvar edição:', error)
     }
   }
 
@@ -782,7 +783,7 @@ function Navbar() {
             name: data.name || 'Projeto Gerencial'
           })
         } catch (error) {
-          console.error('Erro ao carregar projeto gerencial:', error)
+          safeError('Erro ao carregar projeto gerencial:', error)
         }
       }
       loadGerencialProject()
@@ -859,7 +860,7 @@ function Navbar() {
       await updateProjectName(boardId, trimmedName)
       document.title = `${trimmedName} - @kardiosoftware`
     } catch (error) {
-      console.error('Erro ao atualizar nome do projeto:', error)
+      safeError('Erro ao atualizar nome do projeto:', error)
       setGerencialProjectName(previousName)
       updateBoard(boardId, { name: previousName })
     }
@@ -902,7 +903,7 @@ function Navbar() {
       await updateProjectName(boardId, trimmedName)
       document.title = `${trimmedName} - @kardiosoftware`
     } catch (error) {
-      console.error('Erro ao atualizar nome do projeto:', error)
+      safeError('Erro ao atualizar nome do projeto:', error)
       setBoardProjectName(previousName)
       updateBoard(boardId, { name: previousName })
     }
@@ -916,7 +917,7 @@ function Navbar() {
       const projectData = await getProject(boardId)
       setBoardAccessCode(projectData.accessCode)
     } catch (error) {
-      console.error('Erro ao buscar código de acesso:', error)
+      safeError('Erro ao buscar código de acesso:', error)
     } finally {
       setBoardLoadingCodes(false)
     }
@@ -938,6 +939,7 @@ function Navbar() {
     setShowBoardShareModal(false)
     setBoardAccessCode(null)
     setBoardCopied(false)
+    setShowBoardAccessCode(false)
   }
 
   const handleSaveProject = () => {
@@ -1038,13 +1040,48 @@ function Navbar() {
                   <div className="share-modal-loading">Carregando...</div>
                 ) : boardAccessCode ? (
                   <div className="share-modal-code-container">
-                    <button
-                      className="share-modal-code"
-                      onClick={handleBoardCopyAccessCode}
-                      title="Clique para copiar"
-                    >
-                      {boardAccessCode}
-                    </button>
+                    <div className="share-modal-code-with-eye">
+                      <span className="share-modal-code-masked">
+                        {showBoardAccessCode ? boardAccessCode : '******'}
+                      </span>
+                      <button
+                        className="share-modal-eye-button"
+                        onClick={() => setShowBoardAccessCode(!showBoardAccessCode)}
+                        title={showBoardAccessCode ? 'Ocultar código' : 'Mostrar código'}
+                      >
+                        {showBoardAccessCode ? (
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            width="20" 
+                            height="20" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                          </svg>
+                        ) : (
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            width="20" 
+                            height="20" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                     <button
                       className="share-modal-copy-button"
                       onClick={handleBoardCopyAccessCode}
@@ -1208,6 +1245,9 @@ function Navbar() {
                 ) : (
                   <div className="share-modal-error">Erro ao carregar código</div>
                 )}
+                <p className="share-modal-hint">
+                  Este é o código de acesso ao projeto gerencial. Compartilhe este código com pessoas que você deseja que tenham acesso completo a este projeto gerencial, permitindo que visualizem e gerenciem todos os projetos vinculados.
+                </p>
               </div>
             </div>
           </div>,
@@ -1221,7 +1261,7 @@ function Navbar() {
           }}>
             <div className="share-modal" onClick={(e) => e.stopPropagation()}>
               <div className="share-modal-header">
-                <h2>Código de Compartilhamento</h2>
+                <h2>Código de Vinculação</h2>
                 <button className="share-modal-close" onClick={() => {
                   setShowShareCodeModal(false)
                   setShareCode(null)
@@ -1231,7 +1271,7 @@ function Navbar() {
                 </button>
               </div>
               <div className="share-modal-content">
-                <p className="share-modal-label">Código de Compartilhamento:</p>
+                <p className="share-modal-label">Código de Vinculação:</p>
                 {loadingCodes ? (
                   <div className="share-modal-loading">Carregando...</div>
                 ) : shareCode ? (
@@ -1284,7 +1324,7 @@ function Navbar() {
                   <div className="share-modal-error">Erro ao carregar código</div>
                 )}
                 <p className="share-modal-hint">
-                  Compartilhe este código para que outras pessoas possam acessar o projeto
+                  Este código permite que outros usuários vinculem seus projetos pessoais a este projeto gerencial. Compartilhe este código com pessoas que você deseja que gerenciem projetos vinculados a este projeto gerencial.
                 </p>
               </div>
             </div>

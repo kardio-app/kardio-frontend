@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import Navbar from '../components/Navbar/Navbar'
 import Header from '../components/Header/Header'
 import BoardGerencialComponent from '../components/BoardGerencial/BoardGerencial'
+import Loading from '../components/Loading/Loading'
 import { getProject } from '../services/api'
 import { useToast } from '../hooks/useToast'
 import ToastContainer from '../components/Toast/ToastContainer'
@@ -97,9 +98,7 @@ function BoardGerencial() {
     return (
       <>
         <Navbar />
-        <div className="board-gerencial-loading">
-          <p>Carregando projeto gerencial...</p>
-        </div>
+        <Loading message="Carregando projeto gerencial..." />
       </>
     )
   }

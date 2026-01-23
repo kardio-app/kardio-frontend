@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
-import { getProject, getLinkedProjects, getBoard, unlinkManagerFromPersonalProject, linkPersonalProjectToManager } from '../../services/api'
+import { getProject, getLinkedProjects, getBoard as getBoardFromAPI, unlinkManagerFromPersonalProject, linkPersonalProjectToManager } from '../../services/api'
 import BoardComponent from '../Board/Board'
 import useBoardStore from '../../store/useBoardStore'
 import ModalConfirm from '../ModalConfirm/ModalConfirm'
+import FilterInsights from '../FilterInsights/FilterInsights'
 import { safeError } from '../../utils/logger'
 import '../Header/Header.css'
 import './BoardGerencial.css'
@@ -30,7 +31,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
   })
   const updateBoard = useBoardStore((state) => state.updateBoard)
   const boards = useBoardStore((state) => state.boards)
-  const getBoard = useBoardStore((state) => state.getBoard)
+  const getBoardFromStore = useBoardStore((state) => state.getBoard)
 
   const loadLinkedProjects = useCallback(async () => {
     if (!encryptedId) return
@@ -90,7 +91,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
     }
     
     // Filtro por status
-    const board = boards[project.encrypted_id] || getBoard(project.encrypted_id)
+    const board = boards[project.encrypted_id] || getBoardFromStore(project.encrypted_id)
     const allCards = board?.columns?.flatMap(col => col.cards || []) || []
     const hasPendingCards = allCards.some(card => !card.is_completed)
     
@@ -229,7 +230,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
         showToast('Projeto desvinculado com sucesso', 'success')
       }
     } catch (error) {
-      console.error('Erro ao desvincular projeto:', error)
+      safeError('Erro ao desvincular projeto:', error)
       if (showToast) {
         showToast('Erro ao desvincular projeto: ' + error.message, 'error')
       }
@@ -283,7 +284,7 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
       }
       
       // Carregar dados do board do backend
-      const boardData = await getBoard(projectEncryptedId)
+      const boardData = await getBoardFromAPI(projectEncryptedId)
       
       // Atualizar o store com os dados mais recentes
       updateBoard(projectEncryptedId, {
@@ -302,10 +303,10 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
           return prev
         })
       }).catch(err => {
-        console.error('Erro ao atualizar dados do projeto:', err)
+        safeError('Erro ao atualizar dados do projeto:', err)
       })
     } catch (error) {
-      console.error('Erro ao carregar board do projeto:', error)
+      safeError('Erro ao carregar board do projeto:', error)
       if (!silent) {
         alert('Erro ao carregar projeto: ' + error.message)
       }
@@ -487,31 +488,11 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
               <p>Carregando projeto...</p>
             </div>
           ) : (
-            <>
-              {/* Mostrar insights dos filtros se houver filtros aplicados */}
-              {(() => {
-                if (!selectedProjectId) return null
-                const board = boards[selectedProjectId] || getBoard(selectedProjectId)
-                const filters = board?.filters
-                const hasActiveFilters = filters && (
-                  (filters.labels && filters.labels.length > 0) ||
-                  (filters.assignees && filters.assignees.length > 0) ||
-                  filters.completionStatus !== 'all' ||
-                  filters.dateFilter !== 'all'
-                )
-                
-                return hasActiveFilters ? (
-                  <div className="board-gerencial-loaded-board-insights">
-                    <FilterInsights boardId={selectedProjectId} filters={filters} />
-                  </div>
-                ) : null
-              })()}
-              <div className="board-gerencial-loaded-board-content">
-                <BoardComponent 
-                  boardId={selectedProjectId}
-                />
-              </div>
-            </>
+            <div className="board-gerencial-loaded-board-content">
+              <BoardComponent 
+                boardId={selectedProjectId}
+              />
+            </div>
           )}
           </div>
         ) : (

@@ -196,7 +196,7 @@ function Board() {
           
           setBoardData(boardDataToUse)
           boardDataRef.current = boardDataToUse // Atualizar ref
-          document.title = `${boardDataToUse.name} - @kardiosoftware`
+          document.title = `${boardDataToUse.name} - Kardio`
           
           // Resetar contador de erros em caso de sucesso
           consecutiveErrors = 0

@@ -12,12 +12,18 @@ function Docs() {
   const { selectedTopic, setSelectedTopic, expandedItems, setExpandedItems, showOverview, setShowOverview } = useDocsContext()
 
   useEffect(() => {
+    document.title = 'Documentação - Kardio'
+    
     // Verificar se deve mostrar o overview baseado no localStorage
     const shouldShowOverview = localStorage.getItem('kardio-docs-show-overview')
     if (shouldShowOverview === 'true') {
       setShowOverview(true)
       setSelectedTopic(null)
       localStorage.removeItem('kardio-docs-show-overview')
+    }
+    
+    return () => {
+      document.title = 'Kardio'
     }
   }, [setShowOverview, setSelectedTopic])
 

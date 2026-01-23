@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Breadcrumb.css';
 
@@ -6,12 +6,32 @@ const Breadcrumb = ({ items = [], onNavigate, editableItem = null, onEdit = null
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
+  const inputRef = useRef(null);
+  const measureRef = useRef(null);
 
   useEffect(() => {
     if (editableItem) {
       setEditValue(editableItem.label);
     }
   }, [editableItem]);
+
+  // Ajustar largura do input baseado no conteúdo
+  useEffect(() => {
+    if (isEditing && inputRef.current && measureRef.current) {
+      const adjustWidth = () => {
+        if (measureRef.current && inputRef.current) {
+          measureRef.current.textContent = editValue || ' ';
+          const width = measureRef.current.offsetWidth;
+          inputRef.current.style.width = `${Math.max(width + 20, 50)}px`;
+        }
+      };
+      
+      adjustWidth();
+      // Ajustar quando o valor mudar
+      const timeoutId = setTimeout(adjustWidth, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isEditing, editValue]);
 
   const handleClick = (item) => {
     if (item.href) {
@@ -50,6 +70,21 @@ const Breadcrumb = ({ items = [], onNavigate, editableItem = null, onEdit = null
 
   return (
     <div className="breadcrumb">
+      {/* Span invisível para medir o texto */}
+      <span
+        ref={measureRef}
+        style={{
+          position: 'absolute',
+          visibility: 'hidden',
+          whiteSpace: 'pre',
+          fontSize: '0.8125rem',
+          fontWeight: '600',
+          fontFamily: 'inherit',
+          pointerEvents: 'none',
+          zIndex: -1
+        }}
+        aria-hidden="true"
+      />
       <ul className="breadcrumb-list">
         {items.map((item, index) => {
           const isEditable = editableItem && editableItem.index === index;
@@ -94,6 +129,7 @@ const Breadcrumb = ({ items = [], onNavigate, editableItem = null, onEdit = null
               ) : (
                 isEditable && isEditing ? (
                   <input
+                    ref={inputRef}
                     className="breadcrumb-input"
                     type="text"
                     value={editValue}

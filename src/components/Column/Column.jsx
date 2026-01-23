@@ -33,6 +33,8 @@ function Column({ boardId, column, showToast }) {
   const [hasScrollbar, setHasScrollbar] = useState(false)
   const cardsRef = useRef(null)
   const settingsButtonRef = useRef(null)
+  const titleInputRef = useRef(null)
+  const titleMeasureRef = useRef(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -122,6 +124,24 @@ function Column({ boardId, column, showToast }) {
       setTitle(currentColumn.title)
     }
   }, [currentColumn.title, isEditing])
+
+  // Ajustar largura do input do título baseado no conteúdo
+  useEffect(() => {
+    if (isEditing && titleInputRef.current && titleMeasureRef.current) {
+      const adjustWidth = () => {
+        if (titleMeasureRef.current && titleInputRef.current) {
+          titleMeasureRef.current.textContent = title || ' '
+          const width = titleMeasureRef.current.offsetWidth
+          titleInputRef.current.style.width = `${Math.max(width + 20, 50)}px`
+        }
+      }
+      
+      adjustWidth()
+      // Ajustar quando o valor mudar
+      const timeoutId = setTimeout(adjustWidth, 0)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [isEditing, title])
 
   // Aplicar filtros aos cards
   const filters = currentBoard.filters || {}
@@ -349,6 +369,21 @@ function Column({ boardId, column, showToast }) {
             }
           }}
         />
+        {/* Span invisível para medir o texto do título */}
+        <span
+          ref={titleMeasureRef}
+          style={{
+            position: 'absolute',
+            visibility: 'hidden',
+            whiteSpace: 'pre',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            fontFamily: 'inherit',
+            pointerEvents: 'none',
+            zIndex: -1
+          }}
+          aria-hidden="true"
+        />
         <div 
           className="column-header"
           onClick={(e) => {
@@ -360,6 +395,7 @@ function Column({ boardId, column, showToast }) {
         >
           {isEditing ? (
             <input
+              ref={titleInputRef}
               className="column-title-input"
               value={title}
               onChange={handleTitleChange}
@@ -482,8 +518,8 @@ function Column({ boardId, column, showToast }) {
                     >
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
-                        width="18" 
-                        height="18" 
+                        width="16" 
+                        height="16" 
                         viewBox="0 0 24 24" 
                         fill="none" 
                         stroke="currentColor" 
@@ -506,8 +542,8 @@ function Column({ boardId, column, showToast }) {
                     >
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
-                        width="18" 
-                        height="18" 
+                        width="16" 
+                        height="16" 
                         viewBox="0 0 24 24" 
                         fill="none" 
                         stroke="currentColor" 
@@ -561,8 +597,8 @@ function Column({ boardId, column, showToast }) {
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
-                    width="18" 
-                    height="18" 
+                    width="16" 
+                    height="16" 
                     viewBox="0 0 24 24" 
                     fill="none" 
                     stroke="currentColor" 
@@ -585,8 +621,8 @@ function Column({ boardId, column, showToast }) {
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
-                    width="18" 
-                    height="18" 
+                    width="16" 
+                    height="16" 
                     viewBox="0 0 24 24" 
                     fill="none" 
                     stroke="currentColor" 

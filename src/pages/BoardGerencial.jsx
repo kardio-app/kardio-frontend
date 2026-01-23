@@ -53,7 +53,7 @@ function BoardGerencial() {
           })
           
           // Atualizar título da aba do navegador
-          document.title = `${data.name || 'Projeto Gerencial'} - @kardiosoftware`
+          document.title = `${data.name || 'Projeto Gerencial'} - Kardio`
           
           setLoading(false)
         }
@@ -85,12 +85,12 @@ function BoardGerencial() {
   // Atualizar título da aba quando o nome do projeto mudar
   useEffect(() => {
     if (projectData?.name) {
-      document.title = `${projectData.name} - @kardiosoftware`
+      document.title = `${projectData.name} - Kardio`
     }
     
     // Limpar título ao desmontar
     return () => {
-      document.title = '@kardiosoftware'
+      document.title = 'Kardio'
     }
   }, [projectData?.name])
 

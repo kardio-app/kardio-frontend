@@ -5,7 +5,7 @@ import './Legal.css'
 
 function Cookies() {
   useEffect(() => {
-    document.title = 'Política de Cookies - @kardiosoftware'
+    document.title = 'Cookies - Kardio'
   }, [])
 
   return (

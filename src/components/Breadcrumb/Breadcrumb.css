@@ -36,8 +36,8 @@
   align-items: center;
   gap: 0.625rem;
   font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--text-white);
+  font-weight: 400;
+  color: var(--text-gray);
   background: none;
   border: none;
   padding: 0;
@@ -48,7 +48,7 @@
 
 .breadcrumb-link:hover {
   color: var(--text-white);
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .breadcrumb-logo-letter {
@@ -81,9 +81,15 @@
 
 .breadcrumb-current {
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-gray);
   opacity: 0.8;
+}
+
+.breadcrumb-current.breadcrumb-editable {
+  font-weight: 600;
+  color: var(--text-white);
+  opacity: 1;
 }
 
 .breadcrumb-editable {
@@ -99,15 +105,17 @@
 
 .breadcrumb-input {
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-white);
   background-color: var(--bg-gray);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 0.25rem 0.5rem;
-  min-width: 150px;
+  width: auto;
+  min-width: 0;
   max-width: 300px;
   outline: none;
+  box-sizing: content-box;
 }
 
 .breadcrumb-input:focus {

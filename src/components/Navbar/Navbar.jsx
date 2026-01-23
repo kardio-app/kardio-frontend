@@ -831,13 +831,13 @@ function Navbar() {
   // Atualizar título da aba quando o nome mudar
   useEffect(() => {
     if (isBoardGerencial && gerencialProjectName) {
-      document.title = `${gerencialProjectName} - @kardiosoftware`
+      document.title = `${gerencialProjectName} - Kardio`
     } else if (isBoard && boardProjectName) {
-      document.title = `${boardProjectName} - @kardiosoftware`
+      document.title = `${boardProjectName} - Kardio`
     }
     return () => {
       if (isBoardGerencial || isBoard) {
-        document.title = '@kardiosoftware'
+        document.title = 'Kardio'
       }
     }
   }, [isBoardGerencial, gerencialProjectName, isBoard, boardProjectName])
@@ -858,7 +858,7 @@ function Navbar() {
     
     try {
       await updateProjectName(boardId, trimmedName)
-      document.title = `${trimmedName} - @kardiosoftware`
+      document.title = `${trimmedName} - Kardio`
     } catch (error) {
       safeError('Erro ao atualizar nome do projeto:', error)
       setGerencialProjectName(previousName)
@@ -901,7 +901,7 @@ function Navbar() {
     
     try {
       await updateProjectName(boardId, trimmedName)
-      document.title = `${trimmedName} - @kardiosoftware`
+      document.title = `${trimmedName} - Kardio`
     } catch (error) {
       safeError('Erro ao atualizar nome do projeto:', error)
       setBoardProjectName(previousName)

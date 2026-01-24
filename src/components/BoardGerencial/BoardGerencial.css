@@ -36,7 +36,7 @@
 }
 
 .board-gerencial-sidebar-header {
-  padding: 1rem 1rem 0.75rem 1rem;
+  padding: 0.75rem;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
@@ -57,7 +57,7 @@
 }
 
 .board-gerencial-sidebar-footer {
-  padding: 0.75rem 1rem 1rem 1rem;
+  padding: 0.75rem;
   border-top: 1px solid var(--border-color);
   flex-shrink: 0;
 }
@@ -142,7 +142,7 @@
 .board-gerencial-sidebar-project {
   background-color: var(--bg-gray);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: 0.75rem;
   cursor: pointer;
   transition: var(--transition);
   border: 1px solid var(--border-color);
@@ -463,12 +463,12 @@
 
 /* Ajustar altura das colunas dentro do board gerencial */
 .board-gerencial-loaded-board-content .column {
-  max-height: calc(100vh - 48px - 1.5rem - 3.75rem);
+  max-height: calc(100vh - 48px - 1.5rem - 3.75rem - 1rem);
   height: auto;
 }
 
 .board-gerencial-loaded-board-content .column-cards {
-  max-height: calc(100vh - 48px - 1.5rem - 3.75rem - 80px);
+  max-height: calc(100vh - 48px - 1.5rem - 3.75rem - 80px - 1rem);
 }
 
 .board-gerencial-loaded-board-loading {

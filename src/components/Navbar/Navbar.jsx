@@ -294,7 +294,9 @@ function Navbar() {
   useEffect(() => {
     if (isCreating && projectResult) {
       const timer = setTimeout(() => {
-        navigate(`/board/${projectResult.encryptedLink}`)
+        // Usar boardUrl se disponível (contém sessionToken), senão usar encryptedLink (compatibilidade)
+        const route = projectResult.boardUrl || `/board/${projectResult.encryptedLink}`
+        navigate(route)
         setIsCreating(false)
         setProjectResult(null)
       }, 5000)

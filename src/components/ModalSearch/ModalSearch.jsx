@@ -239,11 +239,12 @@ function ModalSearch({ isOpen, onClose, onSearch }) {
   useEffect(() => {
     if (isCreating && createProjectResult) {
       const timer = setTimeout(() => {
-        if (createProjectResult.type === 'managerial') {
-          navigate(`/board-gerencial/${createProjectResult.encryptedLink}`)
-        } else {
-          navigate(`/board/${createProjectResult.encryptedLink}`)
-        }
+        // Usar boardUrl se disponível (contém sessionToken), senão construir manualmente (compatibilidade)
+        const route = createProjectResult.boardUrl || 
+          (createProjectResult.type === 'managerial' 
+            ? `/board-gerencial/${createProjectResult.encryptedLink}`
+            : `/board/${createProjectResult.encryptedLink}`)
+        navigate(route)
         setIsCreating(false)
         setCreateProjectResult(null)
       }, 5000)

@@ -206,6 +206,16 @@ function Board() {
       } catch (err) {
         if (!isMounted) return
         
+        // Verificar se o token expirou
+        if (err.code === 'TOKEN_EXPIRED' || (err.status === 403 && err.message.includes('expirado'))) {
+          // Token expirado - redirecionar para home com mensagem
+          showToast('Este link expirou. Por favor, acesse o projeto novamente usando o código de acesso.', 'error')
+          setTimeout(() => {
+            navigate('/')
+          }, 2000)
+          return
+        }
+        
         consecutiveErrors++
         
         // Só mostrar/logar erro se não for erro de rede/serviço indisponível

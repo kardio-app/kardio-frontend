@@ -123,8 +123,23 @@ export async function getProject(encryptedId) {
     const response = await fetch(`${API_URL}/projects/${encryptedId}`)
 
     if (!response.ok) {
-      const errorMessage = await handleResponseError(response)
-      throw new Error(errorMessage)
+      let errorMessage = `Erro ${response.status}: ${response.statusText}`
+      let errorCode = null
+      
+      try {
+        const clonedResponse = response.clone()
+        const errorData = await clonedResponse.json()
+        errorMessage = errorData.error || errorMessage
+        errorCode = errorData.code || null
+      } catch (e) {
+        // Se não conseguir parsear JSON, usar handleResponseError
+        errorMessage = await handleResponseError(response)
+      }
+      
+      const error = new Error(errorMessage)
+      error.code = errorCode
+      error.status = response.status
+      throw error
     }
 
     return await response.json()
@@ -141,10 +156,16 @@ export async function getBoard(encryptedId) {
 
     if (!response.ok) {
       let errorMessage = `Erro ${response.status}: ${response.statusText}`
+      let errorCode = null
+      let errorDetails = null
+      
       try {
         const clonedResponse = response.clone()
         const errorData = await clonedResponse.json()
         errorMessage = errorData.error || errorMessage
+        errorCode = errorData.code || null
+        errorDetails = errorData.details || null
+        
         if (errorData.details) {
           safeError('Detalhes do erro:', errorData.details)
         }
@@ -157,7 +178,12 @@ export async function getBoard(encryptedId) {
           errorMessage = `Erro ${response.status}: ${response.statusText}`
         }
       }
-      throw new Error(errorMessage)
+      
+      const error = new Error(errorMessage)
+      error.code = errorCode
+      error.status = response.status
+      error.details = errorDetails
+      throw error
     }
 
     return await response.json()

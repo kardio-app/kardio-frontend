@@ -113,11 +113,12 @@ function Home() {
   useEffect(() => {
     if (isCreating && projectResult) {
       const timer = setTimeout(() => {
-        if (projectResult.type === 'managerial') {
-          navigate(`/board-gerencial/${projectResult.encryptedLink}`)
-        } else {
-          navigate(`/board/${projectResult.encryptedLink}`)
-        }
+        // Usar boardUrl se disponível (contém sessionToken), senão construir manualmente (compatibilidade)
+        const route = projectResult.boardUrl || 
+          (projectResult.type === 'managerial' 
+            ? `/board-gerencial/${projectResult.encryptedLink}`
+            : `/board/${projectResult.encryptedLink}`)
+        navigate(route)
         setIsCreating(false)
         setProjectResult(null)
       }, 5000)

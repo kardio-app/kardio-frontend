@@ -82,9 +82,10 @@ function Board({ boardId, showToast }) {
             tolerance: 5,
           }
         : {
-            // No desktop: comportamento original
-            distance: 5,
-            delay: 0,
+            // No desktop: precisa mover pelo menos 10px OU ter um delay de 100ms
+            // Isso permite cliques simples sem ativar o drag
+            distance: 10,
+            delay: 100,
             tolerance: 5,
           },
     }),

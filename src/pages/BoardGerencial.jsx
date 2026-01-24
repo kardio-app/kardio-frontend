@@ -59,6 +59,16 @@ function BoardGerencial() {
         }
       } catch (err) {
         if (isMounted) {
+          // Verificar se o token expirou
+          if (err.code === 'TOKEN_EXPIRED' || (err.status === 403 && err.message.includes('expirado'))) {
+            // Token expirado - redirecionar para home com mensagem
+            showToast('Este link expirou. Por favor, acesse o projeto novamente usando o código de acesso.', 'error')
+            setTimeout(() => {
+              navigate('/')
+            }, 2000)
+            return
+          }
+          
           setError(err.message || 'Erro ao carregar projeto')
           setLoading(false)
         }

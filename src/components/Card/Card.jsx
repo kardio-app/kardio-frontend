@@ -17,13 +17,22 @@ function Card({ boardId, columnId, card, showToast, columns }) {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 768)
   const [commentsCount, setCommentsCount] = useState(0)
   const checkboxContainerRef = useRef(null)
+  const clickTimeoutRef = useRef(null)
+  const isDraggingRef = useRef(false)
+  const mouseDownPositionRef = useRef({ x: 0, y: 0, time: 0 })
+  const hasMovedRef = useRef(false)
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768)
     }
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current)
+      }
+    }
   }, [])
 
   // Buscar contagem de comentários
@@ -70,8 +79,18 @@ function Card({ boardId, columnId, card, showToast, columns }) {
     isDragging,
   } = useSortable({
     id: card.id,
+    disabled: false,
   })
 
+  // Atualizar ref quando isDragging mudar
+  useEffect(() => {
+    isDraggingRef.current = isDragging
+    // Se começou a arrastar, cancelar o clique
+    if (isDragging && clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current)
+      clickTimeoutRef.current = null
+    }
+  }, [isDragging])
 
   // Otimizar cálculo do transform apenas quando necessário
   const transformString = useMemo(() => {
@@ -84,13 +103,61 @@ function Card({ boardId, columnId, card, showToast, columns }) {
     opacity: isDragging ? 0.5 : 1,
   }), [transformString, transition, isDragging])
 
-  const handleClick = (e) => {
-    // Não abrir modal se estiver arrastando ou se clicou no checkbox
-    if (!isDragging && 
-        !e.target.closest('.card-completion-checkbox-container') &&
-        !e.target.closest('.card-completion-checkbox-label')) {
-      setShowModal(true)
+  const handleMouseDown = (e) => {
+    // Ignorar se clicou no checkbox
+    if (e.target.closest('.card-completion-checkbox-container') ||
+        e.target.closest('.card-completion-checkbox-label') ||
+        e.target.closest('.card-completion-checkbox')) {
+      return
     }
+    
+    // Capturar posição inicial e tempo
+    mouseDownPositionRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      time: Date.now()
+    }
+    hasMovedRef.current = false
+  }
+
+  const handleMouseUp = (e) => {
+    // Verificar se foi um clique simples (sem drag)
+    if (!isDraggingRef.current &&
+        mouseDownPositionRef.current.x !== 0) {
+      
+      // Verificar se não clicou no checkbox
+      if (!e.target.closest('.card-completion-checkbox-container') &&
+          !e.target.closest('.card-completion-checkbox-label') &&
+          !e.target.closest('.card-completion-checkbox')) {
+        
+        // Verificar se foi um clique rápido (menos de 300ms) e sem movimento
+        const clickDuration = Date.now() - mouseDownPositionRef.current.time
+        const deltaX = Math.abs(e.clientX - mouseDownPositionRef.current.x)
+        const deltaY = Math.abs(e.clientY - mouseDownPositionRef.current.y)
+        
+        if (clickDuration < 300 && deltaX < 5 && deltaY < 5) {
+          // Usar um pequeno delay para garantir que o drag não vai começar
+          setTimeout(() => {
+            if (!isDraggingRef.current) {
+              setShowModal(true)
+            }
+          }, 50)
+        }
+      }
+    }
+    
+    // Resetar após um delay
+    setTimeout(() => {
+      mouseDownPositionRef.current = { x: 0, y: 0, time: 0 }
+      hasMovedRef.current = false
+    }, 100)
+  }
+
+  const handleClick = (e) => {
+    // Prevenir que o clique padrão interfira
+    // O modal já é aberto via handleMouseUp
+    e.preventDefault()
+    e.stopPropagation()
   }
 
   const handleCompletionToggle = async (e) => {
@@ -127,6 +194,8 @@ function Card({ boardId, columnId, card, showToast, columns }) {
         style={style}
         {...(!isMobile ? { ...attributes, ...listeners } : {})}
         className="card"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
         onClick={handleClick}
         data-dragging={isDragging}
         onDoubleClick={(e) => {

@@ -22,13 +22,9 @@
   display: flex;
   align-items: center;
   color: var(--text-gray);
-  opacity: 0.6;
-}
-
-.breadcrumb-arrow {
-  fill: currentColor;
-  width: 7px;
-  height: 12px;
+  opacity: 0.7;
+  margin: 0 0.5rem;
+  user-select: none;
 }
 
 .breadcrumb-link {
@@ -132,11 +128,6 @@
   .breadcrumb-home-icon {
     width: 14px;
     height: 14px;
-  }
-
-  .breadcrumb-arrow {
-    width: 6px;
-    height: 10px;
   }
 
   .breadcrumb-item {

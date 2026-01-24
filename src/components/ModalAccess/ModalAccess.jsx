@@ -19,17 +19,20 @@ function ModalAccess({ onClose }) {
     // Para projetos gerenciais, boardData será um objeto vazio {}
     // Para projetos pessoais, boardData será o objeto do board
     if (isLoading && projectResult && boardData !== undefined) {
+      // Usar sessionToken se disponível, senão usar encryptedLink (compatibilidade)
+      const boardIdentifier = projectResult.sessionToken || projectResult.encryptedLink
+      
       // Armazenar dados pré-carregados no sessionStorage (apenas se houver dados)
       if (boardData && Object.keys(boardData).length > 0) {
-        sessionStorage.setItem(`board_preload_${projectResult.encryptedLink}`, JSON.stringify(boardData))
+        sessionStorage.setItem(`board_preload_${boardIdentifier}`, JSON.stringify(boardData))
       }
       
       const timer = setTimeout(() => {
-        // Verificar o tipo do projeto e redirecionar corretamente
-        const projectType = projectResult.type || 'personal'
-        const route = projectType === 'managerial' 
-          ? `/board-gerencial/${projectResult.encryptedLink}`
-          : `/board/${projectResult.encryptedLink}`
+        // Usar boardUrl se disponível, senão construir manualmente
+        const route = projectResult.boardUrl || 
+          (projectResult.type === 'managerial' 
+            ? `/board-gerencial/${boardIdentifier}`
+            : `/board/${boardIdentifier}`)
         
         navigate(route)
         setIsLoading(false)
@@ -62,7 +65,7 @@ function ModalAccess({ onClose }) {
         saveProject({
           name: result.name || 'Projeto sem nome',
           code: code.trim().toUpperCase(),
-          encryptedLink: result.encryptedLink
+          encryptedLink: result.encryptedLink // Manter para compatibilidade
         })
       } catch (saveError) {
         safeError('Erro ao salvar projeto automaticamente:', saveError)
@@ -70,10 +73,11 @@ function ModalAccess({ onClose }) {
       }
       
       // Pré-carregar dados do board durante o loading (apenas para projetos pessoais)
-      // Projetos gerenciais não têm board, então não precisa pré-carregar
+      // Usar sessionToken se disponível, senão usar encryptedLink (compatibilidade)
+      const boardIdentifier = result.sessionToken || result.encryptedLink
       if (result.type !== 'managerial') {
         try {
-          const boardData = await getBoard(result.encryptedLink)
+          const boardData = await getBoard(boardIdentifier)
           setBoardData(boardData)
         } catch (boardError) {
           safeError('Erro ao pré-carregar board:', boardError)

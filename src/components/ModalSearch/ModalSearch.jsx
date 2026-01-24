@@ -164,9 +164,12 @@ function ModalSearch({ isOpen, onClose, onSearch }) {
       const result = await accessProject(project.code)
       setProjectResult(result)
       
+      // Usar sessionToken se disponível, senão usar encryptedLink (compatibilidade)
+      const boardIdentifier = result.sessionToken || result.encryptedLink
+      
       if (result.type !== 'managerial') {
         try {
-          const boardData = await getBoard(result.encryptedLink)
+          const boardData = await getBoard(boardIdentifier)
           setBoardData(boardData)
         } catch (boardError) {
           safeError('Erro ao pré-carregar board:', boardError)
@@ -259,15 +262,19 @@ function ModalSearch({ isOpen, onClose, onSearch }) {
 
   useEffect(() => {
     if (isLoading && projectResult && boardData !== undefined) {
+      // Usar sessionToken se disponível, senão usar encryptedLink (compatibilidade)
+      const boardIdentifier = projectResult.sessionToken || projectResult.encryptedLink
+      
       if (boardData && Object.keys(boardData).length > 0) {
-        sessionStorage.setItem(`board_preload_${projectResult.encryptedLink}`, JSON.stringify(boardData))
+        sessionStorage.setItem(`board_preload_${boardIdentifier}`, JSON.stringify(boardData))
       }
       
       const timer = setTimeout(() => {
-        const projectType = projectResult.type || 'personal'
-        const route = projectType === 'managerial' 
-          ? `/board-gerencial/${projectResult.encryptedLink}`
-          : `/board/${projectResult.encryptedLink}`
+        // Usar boardUrl se disponível, senão construir manualmente
+        const route = projectResult.boardUrl || 
+          (projectResult.type === 'managerial' 
+            ? `/board-gerencial/${boardIdentifier}`
+            : `/board/${boardIdentifier}`)
         
         navigate(route)
         setIsLoading(false)

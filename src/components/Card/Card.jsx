@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import useBoardStore from '../../store/useBoardStore'
@@ -16,6 +16,7 @@ function Card({ boardId, columnId, card, showToast, columns }) {
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 768)
   const [commentsCount, setCommentsCount] = useState(0)
+  const checkboxContainerRef = useRef(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,6 +72,7 @@ function Card({ boardId, columnId, card, showToast, columns }) {
     id: card.id,
   })
 
+
   // Otimizar cálculo do transform apenas quando necessário
   const transformString = useMemo(() => {
     return transform ? CSS.Transform.toString(transform) : undefined
@@ -83,9 +85,8 @@ function Card({ boardId, columnId, card, showToast, columns }) {
   }), [transformString, transition, isDragging])
 
   const handleClick = (e) => {
-    // Não abrir modal se estiver arrastando, se clicou no handle ou no checkbox
+    // Não abrir modal se estiver arrastando ou se clicou no checkbox
     if (!isDragging && 
-        !e.target.closest('.card-drag-handle') && 
         !e.target.closest('.card-completion-checkbox-container') &&
         !e.target.closest('.card-completion-checkbox-label')) {
       setShowModal(true)
@@ -124,10 +125,16 @@ function Card({ boardId, columnId, card, showToast, columns }) {
       <div
         ref={setNodeRef}
         style={style}
-        {...(!isMobile ? attributes : {})}
+        {...(!isMobile ? { ...attributes, ...listeners } : {})}
         className="card"
         onClick={handleClick}
         data-dragging={isDragging}
+        onDoubleClick={(e) => {
+          if (isMobile) {
+            e.stopPropagation()
+            setShowMoveModal(true)
+          }
+        }}
       >
         {highlightLabel && (
           <div className="card-labels-container">
@@ -138,35 +145,6 @@ function Card({ boardId, columnId, card, showToast, columns }) {
             />
           </div>
         )}
-        <div 
-          className="card-drag-handle"
-          {...(!isMobile ? listeners : {})}
-          onClick={(e) => {
-            if (isMobile) {
-              e.stopPropagation()
-              setShowMoveModal(true)
-            }
-          }}
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="16" 
-            height="16" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <circle cx="9" cy="12" r="1"></circle>
-            <circle cx="9" cy="5" r="1"></circle>
-            <circle cx="9" cy="19" r="1"></circle>
-            <circle cx="15" cy="12" r="1"></circle>
-            <circle cx="15" cy="5" r="1"></circle>
-            <circle cx="15" cy="19" r="1"></circle>
-          </svg>
-        </div>
         <h3 className={`card-title ${card.is_completed ? 'card-title-completed' : ''}`}>
           {card.title}
         </h3>
@@ -255,13 +233,33 @@ function Card({ boardId, columnId, card, showToast, columns }) {
             )}
           </div>
           <div 
+            ref={checkboxContainerRef}
             className="card-completion-checkbox-container"
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+            onTouchStart={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
           >
-            <div className="card-completion-checkbox-wrapper">
+            <div 
+              className="card-completion-checkbox-wrapper"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
               <label 
                 className="card-completion-checkbox-label"
                 onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
               >
                 <input
                   type="checkbox"
@@ -269,6 +267,8 @@ function Card({ boardId, columnId, card, showToast, columns }) {
                   checked={card.is_completed || false}
                   onChange={handleCompletionToggle}
                   onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                   title={card.is_completed ? 'Marcar como não concluído' : 'Marcar como concluído'}
                 />
                 <span className="card-completion-checkbox-custom"></span>

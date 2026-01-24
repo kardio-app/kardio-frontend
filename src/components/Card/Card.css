@@ -8,7 +8,7 @@
   gap: 0.1875rem;
   border: 1px solid transparent;
   position: relative;
-  cursor: default;
+  cursor: grab;
   touch-action: pan-y;
   will-change: transform;
   transform: translateZ(0);
@@ -16,6 +16,24 @@
   overflow: hidden;
   flex-shrink: 0;
   min-height: fit-content;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+.card .card-completion-checkbox-container,
+.card .card-completion-checkbox-container * {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 20;
+}
+
+.card .card-completion-checkbox-container * {
+  pointer-events: auto !important;
 }
 
 .card-labels-container {
@@ -48,37 +66,6 @@
   border-color: var(--border-color);
 }
 
-.card-drag-handle {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-gray);
-  cursor: grab;
-  transition: var(--transition);
-  opacity: 0;
-  z-index: 10;
-  touch-action: none;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.card:hover .card-drag-handle {
-  opacity: 1;
-}
-
-.card-drag-handle:active {
-  cursor: grabbing;
-}
-
-.card-drag-handle:hover {
-  color: var(--text-white);
-}
 
 .card-dragging {
   opacity: 0.9;
@@ -237,12 +224,19 @@
   justify-content: flex-end;
   gap: 0.5rem;
   margin-left: auto;
+  cursor: default;
+  pointer-events: auto;
+  z-index: 10;
+  position: relative;
 }
 
 .card-completion-checkbox-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 10;
 }
 
 .card-completion-checkbox-label {
@@ -253,6 +247,8 @@
   position: relative;
   width: 20px;
   height: 20px;
+  pointer-events: auto;
+  z-index: 10;
 }
 
 .card-comments-indicator {
@@ -327,43 +323,8 @@
     touch-action: pan-y;
   }
 
-  .card-drag-handle {
-    width: 32px;
-    height: 32px;
-    top: 0.5rem;
-    right: 0.5rem;
-    opacity: 0.8;
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
-    pointer-events: auto;
-  }
-
-  /* Sempre visível no mobile */
-  .card .card-drag-handle {
-    opacity: 0.8 !important;
-  }
-
-  .card:hover .card-drag-handle,
-  .card:active .card-drag-handle,
-  .card:focus-within .card-drag-handle {
-    opacity: 1 !important;
-  }
-
   .card[data-dragging="true"] {
     touch-action: none !important;
-  }
-  
-  .card[data-dragging="true"] .card-drag-handle {
-    touch-action: none !important;
-    opacity: 1 !important;
-  }
-
-  .card-drag-handle {
-    cursor: pointer;
-  }
-
-  .card-drag-handle:active {
-    cursor: pointer;
   }
 }
 

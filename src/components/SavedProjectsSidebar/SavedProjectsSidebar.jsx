@@ -449,21 +449,24 @@ function SavedProjectsSidebar({ isOpen, onClose, onLoadProject, onExit, showToas
         // Continua mesmo se falhar o salvamento
       }
       
+      // Usar sessionToken se disponível, senão usar encryptedLink (compatibilidade)
+      const boardIdentifier = result.sessionToken || result.encryptedLink
+      
       // Pré-carregar dados do board (apenas para projetos pessoais)
       if (result.type !== 'managerial') {
         try {
-          const boardData = await getBoard(result.encryptedLink);
-          sessionStorage.setItem(`board_preload_${result.encryptedLink}`, JSON.stringify(boardData));
+          const boardData = await getBoard(boardIdentifier);
+          sessionStorage.setItem(`board_preload_${boardIdentifier}`, JSON.stringify(boardData));
         } catch (boardError) {
           safeError('Erro ao pré-carregar board:', boardError);
         }
       }
       
-      // Verificar o tipo do projeto e navegar para a rota correta
-      const projectType = result.type || 'personal'
-      const route = projectType === 'managerial' 
-        ? `/board-gerencial/${result.encryptedLink}`
-        : `/board/${result.encryptedLink}`
+      // Usar boardUrl se disponível, senão construir manualmente
+      const route = result.boardUrl || 
+        (result.type === 'managerial' 
+          ? `/board-gerencial/${boardIdentifier}`
+          : `/board/${boardIdentifier}`)
       
       navigate(route);
       onClose();

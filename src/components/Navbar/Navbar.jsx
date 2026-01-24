@@ -580,20 +580,24 @@ function Navbar() {
         safeError('Erro ao atualizar projeto salvo:', saveError)
       }
       
+      // Usar sessionToken se disponível, senão usar encryptedLink (compatibilidade)
+      const boardIdentifier = result.sessionToken || result.encryptedLink
+      
       if (result.type !== 'managerial') {
         try {
           const boardStore = useBoardStore.getState()
-          const boardData = await boardStore.getBoard(result.encryptedLink)
-          sessionStorage.setItem(`board_preload_${result.encryptedLink}`, JSON.stringify(boardData))
+          const boardData = await boardStore.getBoard(boardIdentifier)
+          sessionStorage.setItem(`board_preload_${boardIdentifier}`, JSON.stringify(boardData))
         } catch (boardError) {
           safeError('Erro ao pré-carregar board:', boardError)
         }
       }
       
-      const projectType = result.type || 'personal'
-      const route = projectType === 'managerial' 
-        ? `/board-gerencial/${result.encryptedLink}`
-        : `/board/${result.encryptedLink}`
+      // Usar boardUrl se disponível, senão construir manualmente
+      const route = result.boardUrl || 
+        (result.type === 'managerial' 
+          ? `/board-gerencial/${boardIdentifier}`
+          : `/board/${boardIdentifier}`)
       
       navigate(route)
       setShowHomeSidebar(false)
@@ -715,11 +719,14 @@ function Navbar() {
         encryptedLink: result.encryptedLink
       })
       
-      if (result.type === 'managerial') {
-        navigate(`/board-gerencial/${result.encryptedLink}`)
-      } else {
-        navigate(`/board/${result.encryptedLink}`)
-      }
+      // Usar boardUrl se disponível, senão construir manualmente
+      const boardIdentifier = result.sessionToken || result.encryptedLink
+      const route = result.boardUrl || 
+        (result.type === 'managerial' 
+          ? `/board-gerencial/${boardIdentifier}`
+          : `/board/${boardIdentifier}`)
+      
+      navigate(route)
     } catch (error) {
       safeError('Erro ao carregar projeto', error)
       alert('Erro ao carregar projeto: ' + error.message)

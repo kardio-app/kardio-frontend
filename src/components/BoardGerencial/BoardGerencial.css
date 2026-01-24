@@ -53,7 +53,7 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem;
+  padding: 0.75rem;
 }
 
 .board-gerencial-sidebar-footer {

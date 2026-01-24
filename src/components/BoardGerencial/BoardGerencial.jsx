@@ -392,9 +392,12 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
                   onClick={() => handleOpenProject(project.encrypted_id)}
                 >
                   <div className="board-gerencial-sidebar-project-header">
-                    <h3 className="board-gerencial-sidebar-project-name" title={project.name}>
-                      {project.name}
-                    </h3>
+                    <div className="board-gerencial-sidebar-project-info">
+                      <h3 className="board-gerencial-sidebar-project-name" title={project.name}>
+                        {project.name}
+                      </h3>
+                      <p className="board-gerencial-sidebar-project-code">Código: {maskAccessCode(project.access_code)}</p>
+                    </div>
                     <div className="board-gerencial-sidebar-project-actions">
                       <button
                         className="board-gerencial-sidebar-project-share"
@@ -429,7 +432,6 @@ function BoardGerencial({ encryptedId, projectData, showToast }) {
                       </button>
                     </div>
                   </div>
-                  <p className="board-gerencial-sidebar-project-code">Código: {maskAccessCode(project.access_code)}</p>
                 </div>
               ))}
             </div>

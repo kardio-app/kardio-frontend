@@ -164,8 +164,14 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.75rem;
+}
+
+.board-gerencial-sidebar-project-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .board-gerencial-sidebar-project-name {
@@ -173,7 +179,6 @@
   font-weight: 600;
   color: var(--text-white);
   margin: 0;
-  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -229,6 +234,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 /* Conteúdo principal */

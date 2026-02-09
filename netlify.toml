@@ -5,7 +5,7 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "frame-ancestors ‘self’ https://app.mitra.to https://.mitrasheet.com https://*.mitralab.io;”
+    Content-Security-Policy = "frame-ancestors ‘self’ https://app.mitra.to https://.mitrasheet.com https://*.mitralab.io”
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"

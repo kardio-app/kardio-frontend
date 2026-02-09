@@ -5,7 +5,7 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
+    Content-Security-Policy = "frame-ancestors 'self' https://app.mitra.to https://*.mitrasheet.com;"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
@@ -15,5 +15,3 @@
   from = "/*"
   to = "/index.html"
   status = 200
-
-
